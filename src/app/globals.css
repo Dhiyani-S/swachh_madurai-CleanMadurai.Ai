@@ -17,7 +17,7 @@
     --secondary-foreground: 150 20% 96%;
     --muted: 160 20% 15%;
     --muted-foreground: 150 10% 70%;
-    --accent: 156 100% 39%; /* Lush green for secondary elements */
+    --accent: 156 100% 39%; /* Lush green */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 150 20% 96%;
@@ -25,6 +25,14 @@
     --input: 160 30% 15%;
     --ring: 45 100% 50%;
     --radius: 2.5rem;
+  }
+
+  html {
+    background-color: #050f0a; /* Dark fallback */
+  }
+
+  body {
+    @apply bg-transparent text-foreground font-body antialiased;
   }
 }
 
@@ -36,7 +44,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  z-index: -10; /* Put it behind everything */
+  z-index: -1; /* Placed behind content but in front of html background */
 }
 
 /* Clearer overlay to show the heritage and cleanliness image */
@@ -44,28 +52,28 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(5, 15, 10, 0.45); /* Reduced opacity for better visibility */
-  z-index: -9;
+  background: rgba(5, 15, 10, 0.55); /* Balanced transparency */
+  z-index: 0;
 }
 
 /* Glassmorphism Styles - Enhanced Transparency */
 .glass-panel {
-  background: rgba(10, 26, 16, 0.35) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 200, 0, 0.1) !important;
+  background: rgba(10, 26, 16, 0.4) !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  border: 1px solid rgba(255, 200, 0, 0.15) !important;
   color: #E8F5EE !important;
 }
 
 .glass-sidebar {
-  background: rgba(5, 15, 10, 0.6) !important;
-  backdrop-filter: blur(25px) !important;
+  background: rgba(5, 15, 10, 0.65) !important;
+  backdrop-filter: blur(30px) !important;
   border-right: 1px solid rgba(255, 200, 0, 0.1) !important;
 }
 
 .glass-header {
-  background: rgba(5, 15, 10, 0.65) !important;
-  backdrop-filter: blur(25px) !important;
+  background: rgba(5, 15, 10, 0.7) !important;
+  backdrop-filter: blur(30px) !important;
   border-bottom: 1px solid rgba(255, 200, 0, 0.1) !important;
 }
 
@@ -77,9 +85,9 @@
 /* Input fields transparent style */
 input, select, textarea {
   background: rgba(5, 15, 10, 0.5) !important;
-  border: 1px solid rgba(255, 200, 0, 0.2) !important;
+  border: 1px solid rgba(255, 200, 0, 0.25) !important;
   color: #E8F5EE !important;
-  backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 input::placeholder {
@@ -104,13 +112,4 @@ button[variant="outline"] {
   border-color: rgba(255, 200, 0, 0.4) !important;
   color: hsl(var(--primary)) !important;
   background: rgba(255, 200, 0, 0.05) !important;
-}
-
-@layer base {
-  body {
-    @apply bg-transparent text-foreground font-body antialiased;
-  }
-  html {
-    @apply bg-background;
-  }
 }

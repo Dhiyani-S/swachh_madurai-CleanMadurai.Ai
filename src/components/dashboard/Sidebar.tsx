@@ -29,7 +29,8 @@ export function DashboardSidebar() {
 
   const t = translations[language || 'en'];
 
-  const roleRoutes = {
+  // Mapping routes for each role with safety checks
+  const roleRoutes: Record<string, Array<{ name: string; icon: any; href: string }>> = {
     'commissioner': [
       { name: t.performance, icon: LayoutDashboard, href: '/dashboard/commissioner' },
       { name: 'Analytics', icon: ClipboardList, href: '/dashboard/commissioner/reports' },
@@ -52,7 +53,9 @@ export function DashboardSidebar() {
     ],
   }
 
-  const routes = currentUser ? (roleRoutes[currentUser.role as keyof typeof roleRoutes] || []) : []
+  // Get current user role in a consistent lowercase format
+  const currentRole = currentUser?.role?.toLowerCase() || '';
+  const routes = roleRoutes[currentRole] || [];
 
   return (
     <div className="hidden border-r border-white/10 bg-black/20 backdrop-blur-[50px] md:block w-64 h-screen fixed left-0 top-0 z-50">

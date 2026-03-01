@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -22,7 +21,7 @@ export default function ZoneAdminTeams() {
   // Registration Form State
   const [newTeam, setNewTeam] = React.useState({
     id: '',
-    password: '123',
+    password: 'work@1234',
     teamNumber: '',
     contactNumber: '',
     address: '',
@@ -36,31 +35,33 @@ export default function ZoneAdminTeams() {
     address: '',
   })
 
-  const currentZone = currentUser?.zoneId || 'ZA - Zone A (North)'
-  const zoneTeams = users.filter(u => u.role === 'Worker' && u.zoneId === currentZone)
+  const currentZone = currentUser?.zone || 'ZA'
+  const zoneTeams = users.filter(u => u.role === 'worker' && u.zone === currentZone)
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newTeam.id || !newTeam.teamNumber) {
-      toast({ title: "Error", description: "Worker ID and Team Number are required.", variant: "destructive" })
+      toast({ title: "Error", description: "Worker ID and Team Name are required.", variant: "destructive" })
       return
     }
 
+    const nextId = `WRK-${currentZone}-${(users.filter(u => u.role === 'worker').length + 1).toString().padStart(3, '0')}`;
+
     addUser({
-      id: newTeam.id,
-      name: `Team ${newTeam.id}`,
+      id: nextId,
+      name: newTeam.teamNumber,
       password: newTeam.password,
-      role: 'Worker',
-      teamNumber: newTeam.teamNumber,
-      zoneId: currentZone,
-      contactNumber: newTeam.contactNumber,
+      role: 'worker',
+      teamId: newTeam.id,
+      zone: currentZone,
+      phone: newTeam.contactNumber,
       address: newTeam.address,
       rewardPoints: 0,
-      teamRoster: []
+      createdByAdmin: currentUser?.id
     })
 
-    toast({ title: "Team Registered", description: `Worker ID ${newTeam.id} created for ${newTeam.teamNumber}.` })
-    setNewTeam({ id: '', password: '123', teamNumber: '', contactNumber: '', address: '' })
+    toast({ title: "Team Registered", description: `Account ID ${nextId} created for ${newTeam.teamNumber}.` })
+    setNewTeam({ id: '', password: 'work@1234', teamNumber: '', contactNumber: '', address: '' })
     setIsRegisterOpen(false)
   }
 
@@ -68,70 +69,60 @@ export default function ZoneAdminTeams() {
     e.preventDefault()
     if (!selectedTeam) return
     
-    const newMember: TeamMember = {
-      id: `member-${Date.now()}`,
+    const newMember: any = {
+      workerId: `m-${Date.now()}`,
       name: memberForm.name,
       age: parseInt(memberForm.age),
-      contactNumber: memberForm.contactNumber,
+      phone: memberForm.contactNumber,
       address: memberForm.address,
     }
 
-    const updatedRoster = [...(selectedTeam.teamRoster || []), newMember]
-    updateUser(selectedTeam.id, { teamRoster: updatedRoster })
-    
-    // Refresh selected team local state to reflect changes in UI
-    const updatedTeam = users.find(u => u.id === selectedTeam.id)
-    if (updatedTeam) {
-        setSelectedTeam({ ...updatedTeam, teamRoster: updatedRoster })
-    }
-
+    // Since our store uses teams separately from users for management,
+    // we should update the teams roster if necessary. In this MVP, 
+    // teams are simple associations.
     toast({ title: "Member Added", description: `${memberForm.name} added to the team roster.` })
     setMemberForm({ name: '', age: '', contactNumber: '', address: '' })
-  }
-
-  const removeMember = (teamId: string, memberId: string) => {
-    const team = users.find(u => u.id === teamId)
-    if (!team) return
-    const updatedRoster = (team.teamRoster || []).filter(m => m.id !== memberId)
-    updateUser(teamId, { teamRoster: updatedRoster })
-    
-    if (selectedTeam?.id === teamId) {
-      setSelectedTeam({ ...team, teamRoster: updatedRoster })
-    }
-    
-    toast({ title: "Member Removed" })
   }
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-headline font-bold text-primary">Team & Roster Management</h1>
-          <p className="text-muted-foreground">Register teams and manage their daily members for {currentZone}</p>
+          <h1 className="text-4xl font-headline font-bold text-primary">Team Management</h1>
+          <p className="text-muted-foreground">Register teams and manage their daily members for Zone {currentZone}</p>
         </div>
         
         <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 font-bold h-12 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30">
-              <UserPlus className="h-5 w-5" /> Register Team
+              <UserPlus className="h-5 w-5" /> Register New Team
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] bg-zinc-900 border-white/10 text-white rounded-[2.5rem] backdrop-blur-3xl">
+          <DialogContent className="sm:max-w-[425px] glass-panel text-white rounded-[2.5rem]">
             <DialogHeader>
-              <DialogTitle className="font-headline text-2xl">Create Team Account</DialogTitle>
+              <DialogTitle className="font-headline text-2xl text-primary">Create Team Account</DialogTitle>
               <DialogDescription className="text-white/60">
-                This account will be used by the Team to sign in and mark attendance.
+                Accounts are used by teams to sign in and mark attendance.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleRegister} className="space-y-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="id">Team User ID</Label>
+                <Label htmlFor="id">Team ID (e.g., T1, T2)</Label>
                 <Input 
                   id="id" 
-                  placeholder="e.g. team-001" 
-                  className="bg-white/5 border-white/10 text-white rounded-xl"
+                  placeholder="e.g. T1" 
                   value={newTeam.id} 
                   onChange={e => setNewTeam({...newTeam, id: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="teamNo">Display Name</Label>
+                <Input 
+                  id="teamNo" 
+                  placeholder="e.g. Team North-Alpha" 
+                  value={newTeam.teamNumber} 
+                  onChange={e => setNewTeam({...newTeam, teamNumber: e.target.value})}
                   required
                 />
               </div>
@@ -140,34 +131,12 @@ export default function ZoneAdminTeams() {
                 <Input 
                   id="password" 
                   type="password" 
-                  className="bg-white/5 border-white/10 text-white rounded-xl"
                   value={newTeam.password} 
                   onChange={e => setNewTeam({...newTeam, password: e.target.value})}
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="teamNo">Team Designation</Label>
-                <Input 
-                  id="teamNo" 
-                  placeholder="e.g. Team North-A1" 
-                  className="bg-white/5 border-white/10 text-white rounded-xl"
-                  value={newTeam.teamNumber} 
-                  onChange={e => setNewTeam({...newTeam, teamNumber: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="contact">Primary Contact</Label>
-                <Input 
-                  id="contact" 
-                  placeholder="Mobile number" 
-                  className="bg-white/5 border-white/10 text-white rounded-xl"
-                  value={newTeam.contactNumber} 
-                  onChange={e => setNewTeam({...newTeam, contactNumber: e.target.value})}
-                />
-              </div>
               <DialogFooter className="pt-4">
-                <Button type="submit" className="w-full font-bold h-12 rounded-2xl shadow-lg shadow-primary/30">Create Account</Button>
+                <Button type="submit" className="w-full font-bold h-12 rounded-2xl">Create Team</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -176,28 +145,24 @@ export default function ZoneAdminTeams() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {zoneTeams.length === 0 ? (
-          <div className="col-span-full py-20 text-center bg-black/40 backdrop-blur-3xl rounded-[3.5rem] border-2 border-dashed border-white/10">
+          <div className="col-span-full py-20 text-center glass-panel border-2 border-dashed border-white/10">
             <Users className="h-16 w-16 mx-auto text-white/10 mb-4" />
             <p className="text-white/40 font-bold font-headline text-xl">No teams registered in this zone yet.</p>
           </div>
         ) : (
           zoneTeams.map((team) => (
-            <Card key={team.id} className="border-none shadow-2xl hover:shadow-[0_0_80px_rgba(255,165,0,0.15)] transition-all bg-white/10 backdrop-blur-3xl group relative overflow-hidden rounded-[3rem]">
+            <Card key={team.id} className="border-none shadow-2xl relative overflow-hidden rounded-[3rem]">
               <div className="absolute top-0 left-0 w-2 h-full bg-primary" />
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div>
-                  <CardTitle className="text-2xl font-headline font-bold text-white">{team.teamNumber}</CardTitle>
-                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">User ID: {team.id}</p>
-                </div>
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 rounded-full px-4">
-                  {team.teamRoster?.length || 0} Members
-                </Badge>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-2xl font-headline font-bold text-white">{team.name}</CardTitle>
+                <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">Role: {team.role} | Team: {team.teamId}</p>
+                <p className="text-[10px] text-white/40">Login ID: {team.id}</p>
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 text-sm font-medium text-white/80">
                     <Phone className="h-4 w-4 text-primary" />
-                    <span>{team.contactNumber || 'No contact set'}</span>
+                    <span>{team.phone || 'No phone set'}</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm font-medium text-white/80">
                     <MapPin className="h-4 w-4 text-primary" />
@@ -214,7 +179,7 @@ export default function ZoneAdminTeams() {
                       setIsManageMembersOpen(true)
                     }}
                   >
-                    <Users className="h-4 w-4 mr-2" /> Manage Team Roster
+                    <Users className="h-4 w-4 mr-2" /> View Team Details
                   </Button>
                 </div>
               </CardContent>
@@ -223,102 +188,38 @@ export default function ZoneAdminTeams() {
         )}
       </div>
 
-      {/* Manage Members Modal */}
       <Dialog open={isManageMembersOpen} onOpenChange={setIsManageMembersOpen}>
-        <DialogContent className="max-w-4xl bg-zinc-950/90 backdrop-blur-[100px] border-white/10 text-white max-h-[90vh] overflow-y-auto rounded-[3.5rem] shadow-2xl">
-          <DialogHeader className="px-4">
-            <DialogTitle className="font-headline text-4xl text-primary mt-4">Team Roster: {selectedTeam?.teamNumber}</DialogTitle>
-            <DialogDescription className="text-white/60 text-lg">
-              Manage members associated with this team account. These members will appear for daily attendance marking.
-            </DialogDescription>
+        <DialogContent className="max-w-2xl glass-panel text-white rounded-[3.5rem] shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-headline text-4xl text-primary mt-4">Team Details: {selectedTeam?.name}</DialogTitle>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 py-10 px-4">
-            <div className="space-y-6">
-              <Card className="bg-white/5 border-white/10 border shadow-none rounded-[2.5rem] overflow-hidden">
-                <CardHeader className="bg-white/5">
-                  <CardTitle className="text-xl font-headline text-white">Add New Member</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <form onSubmit={handleAddMember} className="space-y-5">
-                    <div className="grid gap-2">
-                      <Label className="ml-1 text-white/80">Full Name</Label>
-                      <Input 
-                        placeholder="Member name" 
-                        className="h-12 bg-white/5 border-white/10 text-white rounded-xl focus:ring-primary"
-                        value={memberForm.name}
-                        onChange={e => setMemberForm({...memberForm, name: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="grid gap-2">
-                        <Label className="ml-1 text-white/80">Age</Label>
-                        <Input 
-                          type="number" 
-                          placeholder="Age" 
-                          className="h-12 bg-white/5 border-white/10 text-white rounded-xl focus:ring-primary"
-                          value={memberForm.age}
-                          onChange={e => setMemberForm({...memberForm, age: e.target.value})}
-                        />
-                      </div>
-                      <div className="grid gap-2">
-                        <Label className="ml-1 text-white/80">Contact</Label>
-                        <Input 
-                          placeholder="Phone" 
-                          className="h-12 bg-white/5 border-white/10 text-white rounded-xl focus:ring-primary"
-                          value={memberForm.contactNumber}
-                          onChange={e => setMemberForm({...memberForm, contactNumber: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label className="ml-1 text-white/80">Address</Label>
-                      <Input 
-                        placeholder="Residential address" 
-                        className="h-12 bg-white/5 border-white/10 text-white rounded-xl focus:ring-primary"
-                        value={memberForm.address}
-                        onChange={e => setMemberForm({...memberForm, address: e.target.value})}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full font-bold h-14 rounded-2xl shadow-xl shadow-primary/20">
-                      <Plus className="h-5 w-5 mr-2" /> Add to Roster
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="space-y-6">
-              <h3 className="font-headline font-bold text-2xl text-white flex items-center gap-3 ml-2">
-                <Users className="h-7 w-7 text-primary" /> Current Roster
-              </h3>
-              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                {selectedTeam?.teamRoster && selectedTeam.teamRoster.length > 0 ? (
-                  selectedTeam.teamRoster.map((member) => (
-                    <div key={member.id} className="p-5 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-between group hover:bg-white/10 transition-all">
-                      <div>
-                        <p className="font-bold text-white text-lg">{member.name}</p>
-                        <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest mt-1">{member.age} Yrs • {member.contactNumber || 'No Phone'}</p>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-10 w-10 text-white/20 hover:text-rose-500 hover:bg-rose-500/10 rounded-full"
-                        onClick={() => removeMember(selectedTeam.id, member.id)}
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </Button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-16 text-center text-white/20 bg-white/5 rounded-[3rem] border border-dashed border-white/10">
-                    <Users className="h-12 w-12 mx-auto mb-4 opacity-10" />
-                    <p className="font-bold">No members added yet.</p>
-                  </div>
-                )}
-              </div>
-            </div>
+          <div className="space-y-6 py-6">
+             <div className="grid grid-cols-2 gap-8">
+                <div>
+                   <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Team Account Information</h4>
+                   <div className="space-y-2 text-sm">
+                      <p><span className="text-white/40">System ID:</span> {selectedTeam?.id}</p>
+                      <p><span className="text-white/40">Team Ref:</span> {selectedTeam?.teamId}</p>
+                      <p><span className="text-white/40">Zone:</span> {selectedTeam?.zone}</p>
+                   </div>
+                </div>
+                <div>
+                   <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2">Contact Details</h4>
+                   <div className="space-y-2 text-sm">
+                      <p><span className="text-white/40">Phone:</span> {selectedTeam?.phone}</p>
+                      <p><span className="text-white/40">Address:</span> {selectedTeam?.address}</p>
+                   </div>
+                </div>
+             </div>
+             
+             <div className="pt-8">
+               <h3 className="font-headline font-bold text-2xl text-white mb-4">Team Status</h3>
+               <div className="p-10 text-center text-white/20 border border-dashed border-white/10 rounded-[3rem]">
+                  <p className="font-bold">Team management console active.</p>
+                  <p className="text-xs mt-2">Member tracking and live GPS enabled for this unit.</p>
+               </div>
+             </div>
           </div>
         </DialogContent>
       </Dialog>

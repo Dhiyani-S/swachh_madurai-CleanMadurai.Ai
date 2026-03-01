@@ -22,9 +22,9 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased relative">
         {/* Fixed Heritage & Cleanliness Background */}
-        <div className="madurai-bg" />
+        <div className="madurai-bg" aria-hidden="true" />
         
-        <div className="relative z-0">
+        <div className="relative z-10">
           {children}
         </div>
         
