@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -36,17 +37,17 @@ export default function LandingPage() {
 
   if (!mounted) return null
 
-  const towerBg = PlaceHolderImages.find(img => img.id === 'madurai-temple-tower')?.imageUrl
+  const teppakulamBg = PlaceHolderImages.find(img => img.id === 'madurai-teppakulam')?.imageUrl
 
   if (!language) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-100 scale-100" 
-          style={{ backgroundImage: `url(${towerBg})` }}
-          data-ai-hint="madurai gopuram"
+          style={{ backgroundImage: `url(${teppakulamBg})` }}
+          data-ai-hint="madurai teppakulam"
         />
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-[4px]" />
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
         
         <div className="max-w-md w-full space-y-8 animate-in fade-in zoom-in-95 duration-700 relative z-10">
           <div className="flex flex-col items-center gap-6 mb-12">
@@ -113,13 +114,12 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      {/* High-Visibility Heritage Background */}
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-90 scale-100 transition-transform duration-[30s] ease-linear z-0" 
-        style={{ backgroundImage: `url(${towerBg})` }}
-        data-ai-hint="madurai gopuram"
+        className="fixed inset-0 bg-cover bg-center opacity-100 scale-100 transition-transform duration-[30s] ease-linear z-0" 
+        style={{ backgroundImage: `url(${teppakulamBg})` }}
+        data-ai-hint="madurai teppakulam"
       />
-      <div className="fixed inset-0 bg-gradient-to-br from-black/80 via-black/20 to-primary/20 z-[1]" />
+      <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-black/10 to-primary/20 z-[1]" />
       
       <div className="absolute top-0 right-0 p-8 z-20">
         <Button variant="ghost" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} className="text-white hover:bg-white/10 gap-2 font-bold backdrop-blur-md bg-white/10 border border-white/20">
@@ -158,7 +158,6 @@ export default function LandingPage() {
         </div>
 
         <div className="w-full max-w-md mx-auto">
-          {/* Centered Transparent App Container */}
           <Card className="border-white/30 shadow-[0_0_120px_rgba(0,0,0,0.6)] rounded-[3.5rem] bg-black/40 backdrop-blur-[40px] overflow-hidden border-2">
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-white/5 p-2 h-20 rounded-none border-b border-white/10">

@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -63,11 +64,11 @@
 
 @layer components {
   .glass-card {
-    @apply bg-white/10 backdrop-blur-3xl border border-white/20 shadow-2xl;
+    @apply bg-white/20 backdrop-blur-3xl border border-white/30 shadow-2xl;
   }
   
   .glass-panel {
-    @apply bg-black/40 backdrop-blur-2xl border border-white/10 shadow-2xl;
+    @apply bg-black/60 backdrop-blur-3xl border border-white/20 shadow-2xl;
   }
 
   .centered-app-container {
