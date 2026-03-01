@@ -28,8 +28,8 @@ export interface User {
   age?: number;
   contactNumber?: string;
   address?: string;
-  teamMembers?: string[]; // Simplified names list if needed
-  teamRoster?: TeamMember[]; // Detailed objects for members
+  teamMembers?: string[]; // Simplified names list
+  teamRoster?: TeamMember[]; // Detailed objects for members managed by Admin
 }
 
 export type TaskType = 'Sensor' | 'Citizen Public' | 'Citizen Private';
@@ -51,9 +51,6 @@ export interface Task {
   paymentStatus?: 'Unpaid' | 'Paid';
   citizenId?: string;
   aiPriority?: 'Critical' | 'High' | 'Medium' | 'Low';
-  wasteType?: string;
-  estimatedWeight?: number;
-  distance?: string;
 }
 
 export interface MemberAttendance {
@@ -183,7 +180,6 @@ export const useStore = create<AppState>()(
         if (!state.isDemoRunning) return state;
         const newSensors = state.sensors.map(s => simulateSensorStep(s, state.demoSpeed));
         
-        // Auto-trigger tasks for critical sensors
         newSensors.forEach(s => {
           if (s.status === 'critical' && !state.tasks.find(t => t.location === s.location && t.status !== 'Completed')) {
             const newTask: Task = {
@@ -198,11 +194,6 @@ export const useStore = create<AppState>()(
               aiPriority: 'Critical'
             };
             get().addTask(newTask);
-            get().addNotification({
-              title: 'Critical Sensor Alert',
-              message: `${s.sensorType} at ${s.location} is at ${s.currentLevel}%`,
-              type: 'alert'
-            });
           }
         });
 
@@ -238,7 +229,7 @@ export const useStore = create<AppState>()(
       })
     }),
     {
-      name: 'clean-madurai-storage-v3',
+      name: 'clean-madurai-storage-v4',
       storage: createJSONStorage(() => localStorage),
     }
   )

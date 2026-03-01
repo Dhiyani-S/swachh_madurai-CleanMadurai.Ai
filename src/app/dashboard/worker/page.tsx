@@ -271,7 +271,7 @@ export default function WorkerDashboard() {
                           {t.pendingDisposalVerification}
                         </div>
                         <p className="text-xs text-white/40 px-2 leading-relaxed">
-                          {language === 'ta' ? "பணியை இறுதி செய்ய கழிவு மேலாண்மை தளத்தில் QR-ஐ ஸ்கேன் செய்யவும்." : "Your team QR is now active for this task. Proceed to a nearby disposal terminal to finalize."}
+                          Your team QR is now active for this task. Proceed to a nearby disposal terminal to finalize.
                         </p>
                       </div>
                     )}
@@ -352,7 +352,7 @@ export default function WorkerDashboard() {
                       member.status === 'Present' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-rose-500/10 text-rose-500 border-rose-500/20 opacity-60"
                     )}>
                       <div className="flex items-center gap-4">
-                        <div className={cn("h-3 w-3 rounded-full", member.status === 'Present' ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-rose-500")} />
+                        <div className={cn("h-3 w-3 rounded-full", member.status === 'Present' ? "bg-emerald-50 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-rose-500")} />
                         <span className="font-headline text-md tracking-tight">{member.name}</span>
                       </div>
                       <span className="text-[10px] uppercase tracking-widest font-bold opacity-80">{member.status === 'Present' ? t.present : t.absent}</span>
