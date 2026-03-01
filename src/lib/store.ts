@@ -107,7 +107,7 @@ export const useStore = create<AppState>((set) => ({
       subType: 'Dustbin',
       wardId: 'ward-1',
       zoneId: 'Zone 4 (Vaikunth Nagar)',
-      createdAt: new Date().toISOString(),
+      createdAt: '2024-01-01T00:00:00.000Z',
     }
   ],
   teams: initialTeams,

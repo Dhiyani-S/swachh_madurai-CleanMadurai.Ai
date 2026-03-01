@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
@@ -14,37 +14,23 @@ import {
   ClipboardList, 
   Map as MapIcon, 
   Plus,
-  CheckCircle,
-  AlertCircle,
-  Send,
+  AlertTriangle,
   UserPlus,
   BarChart3,
   Edit2,
-  Trash2,
-  Clock,
-  Phone,
-  Home,
   UserCircle,
   Zap,
-  Eye,
-  Settings2,
-  Fingerprint,
-  TrendingUp,
-  XCircle,
   UserCheck,
-  AlertTriangle
+  UserX
 } from "lucide-react"
 import { useStore, Task, User, TeamMember, SensorSubType } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
-import { cn } from "@/lib/utils"
 import { 
   Dialog, 
   DialogContent, 
-  DialogDescription, 
   DialogHeader, 
   DialogTitle, 
-  DialogTrigger,
-  DialogFooter
+  DialogTrigger
 } from "@/components/ui/dialog"
 
 export default function ZoneAdminDashboard() {
@@ -66,6 +52,11 @@ export default function ZoneAdminDashboard() {
   
   const [isEditMemberModalOpen, setIsEditMemberModalOpen] = React.useState(false)
   const [editingMemberContext, setEditingMemberContext] = React.useState<{ teamId: string, member: TeamMember } | null>(null)
+  const [today, setToday] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    setToday(new Date().toLocaleDateString())
+  }, [])
 
   // Auto-forwarding logic for unassigned tasks
   React.useEffect(() => {
@@ -190,7 +181,7 @@ export default function ZoneAdminDashboard() {
     toast({ title: "Changes Saved", description: "Member profile updated." })
   }
 
-  const today = new Date().toLocaleDateString()
+  if (!today) return null; // Prevent hydration mismatch
 
   return (
     <div className="space-y-8">

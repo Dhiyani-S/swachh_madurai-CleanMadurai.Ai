@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { 
@@ -46,11 +46,15 @@ export default function WorkerDashboard() {
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = React.useState(false)
   const [attendanceState, setAttendanceState] = React.useState<MemberAttendance[]>([])
   const [forwardedMessage, setForwardedMessage] = React.useState<string | null>(null)
+  const [today, setToday] = React.useState<string | null>(null)
 
-  const today = new Date().toLocaleDateString()
+  React.useEffect(() => {
+    setToday(new Date().toLocaleDateString())
+  }, [])
+
   // Use currentUser.id as the attendance key for consistency
   const currentTeamAttendance = currentUser?.id ? attendance[currentUser.id] : null
-  const hasMarkedAttendance = currentTeamAttendance?.date === today
+  const hasMarkedAttendance = today && currentTeamAttendance?.date === today
 
   // Filter tasks assigned to this team that are not yet fully completed
   const assignedTasks = tasks.filter(t => 
@@ -58,11 +62,11 @@ export default function WorkerDashboard() {
   )
 
   React.useEffect(() => {
-    if (!hasMarkedAttendance && currentUser?.teamMembers) {
+    if (today && !hasMarkedAttendance && currentUser?.teamMembers) {
       setAttendanceState(currentUser.teamMembers.map(m => ({ name: m, status: 'Present' })))
       setIsAttendanceModalOpen(true)
     }
-  }, [hasMarkedAttendance, currentUser])
+  }, [today, hasMarkedAttendance, currentUser])
 
   const triggerForwarding = (taskName: string) => {
     setForwardedMessage(`this taskk is forward to ather team: ${taskName}`);
@@ -131,6 +135,8 @@ export default function WorkerDashboard() {
       description: "Disposal site scanner verified your team. Task fully completed!",
     })
   }
+
+  if (!today) return null; // Prevent hydration mismatch by waiting for mount
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
