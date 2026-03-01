@@ -10,8 +10,8 @@
     --card-foreground: 150 20% 96%;
     --popover: 160 40% 6%;
     --popover-foreground: 150 20% 96%;
-    /* Bright Yellow/Saffron to match the Madurai sign */
-    --primary: 48 100% 50%; 
+    /* Bright Saffron-Yellow to match the Madurai sign in the background */
+    --primary: 45 100% 50%; 
     --primary-foreground: 160 40% 4%;
     --secondary: 160 20% 12%;
     --secondary-foreground: 150 20% 96%;
@@ -23,8 +23,8 @@
     --destructive-foreground: 150 20% 96%;
     --border: 160 30% 15%;
     --input: 160 30% 15%;
-    --ring: 48 100% 50%;
-    --radius: 2rem;
+    --ring: 45 100% 50%;
+    --radius: 2.5rem;
   }
 }
 
@@ -32,7 +32,6 @@
 .madurai-bg {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  /* Assuming the user saves the uploaded image as madurai_bg.jpg in public folder */
   background-image: url('/madurai_bg.jpg');
   background-size: cover;
   background-position: center;
@@ -45,29 +44,29 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(5, 15, 10, 0.45);
+  background: rgba(5, 15, 10, 0.55);
   z-index: 1;
 }
 
 /* Glassmorphism Styles - Ultra Translucent */
 .glass-panel {
-  background: rgba(10, 26, 16, 0.35) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 200, 0, 0.1) !important;
+  background: rgba(10, 26, 16, 0.45) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 200, 0, 0.15) !important;
   color: #E8F5EE !important;
 }
 
 .glass-sidebar {
-  background: rgba(5, 15, 10, 0.60) !important;
-  backdrop-filter: blur(24px) !important;
-  border-right: 1px solid rgba(255, 200, 0, 0.1) !important;
+  background: rgba(5, 15, 10, 0.70) !important;
+  backdrop-filter: blur(30px) !important;
+  border-right: 1px solid rgba(255, 200, 0, 0.15) !important;
 }
 
 .glass-header {
-  background: rgba(5, 15, 10, 0.65) !important;
-  backdrop-filter: blur(24px) !important;
-  border-bottom: 1px solid rgba(255, 200, 0, 0.1) !important;
+  background: rgba(5, 15, 10, 0.75) !important;
+  backdrop-filter: blur(30px) !important;
+  border-bottom: 1px solid rgba(255, 200, 0, 0.15) !important;
 }
 
 /* Override ShadCN Card for global glass effect */
@@ -77,14 +76,14 @@
 
 /* Input fields transparent style */
 input, select, textarea {
-  background: rgba(5, 15, 10, 0.5) !important;
-  border: 1px solid rgba(255, 200, 0, 0.2) !important;
+  background: rgba(5, 15, 10, 0.6) !important;
+  border: 1px solid rgba(255, 200, 0, 0.3) !important;
   color: #E8F5EE !important;
-  backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 input::placeholder {
-  color: rgba(232, 245, 238, 0.4) !important;
+  color: rgba(232, 245, 238, 0.5) !important;
 }
 
 /* Button styles - Saffron-Yellow for high visibility matching the image sign */
@@ -92,22 +91,22 @@ button.bg-primary, .btn-primary, [class*="btn-primary"] {
   background: hsl(var(--primary)) !important;
   color: hsl(var(--primary-foreground)) !important;
   font-weight: 800 !important;
-  box-shadow: 0 4px 20px rgba(255, 200, 0, 0.3) !important;
+  box-shadow: 0 4px 25px rgba(255, 200, 0, 0.4) !important;
 }
 
 button[variant="outline"], .btn-outline {
-  border-color: rgba(255, 200, 0, 0.4) !important;
+  border-color: rgba(255, 200, 0, 0.5) !important;
   color: hsl(var(--primary)) !important;
-  background: rgba(255, 200, 0, 0.05) !important;
+  background: rgba(255, 200, 0, 0.08) !important;
 }
 
 /* Table rows transparent */
 table tr {
-  background: rgba(10, 26, 16, 0.3) !important;
+  background: rgba(10, 26, 16, 0.4) !important;
 }
 
 table th {
-  background: rgba(255, 200, 0, 0.08) !important;
+  background: rgba(255, 200, 0, 0.1) !important;
   color: hsl(var(--primary)) !important;
 }
 
