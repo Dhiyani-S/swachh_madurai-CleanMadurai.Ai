@@ -23,7 +23,7 @@
     --border: 160 30% 15%;
     --input: 160 30% 15%;
     --ring: 156 100% 39%;
-    --radius: 1.5rem;
+    --radius: 2rem;
   }
 }
 
@@ -38,33 +38,61 @@
   z-index: -1;
 }
 
+/* Dark overlay for readability while keeping image visible */
 .madurai-bg::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(5, 15, 10, 0.72);
+  background: rgba(5, 15, 10, 0.65);
   z-index: 1;
 }
 
-/* Glassmorphism Styles */
+/* Glassmorphism Styles - Ultra Translucent */
 .glass-panel {
-  background: rgba(10, 26, 16, 0.75) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  background: rgba(10, 26, 16, 0.45) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
   border: 1px solid rgba(0, 200, 117, 0.15) !important;
   color: #E8F5EE !important;
 }
 
 .glass-sidebar {
-  background: rgba(5, 15, 10, 0.80) !important;
-  backdrop-filter: blur(16px) !important;
+  background: rgba(5, 15, 10, 0.70) !important;
+  backdrop-filter: blur(20px) !important;
   border-right: 1px solid rgba(0, 200, 117, 0.12) !important;
 }
 
 .glass-header {
-  background: rgba(5, 15, 10, 0.85) !important;
-  backdrop-filter: blur(16px) !important;
+  background: rgba(5, 15, 10, 0.75) !important;
+  backdrop-filter: blur(20px) !important;
   border-bottom: 1px solid rgba(0, 200, 117, 0.12) !important;
+}
+
+/* Override ShadCN Card for global glass effect */
+.card, [class*="card"], .bg-card {
+  @apply glass-panel;
+}
+
+/* Input fields transparent style */
+input, select, textarea {
+  background: rgba(5, 15, 10, 0.5) !important;
+  border: 1px solid rgba(0, 200, 117, 0.2) !important;
+  color: #E8F5EE !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+input::placeholder {
+  color: rgba(232, 245, 238, 0.4) !important;
+}
+
+/* Table rows transparent */
+table tr {
+  background: rgba(10, 26, 16, 0.3) !important;
+}
+
+table th {
+  background: rgba(0, 200, 117, 0.08) !important;
+  color: #00C875 !important;
 }
 
 /* Animation Upgrades */
@@ -83,31 +111,19 @@
 }
 
 @keyframes alertPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.5); }
-  50% { box-shadow: 0 0 0 20px rgba(255, 107, 107, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
+  50% { box-shadow: 0 0 0 15px rgba(255, 107, 107, 0); }
 }
 .sensor-alert-card {
   animation: alertPulse 1.5s infinite;
 }
 
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(40px); }
+  from { opacity: 0; transform: translateX(30px); }
   to { opacity: 1; transform: translateX(0); }
 }
 .task-card-new {
   animation: slideInRight 0.4s ease;
-}
-
-/* Override ShadCN Card */
-.card, [class*="card"] {
-  @apply glass-panel;
-}
-
-input, select, textarea {
-  background: rgba(5, 15, 10, 0.6) !important;
-  border: 1px solid rgba(0, 200, 117, 0.25) !important;
-  color: #E8F5EE !important;
-  backdrop-filter: blur(8px) !important;
 }
 
 @layer base {
