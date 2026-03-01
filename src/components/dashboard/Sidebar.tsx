@@ -30,29 +30,29 @@ export function DashboardSidebar() {
   const t = translations[language || 'en'];
 
   const roleRoutes = {
-    'Corporation Commissioner': [
+    'commissioner': [
       { name: t.performance, icon: LayoutDashboard, href: '/dashboard/commissioner' },
       { name: 'Analytics', icon: ClipboardList, href: '/dashboard/commissioner/reports' },
     ],
-    'Ward Admin': [
+    'ward_admin': [
       { name: t.wardAdmin, icon: LayoutDashboard, href: '/dashboard/ward-admin' },
       { name: 'Tasks', icon: ClipboardList, href: '/dashboard/ward-admin/tasks' },
     ],
-    'Zone Admin': [
+    'zone_admin': [
       { name: t.zoneAdmin, icon: LayoutDashboard, href: '/dashboard/zone-admin' },
       { name: 'Team Mgmt', icon: Users, href: '/dashboard/zone-admin/teams' },
     ],
-    'Worker': [
+    'worker': [
       { name: t.activeTasks, icon: ClipboardList, href: '/dashboard/worker' },
       { name: t.rewards, icon: Award, href: '/dashboard/worker/rewards' },
     ],
-    'Citizen': [
+    'citizen': [
       { name: t.citizenPortal, icon: LayoutDashboard, href: '/dashboard/citizen' },
       { name: 'History', icon: ClipboardList, href: '/dashboard/citizen/history' },
     ],
   }
 
-  const routes = currentUser ? roleRoutes[currentUser.role] : []
+  const routes = currentUser ? (roleRoutes[currentUser.role as keyof typeof roleRoutes] || []) : []
 
   return (
     <div className="hidden border-r border-white/10 bg-black/20 backdrop-blur-[50px] md:block w-64 h-screen fixed left-0 top-0 z-50">

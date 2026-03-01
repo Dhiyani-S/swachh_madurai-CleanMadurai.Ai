@@ -4,7 +4,7 @@ import { DashboardSidebar } from "@/components/dashboard/Sidebar"
 import { useStore } from "@/lib/store"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Menu, Globe, Wifi, WifiOff, Bell, Search, User } from "lucide-react"
+import { Menu, Globe, Wifi, WifiOff, Bell, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { translations } from "@/lib/translations"
 import { Badge } from "@/components/ui/badge"
@@ -29,7 +29,7 @@ export default function DashboardLayout({
 
   useEffect(() => {
     setMounted(true)
-    setIsOnline(navigator.onLine)
+    setIsOnline(typeof navigator !== 'undefined' ? navigator.onLine : true)
     const handleOnline = () => setIsOnline(true)
     const handleOffline = () => setIsOnline(false)
     window.addEventListener('online', handleOnline)
