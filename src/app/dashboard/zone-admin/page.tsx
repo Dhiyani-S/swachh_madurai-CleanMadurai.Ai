@@ -26,7 +26,8 @@ import {
   Home,
   UserCircle,
   Zap,
-  Eye
+  Eye,
+  Settings2
 } from "lucide-react"
 import { useStore, Task, User, TeamMember, SensorSubType } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
@@ -42,7 +43,7 @@ import {
 } from "@/components/ui/dialog"
 
 export default function ZoneAdminDashboard() {
-  const { tasks, updateTask, teams, addTask, updateTeam, currentUser } = useStore()
+  const { tasks, updateTask, teams, addTask, addTeam, updateTeam, currentUser } = useStore()
   const { toast } = useToast()
 
   const currentZone = currentUser?.zoneId || 'Zone 4 (Vaikunth Nagar)'
@@ -52,6 +53,7 @@ export default function ZoneAdminDashboard() {
   const [selectedTeam, setSelectedTeam] = React.useState<User | null>(null)
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
+  const [isNewTeamModalOpen, setIsNewTeamModalOpen] = React.useState(false)
   const [editingMember, setEditingMember] = React.useState<{ teamNumber: string, member: TeamMember } | null>(null)
 
   // Auto-forwarding logic: Check tasks unassigned for > 30 mins
@@ -95,7 +97,7 @@ export default function ZoneAdminDashboard() {
   const handleSimulateSensor = (type: SensorSubType) => {
     const names: Record<SensorSubType, string> = {
       Dustbin: 'work-disprose waste',
-      Drainage: 'drainage leakage',
+      Drainage: 'trainage leakage',
       Water: 'water leakage',
       Toilet: 'toilet waste disposal',
       Napkin: 'napkin/product refill'
@@ -114,6 +116,27 @@ export default function ZoneAdminDashboard() {
     }
     addTask(newTask)
     toast({ title: "Sensor Alert Received", description: `${names[type]} detected.` })
+  }
+
+  const handleCreateTeam = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const fd = new FormData(e.currentTarget)
+    const teamNumber = fd.get('teamNumber') as string
+    const leaderName = fd.get('leaderName') as string
+
+    const newTeam: User = {
+      id: `team-${Date.now()}`,
+      name: leaderName,
+      role: 'Worker',
+      teamNumber: `Team ${teamNumber}`,
+      zoneId: currentZone,
+      rewardPoints: 0,
+      members: []
+    }
+
+    addTeam(newTeam)
+    setIsNewTeamModalOpen(false)
+    toast({ title: "New Team Created", description: `${newTeam.teamNumber} is now active in ${currentZone}.` })
   }
 
   const handleAddMember = (e: React.FormEvent<HTMLFormElement>) => {
@@ -178,14 +201,15 @@ export default function ZoneAdminDashboard() {
             <DialogContent>
               <DialogHeader><DialogTitle>Trigger Virtual Sensors</DialogTitle></DialogHeader>
               <div className="grid grid-cols-1 gap-2 pt-4">
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Dustbin')}>Dustbin Overflow</Button>
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Drainage')}>Drainage Leakage</Button>
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Water')}>Water Leakage</Button>
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Toilet')}>Toilet Maintenance</Button>
+                <Button variant="secondary" onClick={() => handleSimulateSensor('Dustbin')}>Dustbin (work-disprose waste)</Button>
+                <Button variant="secondary" onClick={() => handleSimulateSensor('Drainage')}>Drainage (trainage leakage)</Button>
+                <Button variant="secondary" onClick={() => handleSimulateSensor('Water')}>Water (water leakage)</Button>
+                <Button variant="secondary" onClick={() => handleSimulateSensor('Toilet')}>Toilet (toilet waste disposal)</Button>
+                <Button variant="secondary" onClick={() => handleSimulateSensor('Napkin')}>Napkin (napkin/product refill)</Button>
               </div>
             </DialogContent>
           </Dialog>
-          <Button className="gap-2 bg-primary font-bold">
+          <Button onClick={() => setIsNewTeamModalOpen(true)} className="gap-2 bg-primary font-bold">
             <UserPlus className="h-4 w-4" /> New Team
           </Button>
         </div>
@@ -300,7 +324,9 @@ export default function ZoneAdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-8">
-                {zoneTeams.map(team => (
+                {zoneTeams.length === 0 ? (
+                   <div className="py-12 text-center text-muted-foreground">No teams active in this zone yet.</div>
+                ) : zoneTeams.map(team => (
                   <div key={team.id} className="space-y-3 p-4 rounded-xl border bg-secondary/5">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">
@@ -315,17 +341,17 @@ export default function ZoneAdminDashboard() {
                       <div className="flex items-center gap-6">
                         <div className="text-right">
                           <p className="text-[10px] font-bold text-muted-foreground uppercase">Reward Points</p>
-                          <p className="font-headline font-bold text-lg text-primary">{team.rewardPoints} pts</p>
+                          <p className="font-headline font-bold text-lg text-primary">{team.rewardPoints || 0} pts</p>
                         </div>
-                        <StatusBadge status={team.rewardPoints! > 400 ? 'Green' : team.rewardPoints! > 300 ? 'Yellow' : 'Red'} />
+                        <StatusBadge status={(team.rewardPoints || 0) > 400 ? 'Green' : (team.rewardPoints || 0) > 300 ? 'Yellow' : 'Red'} />
                       </div>
                     </div>
                     <div className="space-y-1">
                       <div className="flex justify-between text-[10px] font-bold uppercase text-muted-foreground">
                         <span>Efficiency Level</span>
-                        <span>{Math.round((team.rewardPoints! / 600) * 100)}%</span>
+                        <span>{Math.round(((team.rewardPoints || 0) / 600) * 100)}%</span>
                       </div>
-                      <Progress value={(team.rewardPoints! / 600) * 100} className="h-2" />
+                      <Progress value={((team.rewardPoints || 0) / 600) * 100} className="h-2" />
                     </div>
                   </div>
                 ))}
@@ -336,47 +362,87 @@ export default function ZoneAdminDashboard() {
 
         <TabsContent value="teams" className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {zoneTeams.map(team => (
-              <Card key={team.id} className="border-none shadow-md flex flex-col">
+            {zoneTeams.length === 0 ? (
+               <div className="col-span-full py-20 text-center space-y-4">
+                  <Users className="h-12 w-12 mx-auto text-muted-foreground/30" />
+                  <p className="text-muted-foreground">No teams registered. Create your first team using the "New Team" button above.</p>
+               </div>
+            ) : zoneTeams.map(team => (
+              <Card key={team.id} className="border-none shadow-md flex flex-col group hover:ring-2 hover:ring-primary/20 transition-all">
                 <CardHeader className="pb-3 border-b bg-secondary/10">
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className="text-lg font-headline">{team.teamNumber}</CardTitle>
-                      <CardDescription>Leader: {team.name}</CardDescription>
+                      <CardTitle className="text-lg font-headline text-primary">{team.teamNumber}</CardTitle>
+                      <CardDescription className="flex items-center gap-1"><UserCircle className="h-3 w-3" /> Leader: {team.name}</CardDescription>
                     </div>
                     <Button variant="outline" size="sm" className="h-8 text-xs font-bold" onClick={() => {
                       setSelectedTeam(team)
                       setIsAddModalOpen(true)
                     }}>
-                      <Plus className="h-4 w-4 mr-1" /> Add
+                      <Plus className="h-4 w-4 mr-1" /> Add Member
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-3 flex-1">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Team Roster</p>
-                  {team.members?.map(member => (
-                    <div key={member.id} className="p-3 rounded-lg bg-secondary/20 flex items-center justify-between group hover:bg-secondary/30 transition-colors border border-transparent hover:border-primary/20">
-                      <div>
-                        <p className="font-bold text-sm">{member.name} <span className="text-muted-foreground font-normal">({member.age})</span></p>
-                        <div className="flex flex-col gap-0.5 text-[10px] text-muted-foreground mt-1">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Team Roster ({team.members?.length || 0})</p>
+                  {team.members?.length === 0 ? (
+                    <div className="py-8 text-center text-xs text-muted-foreground italic border border-dashed rounded-lg bg-secondary/5">
+                      No members assigned yet
+                    </div>
+                  ) : team.members?.map(member => (
+                    <div key={member.id} className="p-3 rounded-lg bg-secondary/20 flex items-center justify-between group/member hover:bg-white hover:shadow-sm transition-all border border-transparent hover:border-primary/10">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-sm">{member.name}</p>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">{member.age}y</span>
+                        </div>
+                        <div className="flex flex-col gap-0.5 text-[10px] text-muted-foreground">
                           <span className="flex items-center gap-1"><Phone className="h-2.5 w-2.5" /> {member.contactNumber}</span>
                           <span className="flex items-center gap-1"><MapIcon className="h-2.5 w-2.5" /> {member.address}</span>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => {
-                        setEditingMember({ teamNumber: team.teamNumber!, member })
-                        setIsEditModalOpen(true)
-                      }}>
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex gap-1 opacity-0 group-hover/member:opacity-100 transition-opacity">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => {
+                          setEditingMember({ teamNumber: team.teamNumber!, member })
+                          setIsEditModalOpen(true)
+                        }}>
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </CardContent>
+                <CardFooter className="pt-0 pb-4">
+                   <Button variant="ghost" className="w-full text-[10px] font-bold text-muted-foreground h-8 hover:text-primary">
+                     <Settings2 className="h-3 w-3 mr-1" /> Manage Team Settings
+                   </Button>
+                </CardFooter>
               </Card>
             ))}
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* New Team Modal */}
+      <Dialog open={isNewTeamModalOpen} onOpenChange={setIsNewTeamModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Register New Team</DialogTitle>
+            <DialogDescription>Create a new worker team for {currentZone}</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateTeam} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Team Number ID</Label>
+              <Input name="teamNumber" placeholder="e.g. 15 (Becomes Team 15)" required />
+            </div>
+            <div className="space-y-2">
+              <Label>Team Leader Name</Label>
+              <Input name="leaderName" placeholder="Full Name of Team Leader" required />
+            </div>
+            <Button type="submit" className="w-full font-bold h-11">Create Active Team</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Member Modal */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
