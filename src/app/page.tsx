@@ -26,7 +26,6 @@ export default function LandingPage() {
 
   const [regId, setRegId] = React.useState('')
   const [regPassword, setRegPassword] = React.useState('')
-  const [regName, setRegName] = React.useState('')
   const [regRole, setRegRole] = React.useState<UserRole>('Citizen')
   const [regZone, setRegZone] = React.useState('')
 
@@ -106,7 +105,8 @@ export default function LandingPage() {
       toast({ title: "Registration Failed", description: "User ID already exists.", variant: "destructive" })
       return
     }
-    const newUser = { id: regId, password: regPassword, name: regName, role: regRole, zoneId: regZone || undefined, rewardPoints: 0 };
+    // Using regId as the name for simplicity since Full Name was removed
+    const newUser = { id: regId, password: regPassword, name: regId, role: regRole, zoneId: regZone || undefined, rewardPoints: 0 };
     addUser(newUser)
     toast({ title: "Success", description: "Account created! You can now sign in." })
   }
@@ -190,7 +190,7 @@ export default function LandingPage() {
                         </Select>
                       </div>
                     </div>
-                    <Button type="submit" className="w-full h-20 text-2xl font-bold bg-primary hover:bg-primary/90 rounded-[2.5rem] shadow-2xl shadow-primary/30 group transition-all">
+                    <Button type="submit" className="w-full h-20 text-2xl font-bold bg-primary hover:bg-primary/90 rounded-[2.5rem] shadow-2xl shadow-primary/30 group transition-all text-white">
                       {t.signIn} <ChevronRight className="h-8 w-8 ml-2 group-hover:translate-x-2 transition-transform" />
                     </Button>
                   </form>
@@ -202,10 +202,6 @@ export default function LandingPage() {
                       <div className="space-y-2">
                         <Label className="text-white/80 font-bold ml-1">Desired User ID</Label>
                         <Input placeholder="Unique ID" className="h-16 bg-black/40 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md" required value={regId} onChange={e => setRegId(e.target.value)} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-white/80 font-bold ml-1">Full Name</Label>
-                        <Input placeholder="Full Name" className="h-16 bg-black/40 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md" required value={regName} onChange={e => setRegName(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white/80 font-bold ml-1">Password</Label>
@@ -240,7 +236,7 @@ export default function LandingPage() {
                         </div>
                       )}
                     </div>
-                    <Button type="submit" className="w-full h-20 text-2xl font-bold bg-primary hover:bg-primary/90 rounded-[2.5rem] shadow-2xl shadow-primary/30 group transition-all">
+                    <Button type="submit" className="w-full h-20 text-2xl font-bold bg-primary hover:bg-primary/90 rounded-[2.5rem] shadow-2xl shadow-primary/30 group transition-all text-white">
                       <UserPlus className="mr-2 h-8 w-8" /> Register Account
                     </Button>
                   </form>
