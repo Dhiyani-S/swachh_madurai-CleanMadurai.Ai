@@ -41,6 +41,7 @@ export interface Task {
   type: TaskType;
   subType?: SensorSubType;
   assignedTo?: string; // Worker User ID
+  assignedAt?: string; // ISO Timestamp when assigned
   wardId: string;
   zoneId: string;
   createdAt: string;
@@ -90,7 +91,21 @@ export const useStore = create<AppState>()(
       addUser: (user) => set((state) => ({ users: [...state.users, user] })),
       addTask: (task) => set((state) => ({ tasks: [task, ...state.tasks] })),
       updateTask: (taskId, updates) => set((state) => ({
-        tasks: state.tasks.map((t) => t.id === taskId ? { ...t, ...updates } : t)
+        tasks: state.tasks.map((t) => {
+          if (t.id === taskId) {
+            const updatedTask = { ...t, ...updates };
+            // If the task is being assigned, record the timestamp
+            if (updates.assignedTo && !t.assignedTo) {
+              updatedTask.assignedAt = new Date().toISOString();
+            }
+            // If the task is being unassigned, clear the timestamp
+            if (updates.assignedTo === undefined && t.assignedTo) {
+              updatedTask.assignedAt = undefined;
+            }
+            return updatedTask;
+          }
+          return t;
+        })
       })),
       updateUser: (userId, updates) => set((state) => ({
         users: state.users.map((u) => u.id === userId ? { ...u, ...updates } : u)

@@ -44,6 +44,7 @@ export default function WorkerDashboard() {
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = React.useState(false)
   const [attendanceState, setAttendanceState] = React.useState<MemberAttendance[]>([])
   const [mounted, setMounted] = React.useState(false)
+  const [timeLefts, setTimeLefts] = React.useState<Record<string, string>>({})
 
   React.useEffect(() => {
     setMounted(true)
@@ -51,14 +52,37 @@ export default function WorkerDashboard() {
 
   const today = React.useMemo(() => new Date().toLocaleDateString(), [])
   
-  // Use currentUser.id as the attendance key for consistency
   const currentTeamAttendance = currentUser?.id ? attendance[currentUser.id] : null
   const hasMarkedAttendance = currentTeamAttendance?.date === today
 
-  // Filter tasks assigned to this team that are not yet fully completed
   const assignedTasks = tasks.filter(t => 
     t.assignedTo === currentUser?.id && t.status !== 'Completed'
   )
+
+  // Timer Update Loop for assigned tasks
+  React.useEffect(() => {
+    if (!mounted) return;
+
+    const updateTimers = () => {
+      const now = new Date();
+      const newTimeLefts: Record<string, string> = {};
+
+      assignedTasks.forEach(task => {
+        if (task.status === 'Pending' && task.assignedAt) {
+          const assignedTime = new Date(task.assignedAt);
+          const diff = now.getTime() - assignedTime.getTime();
+          const remainingMs = Math.max(0, (30 * 60 * 1000) - diff);
+          const mins = Math.floor(remainingMs / 60000);
+          const secs = Math.floor((remainingMs % 60000) / 1000);
+          newTimeLefts[task.id] = `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+      });
+      setTimeLefts(newTimeLefts);
+    };
+
+    const interval = setInterval(updateTimers, 1000);
+    return () => clearInterval(interval);
+  }, [mounted, assignedTasks]);
 
   React.useEffect(() => {
     if (mounted && !hasMarkedAttendance && currentUser?.teamMembers) {
@@ -301,8 +325,11 @@ export default function WorkerDashboard() {
               </CardHeader>
               <CardContent>
                 {task.status === 'Pending' && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 p-2 rounded-lg">
-                    <Timer className="h-3 w-3" /> Must respond within 30 minutes
+                  <div className="flex items-center justify-between text-xs text-rose-600 bg-rose-50 p-2 rounded-lg border border-rose-100 font-bold">
+                    <div className="flex items-center gap-2">
+                      <Timer className="h-4 w-4 animate-pulse" /> Must respond within:
+                    </div>
+                    <span className="font-mono text-sm">{timeLefts[task.id] || '--:--'}</span>
                   </div>
                 )}
                 {task.status === 'In Progress' && (

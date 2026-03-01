@@ -17,15 +17,17 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
 import { translations } from "@/lib/translations"
+import { useToast } from "@/hooks/use-toast"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { currentUser, language, setLanguage } = useStore()
+  const { currentUser, language, setLanguage, tasks, updateTask } = useStore()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     setMounted(true)
@@ -33,6 +35,40 @@ export default function DashboardLayout({
       router.push('/')
     }
   }, [currentUser, router])
+
+  // Automatic Task Timeout Logic (30 Minutes)
+  useEffect(() => {
+    if (!mounted) return;
+
+    const checkTimeouts = () => {
+      const now = new Date();
+      const timeoutLimit = 30 * 60 * 1000; // 30 minutes in ms
+
+      tasks.forEach(task => {
+        if (task.status === 'Pending' && task.assignedTo && task.assignedAt) {
+          const assignedTime = new Date(task.assignedAt);
+          const diff = now.getTime() - assignedTime.getTime();
+
+          if (diff > timeoutLimit) {
+            // Task has timed out, unassign it
+            updateTask(task.id, { assignedTo: undefined });
+            
+            // Only notify if current user is relevant (Admin or the Worker who lost the task)
+            if (currentUser?.role === 'Zone Admin' || currentUser?.id === task.assignedTo) {
+              toast({
+                title: "Task Re-assigned",
+                description: `Task "${task.name}" was unassigned due to 30-minute response timeout.`,
+                variant: "destructive"
+              });
+            }
+          }
+        }
+      });
+    };
+
+    const interval = setInterval(checkTimeouts, 10000); // Check every 10 seconds
+    return () => clearInterval(interval);
+  }, [mounted, tasks, updateTask, currentUser, toast]);
 
   if (!mounted || !currentUser) return null
 
