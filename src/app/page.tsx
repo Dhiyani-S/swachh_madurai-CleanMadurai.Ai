@@ -52,7 +52,7 @@ export default function LandingPage() {
         
         <div className="max-w-md w-full space-y-8 animate-in fade-in zoom-in-95 duration-700 relative z-10">
           <div className="flex flex-col items-center gap-6 mb-12">
-            <div className="h-28 w-28 bg-primary rounded-[2.5rem] flex items-center justify-center shadow-[0_0_60px_rgba(0,200,117,0.4)] border border-white/20">
+            <div className="h-28 w-28 bg-primary rounded-[2.5rem] flex items-center justify-center shadow-[0_0_60px_rgba(51,115,204,0.4)] border border-white/20">
               <Recycle className="h-14 w-14 text-white animate-pulse" />
             </div>
             <div className="space-y-2">
@@ -125,16 +125,10 @@ export default function LandingPage() {
     if (signInTab) signInTab.click()
   }
 
-  const handleQuickLogin = (roleName: UserRole, id: string) => {
-    setRole(roleName)
-    setUserId(id)
-    setPassword('123')
-  }
-
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-50 scale-105" 
+        className="fixed inset-0 bg-cover bg-center opacity-70 scale-105" 
         style={{ backgroundImage: `url(${maduraiBg})` }}
         data-ai-hint="madurai temple"
       />
@@ -214,28 +208,6 @@ export default function LandingPage() {
                       {t.signIn} <ChevronRight className="h-8 w-8 ml-2 group-hover:translate-x-2 transition-transform" />
                     </Button>
                   </form>
-
-                  <div className="pt-8 border-t border-white/10">
-                    <p className="text-[11px] font-bold text-white/40 uppercase tracking-[0.3em] mb-4 text-center">Quick Demo Access</p>
-                    <div className="grid grid-cols-5 gap-2">
-                      {[
-                        { label: "Comm", role: "Corporation Commissioner", id: "01" },
-                        { label: "Ward", role: "Ward Admin", id: "02" },
-                        { label: "Zone", role: "Zone Admin", id: "03" },
-                        { label: "Work", role: "Worker", id: "04" },
-                        { label: "Ctz", role: "Citizen", id: "05" }
-                      ].map(demo => (
-                        <Button 
-                          key={demo.id} 
-                          variant="outline" 
-                          className="h-12 text-[9px] font-bold bg-white/5 border-white/10 text-white hover:bg-primary/20 p-1"
-                          onClick={() => handleQuickLogin(demo.role as UserRole, demo.id)}
-                        >
-                          {demo.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
                 </TabsContent>
 
                 <TabsContent value="signup" className="mt-0 space-y-6">
