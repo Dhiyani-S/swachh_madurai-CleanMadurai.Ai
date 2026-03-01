@@ -27,7 +27,8 @@ import {
   UserCircle,
   Zap,
   Eye,
-  Settings2
+  Settings2,
+  Fingerprint
 } from "lucide-react"
 import { useStore, Task, User, TeamMember, SensorSubType } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
@@ -123,9 +124,10 @@ export default function ZoneAdminDashboard() {
     const fd = new FormData(e.currentTarget)
     const teamNumber = fd.get('teamNumber') as string
     const leaderName = fd.get('leaderName') as string
+    const workerUserId = fd.get('workerUserId') as string
 
     const newTeam: User = {
-      id: `team-${Date.now()}`,
+      id: workerUserId || `team-${Date.now()}`,
       name: leaderName,
       role: 'Worker',
       teamNumber: `Team ${teamNumber}`,
@@ -136,7 +138,7 @@ export default function ZoneAdminDashboard() {
 
     addTeam(newTeam)
     setIsNewTeamModalOpen(false)
-    toast({ title: "New Team Created", description: `${newTeam.teamNumber} is now active in ${currentZone}.` })
+    toast({ title: "New Team Created", description: `${newTeam.teamNumber} is now active with ID: ${newTeam.id}` })
   }
 
   const handleAddMember = (e: React.FormEvent<HTMLFormElement>) => {
@@ -374,13 +376,18 @@ export default function ZoneAdminDashboard() {
                     <div>
                       <CardTitle className="text-lg font-headline text-primary">{team.teamNumber}</CardTitle>
                       <CardDescription className="flex items-center gap-1"><UserCircle className="h-3 w-3" /> Leader: {team.name}</CardDescription>
+                      <div className="mt-1 flex items-center gap-1 text-[10px] font-bold text-muted-foreground bg-white w-fit px-1.5 py-0.5 rounded border">
+                        <Fingerprint className="h-3 w-3" /> ID: {team.id}
+                      </div>
                     </div>
-                    <Button variant="outline" size="sm" className="h-8 text-xs font-bold" onClick={() => {
-                      setSelectedTeam(team)
-                      setIsAddModalOpen(true)
-                    }}>
-                      <Plus className="h-4 w-4 mr-1" /> Add Member
-                    </Button>
+                    <div className="flex flex-col gap-1">
+                      <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold" onClick={() => {
+                        setSelectedTeam(team)
+                        setIsAddModalOpen(true)
+                      }}>
+                        <Plus className="h-3 w-3 mr-1" /> Member
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-3 flex-1">
@@ -431,9 +438,15 @@ export default function ZoneAdminDashboard() {
             <DialogDescription>Create a new worker team for {currentZone}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateTeam} className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label>Team Number ID</Label>
-              <Input name="teamNumber" placeholder="e.g. 15 (Becomes Team 15)" required />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Team Number ID</Label>
+                <Input name="teamNumber" placeholder="e.g. 15" required />
+              </div>
+              <div className="space-y-2">
+                <Label>Worker User ID (Login ID)</Label>
+                <Input name="workerUserId" placeholder="e.g. worker-15" required />
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Team Leader Name</Label>
