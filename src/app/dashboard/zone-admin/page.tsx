@@ -47,7 +47,7 @@ import {
 } from "@/components/ui/dialog"
 
 export default function ZoneAdminDashboard() {
-  const { tasks, updateTask, teams, addTask, addTeam, updateTeam, currentUser } = useStore()
+  const { tasks, updateTask, teams, addTask, addTeam, updateTeam, currentUser, attendance } = useStore()
   const { toast } = useToast()
 
   const currentZone = currentUser?.zoneId || 'Zone 4 (Vaikunth Nagar)'
@@ -85,9 +85,6 @@ export default function ZoneAdminDashboard() {
 
   const handleAssignTask = (taskId: string, workerId: string) => {
     if (!workerId) return
-    const task = zoneTasks.find(t => t.id === taskId)
-    if (!task) return
-
     updateTask(taskId, { 
       assignedTo: workerId, 
       status: 'Pending'
@@ -211,14 +208,21 @@ export default function ZoneAdminDashboard() {
     toast({ title: "Profile Updated", description: "Member details saved successfully." })
   }
 
+  const today = new Date().toLocaleDateString();
   const teamPerformanceData = zoneTeams.map(team => {
     const teamTasks = tasks.filter(t => t.assignedTo === team.id);
     const completed = teamTasks.filter(t => t.status === 'Completed').length;
     const incomplete = teamTasks.filter(t => t.status !== 'Completed').length;
+    
+    // Key is team.id (which is the worker's user id)
+    const teamAttendance = attendance[team.id];
+    const isAttendanceToday = teamAttendance?.date === today;
+
     return {
       ...team,
       completed,
-      incomplete
+      incomplete,
+      todaysAttendance: isAttendanceToday ? teamAttendance.members : null
     };
   });
 
@@ -371,7 +375,7 @@ export default function ZoneAdminDashboard() {
                 <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
                   <TrendingUp className="h-6 w-6" /> Team Performance Analysis
                 </CardTitle>
-                <CardDescription>Live tracking of task completion and rewards in {currentZone}</CardDescription>
+                <CardDescription>Live tracking of task completion, rewards, and member attendance in {currentZone}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {teamPerformanceData.length === 0 ? (
@@ -430,6 +434,29 @@ export default function ZoneAdminDashboard() {
                             <span className="text-primary">{Math.round((team.completed / (team.completed + team.incomplete || 1)) * 100)}%</span>
                           </div>
                           <Progress value={(team.completed / (team.completed + team.incomplete || 1)) * 100} className="h-2" />
+                        </div>
+                      </div>
+
+                      <div className="mt-6 pt-6 border-t border-slate-300">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+                          <UserCheck className="h-3 w-3" /> Daily Member Attendance (Today)
+                        </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                          {team.todaysAttendance ? (
+                            team.todaysAttendance.map((member, idx) => (
+                              <div key={idx} className={cn(
+                                "flex items-center justify-between p-2 rounded-lg border text-[11px] font-medium shadow-sm",
+                                member.status === 'Present' ? "bg-emerald-50 border-emerald-100 text-emerald-700" : "bg-rose-50 border-rose-100 text-rose-700"
+                              )}>
+                                <span className="truncate pr-2">{member.name}</span>
+                                <span className="font-bold shrink-0">{member.status}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="col-span-full py-4 text-center text-xs text-muted-foreground italic bg-secondary/10 rounded-lg border border-dashed">
+                              Attendance record not yet available for today
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

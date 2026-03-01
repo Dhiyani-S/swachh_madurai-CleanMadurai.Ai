@@ -48,12 +48,13 @@ export default function WorkerDashboard() {
   const [forwardedMessage, setForwardedMessage] = React.useState<string | null>(null)
 
   const today = new Date().toLocaleDateString()
-  const currentTeamAttendance = currentUser?.teamNumber ? attendance[currentUser.teamNumber] : null
+  // Use currentUser.id as the attendance key for consistency
+  const currentTeamAttendance = currentUser?.id ? attendance[currentUser.id] : null
   const hasMarkedAttendance = currentTeamAttendance?.date === today
 
   // Filter tasks assigned to this team that are not yet fully completed
   const assignedTasks = tasks.filter(t => 
-    t.assignedTo === currentUser?.teamNumber && t.status !== 'Completed'
+    t.assignedTo === currentUser?.id && t.status !== 'Completed'
   )
 
   React.useEffect(() => {
@@ -72,8 +73,8 @@ export default function WorkerDashboard() {
   };
 
   const handleAttendanceSubmit = () => {
-    if (currentUser?.teamNumber) {
-      setAttendance(currentUser.teamNumber, attendanceState)
+    if (currentUser?.id) {
+      setAttendance(currentUser.id, attendanceState)
       setIsAttendanceModalOpen(false)
       toast({
         title: "Attendance Marked",
@@ -193,13 +194,13 @@ export default function WorkerDashboard() {
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 rounded-full bg-accent flex items-center justify-center text-accent-foreground font-headline text-2xl font-bold">
-              {currentUser?.teamNumber?.split(' ')[1] || '0'}
+              {currentUser?.teamNumber?.split(' ')[1]?.charAt(0) || currentUser?.id?.charAt(0) || '0'}
             </div>
             <div>
               <h1 className="text-2xl font-headline font-bold">{currentUser?.name}</h1>
               <div className="flex flex-col gap-1">
                 <p className="text-muted-foreground text-sm flex items-center gap-1">
-                  <Users className="h-3 w-3" /> {currentUser?.teamNumber} • {currentUser?.zoneId || 'Zone 4'}
+                  <Users className="h-3 w-3" /> {currentUser?.teamNumber || `Worker ${currentUser?.id}`} • {currentUser?.zoneId || 'Zone 4'}
                 </p>
                 {hasMarkedAttendance && (
                   <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md w-fit">
@@ -246,7 +247,7 @@ export default function WorkerDashboard() {
                 </div>
                 <div className="pt-2 border-t flex justify-between items-center px-1">
                   <span className="font-bold">Total Points</span>
-                  <span className="text-xl font-headline font-bold text-primary">450 pts</span>
+                  <span className="text-xl font-headline font-bold text-primary">{currentUser?.rewardPoints || 0} pts</span>
                 </div>
               </div>
             </DialogContent>
@@ -404,7 +405,7 @@ export default function WorkerDashboard() {
                           </div>
                         </div>
                         <div className="text-center space-y-2">
-                          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Team ID: {currentUser?.teamNumber}</p>
+                          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Team ID: {currentUser?.teamNumber || currentUser?.id}</p>
                           <p className="text-[10px] text-muted-foreground italic flex items-center justify-center gap-1">
                             <Info className="h-3 w-3" /> External scan will trigger full completion
                           </p>
