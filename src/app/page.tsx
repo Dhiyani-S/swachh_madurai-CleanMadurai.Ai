@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -8,20 +9,28 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useStore, UserRole } from "@/lib/store"
-import { Recycle, ChevronRight, UserPlus, Globe, Loader2 } from "lucide-react"
+import { useStore, UserRole, User } from "@/lib/store"
+import { Recycle, ChevronRight, UserPlus, Globe, Loader2, ShieldCheck, MapPin } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { translations } from "@/lib/translations"
 
 export default function LandingPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { setCurrentUser, users, language, setLanguage } = useStore()
+  const { setCurrentUser, users, addUser, language, setLanguage } = useStore()
   
   const [role, setRole] = React.useState<UserRole>('citizen')
   const [userId, setUserId] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [mounted, setMounted] = React.useState(false)
+
+  // Sign up state
+  const [signUpRole, setSignUpRole] = React.useState<UserRole>('zone_admin')
+  const [signUpName, setSignUpName] = React.useState('')
+  const [signUpId, setSignUpId] = React.useState('')
+  const [signUpPassword, setSignUpPassword] = React.useState('')
+  const [signUpZone, setSignUpZone] = React.useState('')
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   React.useEffect(() => {
     setMounted(true)
@@ -69,11 +78,6 @@ export default function LandingPage() {
                 <ChevronRight className="h-6 w-6 text-primary group-hover:translate-x-2 transition-transform" />
               </Button>
             </div>
-            <div className="mt-12 flex items-center justify-center gap-8 text-white/40 font-bold text-xs uppercase tracking-[0.2em]">
-               <div className="flex flex-col items-center"><span>142</span><span className="text-[8px] opacity-60">Tasks</span></div>
-               <div className="flex flex-col items-center"><span>2,847kg</span><span className="text-[8px] opacity-60">Waste</span></div>
-               <div className="flex flex-col items-center"><span>127</span><span className="text-[8px] opacity-60">Active</span></div>
-            </div>
           </Card>
         </div>
       </div>
@@ -91,6 +95,47 @@ export default function LandingPage() {
     }
     setCurrentUser(existingUser)
     router.push('/dashboard')
+  }
+
+  const handleSignUp = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!signUpId || !signUpPassword || !signUpName) {
+      toast({ title: "Error", description: "Please fill all fields.", variant: "destructive" })
+      return
+    }
+
+    if (signUpRole === 'zone_admin' && !signUpZone) {
+      toast({ title: "Error", description: "Please select a zone.", variant: "destructive" })
+      return
+    }
+
+    if (users.find(u => u.id === signUpId)) {
+      toast({ title: "Registration Failed", description: "User ID already exists.", variant: "destructive" })
+      return
+    }
+
+    setIsSubmitting(true)
+
+    const newUser: User = {
+      id: signUpId,
+      name: signUpName,
+      password: signUpPassword,
+      role: signUpRole,
+      zone: signUpRole === 'zone_admin' ? signUpZone : undefined,
+      rewardPoints: 0,
+    }
+
+    addUser(newUser)
+    
+    toast({ title: "Success", description: "Account created successfully. Please Sign In." })
+    
+    // Clear fields
+    setSignUpId('')
+    setSignUpName('')
+    setSignUpPassword('')
+    setSignUpZone('')
+    
+    setIsSubmitting(false)
   }
 
   const handleDemoFill = (targetRole: UserRole) => {
@@ -169,17 +214,64 @@ export default function LandingPage() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="signup" className="mt-0 text-center py-10 space-y-6">
-                <div className="h-20 w-20 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <UserPlus className="h-10 w-10 text-rose-500" />
-                </div>
-                <h3 className="text-xl font-bold text-white">Public Access</h3>
-                <p className="text-white/60 text-sm leading-relaxed max-w-xs mx-auto">
-                  {t.workerSelfRegisterBlocked}
-                </p>
-                <Button className="w-full h-14 bg-secondary text-secondary-foreground font-bold rounded-2xl" onClick={() => handleDemoFill('citizen')}>
-                  Register as Citizen
-                </Button>
+              <TabsContent value="signup" className="mt-0 space-y-6">
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">Full Name</Label>
+                    <Input placeholder="Enter your name" className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl" required value={signUpName} onChange={e => setSignUpName(e.target.value)} />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">User ID</Label>
+                      <Input placeholder="ID" className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl" required value={signUpId} onChange={e => setSignUpId(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">Password</Label>
+                      <Input type="password" placeholder="••••" className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl" required value={signUpPassword} onChange={e => setSignUpPassword(e.target.value)} />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">Administrative Role</Label>
+                    <Select value={signUpRole} onValueChange={(val) => setSignUpRole(val as UserRole)}>
+                      <SelectTrigger className="h-12 bg-white/5 border-white/10 text-white rounded-xl"><SelectValue /></SelectTrigger>
+                      <SelectContent className="bg-zinc-950/90 border-white/10 text-white rounded-xl backdrop-blur-xl">
+                        <SelectItem value="commissioner">Corporation Commissioner</SelectItem>
+                        <SelectItem value="ward_admin">Ward Admin</SelectItem>
+                        <SelectItem value="zone_admin">Zone Admin</SelectItem>
+                        <SelectItem value="citizen">Citizen</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {signUpRole === 'zone_admin' && (
+                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                      <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest flex items-center gap-1"><MapPin className="h-3 w-3" /> Assigned Zone</Label>
+                      <Select value={signUpZone} onValueChange={setSignUpZone}>
+                        <SelectTrigger className="h-12 bg-white/5 border-white/10 text-white rounded-xl"><SelectValue placeholder="Select Zone" /></SelectTrigger>
+                        <SelectContent className="bg-zinc-950/90 border-white/10 text-white rounded-xl backdrop-blur-xl">
+                          <SelectItem value="ZA">Zone A (North)</SelectItem>
+                          <SelectItem value="ZB">Zone B (South)</SelectItem>
+                          <SelectItem value="ZC">Zone C (East)</SelectItem>
+                          <SelectItem value="ZD">Zone D (West)</SelectItem>
+                          <SelectItem value="ZE">Zone E (Central)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <Button type="submit" disabled={isSubmitting} className="w-full h-14 text-lg font-bold bg-primary hover:bg-primary/90 mt-4 rounded-xl shadow-lg shadow-primary/20">
+                    {isSubmitting ? <Loader2 className="animate-spin" /> : <ShieldCheck className="mr-2" />} Register Admin Account
+                  </Button>
+
+                  <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-2xl">
+                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Notice for Workers</p>
+                    <p className="text-[10px] text-white/60 leading-relaxed italic">
+                      {t.workerSelfRegisterBlocked}
+                    </p>
+                  </div>
+                </form>
               </TabsContent>
             </div>
           </Tabs>
