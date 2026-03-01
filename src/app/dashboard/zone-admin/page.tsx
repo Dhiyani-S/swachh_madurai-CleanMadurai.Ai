@@ -30,7 +30,8 @@ import {
   Settings2,
   Fingerprint,
   TrendingUp,
-  XCircle
+  XCircle,
+  UserCheck
 } from "lucide-react"
 import { useStore, Task, User, TeamMember, SensorSubType } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
@@ -57,7 +58,9 @@ export default function ZoneAdminDashboard() {
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
   const [isNewTeamModalOpen, setIsNewTeamModalOpen] = React.useState(false)
+  const [isEditTeamInfoModalOpen, setIsEditTeamInfoModalOpen] = React.useState(false)
   const [editingMember, setEditingMember] = React.useState<{ workerId: string, member: TeamMember } | null>(null)
+  const [editingTeam, setEditingTeam] = React.useState<User | null>(null)
 
   // Auto-forwarding logic: Check tasks unassigned for > 30 mins
   React.useEffect(() => {
@@ -146,6 +149,24 @@ export default function ZoneAdminDashboard() {
     addTeam(newTeam)
     setIsNewTeamModalOpen(false)
     toast({ title: "New Team Created", description: `${newTeam.teamNumber} is now active.` })
+  }
+
+  const handleEditTeamInfoSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!editingTeam) return
+    const fd = new FormData(e.currentTarget)
+    
+    const updates: Partial<User> = {
+      name: fd.get('leaderName') as string,
+      age: parseInt(fd.get('age') as string),
+      contactNumber: fd.get('contact') as string,
+      address: fd.get('address') as string,
+    }
+
+    updateTeam(editingTeam.id, updates)
+    setIsEditTeamInfoModalOpen(false)
+    setEditingTeam(null)
+    toast({ title: "Team Profile Updated", description: "Leader information has been saved." })
   }
 
   const handleAddMember = (e: React.FormEvent<HTMLFormElement>) => {
@@ -420,7 +441,15 @@ export default function ZoneAdminDashboard() {
                 <CardHeader className="pb-3 border-b bg-secondary/10">
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
-                      <CardTitle className="text-lg font-headline text-primary">Leader: {team.name}</CardTitle>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg font-headline text-primary">Leader: {team.name}</CardTitle>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => {
+                          setEditingTeam(team)
+                          setIsEditTeamInfoModalOpen(true)
+                        }}>
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                       <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
                         <span className="font-bold text-primary/80">Age: {team.age}</span>
                         <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {team.contactNumber}</span>
@@ -509,6 +538,37 @@ export default function ZoneAdminDashboard() {
               <Input name="address" placeholder="Full residential address" required />
             </div>
             <Button type="submit" className="w-full font-bold h-11">Register Team</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Team Info Modal */}
+      <Dialog open={isEditTeamInfoModalOpen} onOpenChange={setIsEditTeamInfoModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Team Leader Information</DialogTitle>
+            <DialogDescription>Update the profile for Team ID: {editingTeam?.id}</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditTeamInfoSubmit} className="space-y-4 pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Leader Name</Label>
+                <Input name="leaderName" defaultValue={editingTeam?.name} required />
+              </div>
+              <div className="space-y-2">
+                <Label>Age</Label>
+                <Input name="age" type="number" defaultValue={editingTeam?.age} required />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Leader Phone Number</Label>
+              <Input name="contact" defaultValue={editingTeam?.contactNumber} required />
+            </div>
+            <div className="space-y-2">
+              <Label>Leader Address</Label>
+              <Input name="address" defaultValue={editingTeam?.address} required />
+            </div>
+            <Button type="submit" className="w-full font-bold h-11">Save Changes</Button>
           </form>
         </DialogContent>
       </Dialog>
