@@ -28,12 +28,6 @@ const wardData = [
   { name: 'Ward 5', performance: 'Green', tasks: 110, completed: 108, admin: 'Deepa R.' },
 ]
 
-const sensorAlerts = [
-  { type: 'Dustbin Overflow', location: 'Goripalayam', time: '10 mins ago', severity: 'High' },
-  { type: 'Water Leakage', location: 'Simmakkal', time: '25 mins ago', severity: 'Medium' },
-  { type: 'Toilet Stock Level', location: 'Anna Bus Stand', time: '1 hour ago', severity: 'Low' },
-]
-
 export default function CommissionerDashboard() {
   const [aiInsights, setAiInsights] = React.useState<CommissionerPerformanceInsightsOutput | null>(null)
   const [isLoadingAi, setIsLoadingAi] = React.useState(false)
@@ -192,35 +186,7 @@ export default function CommissionerDashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card className="border-none shadow-md">
-          <CardHeader>
-            <CardTitle className="font-headline text-xl flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-rose-500" /> Live Sensor Alerts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="divide-y">
-              {sensorAlerts.map((alert, i) => (
-                <div key={i} className="py-3 flex items-center justify-between">
-                  <div>
-                    <p className="font-bold text-sm">{alert.type}</p>
-                    <p className="text-xs text-muted-foreground">{alert.location}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] font-medium text-muted-foreground">{alert.time}</span>
-                    <div className={cn(
-                      "h-2 w-2 rounded-full",
-                      alert.severity === 'High' ? "bg-rose-500" : "bg-amber-500"
-                    )} />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Button variant="ghost" className="w-full mt-4 text-primary font-bold">View Alert Map</Button>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 gap-8">
         <Card className="border-none shadow-md">
           <CardHeader>
             <CardTitle className="font-headline text-xl flex items-center gap-2">

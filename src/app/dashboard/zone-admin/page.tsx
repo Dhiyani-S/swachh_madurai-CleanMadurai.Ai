@@ -31,7 +31,8 @@ import {
   Fingerprint,
   TrendingUp,
   XCircle,
-  UserCheck
+  UserCheck,
+  AlertTriangle
 } from "lucide-react"
 import { useStore, Task, User, TeamMember, SensorSubType } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
@@ -227,10 +228,10 @@ export default function ZoneAdminDashboard() {
       <Tabs defaultValue="assignments" className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-secondary/50 h-14 p-1 rounded-xl">
           <TabsTrigger value="assignments" className="font-bold gap-2 text-md">
-            <ClipboardList className="h-4 w-4" /> Task Queue
+            <ClipboardList className="h-4 w-4" /> Live Task Board
           </TabsTrigger>
           <TabsTrigger value="performance" className="font-bold gap-2 text-md">
-            <BarChart3 className="h-4 w-4" /> Performance
+            <BarChart3 className="h-4 w-4" /> Team Performance
           </TabsTrigger>
           <TabsTrigger value="teams" className="font-bold gap-2 text-md">
             <Users className="h-4 w-4" /> Team Roster
@@ -239,12 +240,12 @@ export default function ZoneAdminDashboard() {
 
         <TabsContent value="assignments" className="pt-6 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-none shadow-xl">
+            <Card className="border-none shadow-xl ring-2 ring-rose-500/20">
               <CardHeader className="bg-rose-50/50 rounded-t-xl">
                 <CardTitle className="text-lg flex items-center gap-2 text-rose-700">
-                  <AlertCircle className="h-5 w-5" /> Automated Sensor Alerts
+                  <AlertTriangle className="h-5 w-5 animate-pulse" /> Live Sensor Alerts
                 </CardTitle>
-                <CardDescription>Urgent tasks requiring immediate team dispatch</CardDescription>
+                <CardDescription>Real-time sensor triggers requiring immediate dispatch</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y">
@@ -252,7 +253,7 @@ export default function ZoneAdminDashboard() {
                     <div className="p-10 text-center text-muted-foreground italic bg-secondary/5">No active sensor alerts.</div>
                   ) : (
                     zoneTasks.filter(t => t.type === 'Sensor' && !t.assignedTo).map((task) => (
-                      <div key={task.id} className="p-4 flex items-center justify-between hover:bg-secondary/5 transition-colors">
+                      <div key={task.id} className="p-4 flex items-center justify-between hover:bg-rose-50/30 transition-colors">
                         <div className="flex-1">
                           <h4 className="font-bold text-sm text-primary">{task.name}</h4>
                           <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-1">
