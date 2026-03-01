@@ -85,62 +85,75 @@ export default function DashboardLayout({
   if (!mounted || !currentUser) return null
 
   const t = translations[language || 'en'];
-  const maduraiBg = PlaceHolderImages.find(img => img.id === 'madurai-city-clean')?.imageUrl
+  const maduraiBg = PlaceHolderImages.find(img => img.id === 'madurai-temple-bg')?.imageUrl
 
   return (
-    <div className="flex min-h-screen bg-background relative overflow-hidden">
+    <div className="relative min-h-screen bg-black overflow-hidden selection:bg-primary selection:text-white">
+      {/* Fixed Background Layer */}
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-[0.03] pointer-events-none" 
+        className="fixed inset-0 bg-cover bg-center opacity-30 z-0 transition-opacity duration-1000" 
         style={{ backgroundImage: `url(${maduraiBg})` }}
       />
-      <DashboardSidebar />
-      <div className="flex-1 md:ml-64 flex flex-col relative z-10">
-        <header className="h-16 border-b bg-card/80 backdrop-blur-md px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
-          <div className="flex items-center gap-4 flex-1">
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-6 w-6" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <Badge variant={isOnline ? "outline" : "destructive"} className="gap-1 hidden sm:flex">
-                {isOnline ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
-                {isOnline ? t.liveMode : t.offlineReady}
-              </Badge>
+      <div className="fixed inset-0 bg-gradient-to-br from-black/80 via-black/40 to-primary/10 z-1" />
+      
+      <div className="relative z-10 flex min-h-screen">
+        <DashboardSidebar />
+        
+        <div className="flex-1 md:ml-64 flex flex-col">
+          <header className="h-16 bg-white/5 backdrop-blur-xl border-b border-white/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
+            <div className="flex items-center gap-4 flex-1">
+              <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/10">
+                <Menu className="h-6 w-6" />
+              </Button>
+              <div className="flex items-center gap-2">
+                <Badge variant={isOnline ? "outline" : "destructive"} className="gap-1 hidden sm:flex border-white/20 text-white">
+                  {isOnline ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+                  {isOnline ? t.liveMode : t.offlineReady}
+                </Badge>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 md:gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="gap-2 font-bold text-xs"
-              onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}
-            >
-              <Globe className="h-4 w-4" />
-              <span className="hidden sm:inline">{language === 'en' ? 'தமிழ்' : 'English'}</span>
-            </Button>
             
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2 px-2 hover:bg-secondary">
-                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs">
-                    {currentUser.name.charAt(0)}
-                  </div>
-                  <span className="hidden sm:inline font-medium text-sm">{currentUser.name}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>{t.settings}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive" onClick={() => {
-                   setCurrentUser(null)
-                   router.push('/')
-                }}>{t.logout}</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </header>
-        <main className="flex-1 p-4 md:p-8 overflow-auto">
-          {children}
-        </main>
+            <div className="flex items-center gap-2 md:gap-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="gap-2 font-bold text-xs text-white hover:bg-white/10"
+                onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}
+              >
+                <Globe className="h-4 w-4" />
+                <span className="hidden sm:inline">{language === 'en' ? 'தமிழ்' : 'English'}</span>
+              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="gap-2 px-2 text-white hover:bg-white/10">
+                    <div className="h-8 w-8 rounded-full bg-primary/40 border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-lg">
+                      {currentUser.name.charAt(0)}
+                    </div>
+                    <span className="hidden sm:inline font-medium text-sm">{currentUser.name}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-zinc-900 border-white/10 text-white">
+                  <DropdownMenuLabel>{t.settings}</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/5" />
+                  <DropdownMenuItem className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10" onClick={() => {
+                     setCurrentUser(null)
+                     router.push('/')
+                  }}>{t.logout}</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </header>
+
+          <main className="flex-1 p-4 md:p-12 overflow-y-auto">
+            {/* Centered Content Wrapper */}
+            <div className="max-w-6xl mx-auto w-full">
+              <div className="bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md rounded-[2.5rem] shadow-2xl p-6 md:p-10 border border-white/20 min-h-[calc(100vh-10rem)]">
+                {children}
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   )
