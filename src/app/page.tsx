@@ -210,12 +210,15 @@ export default function LandingPage() {
                        <Select value={role} onValueChange={(val) => setRole(val as UserRole)}>
                          <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
                          <SelectContent>
+                           <SelectItem value="Corporation Commissioner">{t.commissioner}</SelectItem>
+                           <SelectItem value="Ward Admin">{t.wardAdmin}</SelectItem>
+                           <SelectItem value="Zone Admin">{t.zoneAdmin}</SelectItem>
                            <SelectItem value="Worker">{t.worker}</SelectItem>
                            <SelectItem value="Citizen">Citizen / பொதுமக்கள்</SelectItem>
                          </SelectContent>
                        </Select>
                      </div>
-                     {(role === 'Worker') && (
+                     {(role === 'Worker' || role === 'Zone Admin') && (
                         <div className="space-y-2">
                           <Label>Zone</Label>
                           <Select value={zone} onValueChange={setZone}>
