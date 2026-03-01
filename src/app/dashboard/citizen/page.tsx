@@ -190,6 +190,56 @@ export default function CitizenDashboard() {
             </CardFooter>
           </Card>
         </TabsContent>
+        
+        <TabsContent value="private">
+          <Card className="border-none shadow-lg">
+            <CardHeader>
+              <CardTitle className="font-headline text-primary flex items-center gap-2"><Home className="h-6 w-6" /> Private Disposal Booking</CardTitle>
+              <CardDescription>Direct doorstep collection for households</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Zone</Label>
+                  <Select value={selectedZone} onValueChange={setSelectedZone}>
+                    <SelectTrigger><SelectValue placeholder="Select Zone" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ZA - Zone A (North)">Zone A (North)</SelectItem>
+                      <SelectItem value="ZB - Zone B (South)">Zone B (South)</SelectItem>
+                      <SelectItem value="ZC - Zone C (East)">Zone C (East)</SelectItem>
+                      <SelectItem value="ZD - Zone D (West)">Zone D (West)</SelectItem>
+                      <SelectItem value="ZE - Zone E (Central)">Zone E (Central)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Service Type</Label>
+                  <Select value={issueType} onValueChange={setIssueType}>
+                    <SelectTrigger><SelectValue placeholder="Service" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Standard Waste Collection">Standard Collection</SelectItem>
+                      <SelectItem value="Large Item / Bulk Waste">Bulk Waste (Furniture/etc)</SelectItem>
+                      <SelectItem value="Garden Waste">Garden Waste</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Doorstep Address</Label>
+                <Input placeholder="House No, Street, Landmark" value={address} onChange={e => setAddress(e.target.value)} />
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-4">
+               <div className="w-full p-4 bg-secondary/50 rounded-xl border border-dashed flex items-center justify-between">
+                 <span className="text-sm font-bold">Booking Fee:</span>
+                 <span className="text-xl font-headline font-bold text-primary">₹250.00</span>
+               </div>
+               <Button className="w-full font-bold h-12" onClick={() => handleSubmit('private')} disabled={submitting}>
+                 {submitting ? <Loader2 className="animate-spin" /> : <Send />} Pay & Request Worker
+               </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   )
