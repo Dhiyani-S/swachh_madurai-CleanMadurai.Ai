@@ -1,5 +1,7 @@
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import initialData from './initial-dataset.json';
 
 export type UserRole = 'Corporation Commissioner' | 'Ward Admin' | 'Zone Admin' | 'Worker' | 'Citizen';
 
@@ -24,6 +26,7 @@ export interface User {
   age?: number;
   contactNumber?: string;
   address?: string;
+  teamMembers?: string[]; // Simplified member names for fallback
 }
 
 export type TaskType = 'Sensor' | 'Citizen Public' | 'Citizen Private';
@@ -68,68 +71,15 @@ interface AppState {
   updateUser: (userId: string, updates: Partial<User>) => void;
   setAttendance: (workerId: string, members: MemberAttendance[]) => void;
   addCitizenRewards: (citizenId: string, points: number) => void;
+  resetToDataset: () => void;
 }
-
-const initialUsers: User[] = [
-  {
-    id: 'worker-04',
-    password: 'password123',
-    name: 'Karthik',
-    role: 'Worker',
-    teamNumber: 'Team worker-04',
-    zoneId: 'Zone 4 (Vaikunth Nagar)',
-    rewardPoints: 450,
-    age: 28,
-    contactNumber: '9876543210',
-    address: '12, West St, Madurai',
-    members: [
-      { id: 'm1', name: 'Siva', age: 32, contactNumber: '9876543211', address: '45, East St, Madurai' },
-      { id: 'm2', name: 'Meena', age: 26, contactNumber: '9876543212', address: '7, South St, Madurai' }
-    ]
-  },
-  {
-    id: 'comm-1',
-    password: 'password123',
-    name: 'Dr. Madurai Commissioner',
-    role: 'Corporation Commissioner',
-    rewardPoints: 0
-  },
-  {
-    id: 'ward-admin-1',
-    password: 'password123',
-    name: 'Senthil Kumar',
-    role: 'Ward Admin',
-    wardId: 'ward-1',
-    rewardPoints: 0
-  },
-  {
-    id: 'zone-admin-1',
-    password: 'password123',
-    name: 'Dharshini',
-    role: 'Zone Admin',
-    zoneId: 'Zone 1 (Central)',
-    rewardPoints: 0
-  }
-];
 
 export const useStore = create<AppState>()(
   persist(
     (set) => ({
       currentUser: null,
-      tasks: [
-        {
-          id: 'task-1',
-          name: 'Work-Dispose Waste',
-          location: 'Meenakshi Temple Gate',
-          status: 'Pending',
-          type: 'Sensor',
-          subType: 'Dustbin',
-          wardId: 'ward-1',
-          zoneId: 'Zone 4 (Vaikunth Nagar)',
-          createdAt: new Date().toISOString(),
-        }
-      ],
-      users: initialUsers,
+      tasks: (initialData.tasks as Task[]),
+      users: (initialData.users as User[]),
       attendance: {},
       setCurrentUser: (user) => set({ currentUser: user }),
       addUser: (user) => set((state) => ({ users: [...state.users, user] })),
@@ -163,6 +113,12 @@ export const useStore = create<AppState>()(
           currentUser: currentUser as User | null
         };
       }),
+      resetToDataset: () => set({ 
+        tasks: (initialData.tasks as Task[]), 
+        users: (initialData.users as User[]),
+        attendance: {},
+        currentUser: null
+      })
     }),
     {
       name: 'clean-madurai-storage',
