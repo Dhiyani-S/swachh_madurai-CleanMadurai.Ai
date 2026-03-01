@@ -23,12 +23,6 @@
       "description": "Clean street in Madurai city",
       "imageUrl": "https://images.unsplash.com/photo-1548013146-72479768bbaa?auto=format&fit=crop&q=80&w=1080",
       "imageHint": "madurai street"
-    },
-    {
-      "id": "hero-cleaning",
-      "description": "City workers cleaning a street in Madurai",
-      "imageUrl": "https://images.unsplash.com/photo-1615770877212-d0aaba1b1962?auto=format&fit=crop&q=80&w=1080",
-      "imageHint": "city cleaning"
     }
   ]
 }
