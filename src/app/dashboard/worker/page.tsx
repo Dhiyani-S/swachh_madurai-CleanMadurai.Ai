@@ -34,10 +34,12 @@ import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { translations } from "@/lib/translations"
 
 export default function WorkerDashboard() {
-  const { currentUser, tasks, updateTask, attendance, setAttendance } = useStore()
+  const { currentUser, tasks, updateTask, attendance, setAttendance, language } = useStore()
   const { toast } = useToast()
+  const t = translations[language || 'en'];
   
   const [isQRModalOpen, setIsQRModalOpen] = React.useState(false)
   const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null)
@@ -96,8 +98,8 @@ export default function WorkerDashboard() {
       setAttendance(currentUser.id, attendanceState)
       setIsAttendanceModalOpen(false)
       toast({
-        title: "Attendance Marked",
-        description: "Today's team status has been shared with the Zone Admin.",
+        title: language === 'ta' ? "வருகை பதிவு செய்யப்பட்டது" : "Attendance Marked",
+        description: language === 'ta' ? "இன்றைய குழு நிலை மண்டல நிர்வாகியுடன் பகிரப்பட்டது." : "Today's team status has been shared with the Zone Admin.",
       })
     }
   }
@@ -106,14 +108,14 @@ export default function WorkerDashboard() {
     if (action === 'Accept') {
       updateTask(taskId, { status: 'In Progress' })
       toast({
-        title: "Task Accepted",
-        description: "Proceed to the location to begin work.",
+        title: language === 'ta' ? "பணி ஏற்கப்பட்டது" : "Task Accepted",
+        description: language === 'ta' ? "பணியைத் தொடங்க அந்த இடத்திற்குச் செல்லுங்கள்." : "Proceed to the location to begin work.",
       })
     } else {
       updateTask(taskId, { status: 'Pending', assignedTo: undefined })
       toast({
-        title: "Task Rejected",
-        description: "The task has been released for other teams.",
+        title: language === 'ta' ? "பணி நிராகரிக்கப்பட்டது" : "Task Rejected",
+        description: language === 'ta' ? "பணி மற்ற குழுக்களுக்கு விடுவிக்கப்பட்டது." : "The task has been released for other teams.",
       })
     }
   }
@@ -121,8 +123,8 @@ export default function WorkerDashboard() {
   const handleMarkAsFinished = (taskId: string) => {
     updateTask(taskId, { status: 'Partially Completed' })
     toast({
-      title: "Work Recorded",
-      description: "Work marked as finished. Please show your team QR at the disposal site for final verification.",
+      title: language === 'ta' ? "வேலை பதிவு செய்யப்பட்டது" : "Work Recorded",
+      description: language === 'ta' ? "கடைசி சரிபார்ப்பிற்கு உங்கள் குழு QR-ஐ கழிவுத் தளத்தில் காண்பிக்கவும்." : "Work marked as finished. Please show your team QR at the disposal site for final verification.",
     })
   }
 
@@ -131,8 +133,8 @@ export default function WorkerDashboard() {
     setIsQRModalOpen(false)
     setSelectedTaskId(null)
     toast({
-      title: "Verification Successful",
-      description: "Disposal site scanner verified your team. Task fully completed!",
+      title: language === 'ta' ? "சரிபார்ப்பு வெற்றிகரமாக முடிந்தது" : "Verification Successful",
+      description: language === 'ta' ? "கழிவுத் தளம் உங்கள் குழுவை உறுதி செய்தது. பணி முடிந்தது!" : "Disposal site scanner verified your team. Task fully completed!",
     })
   }
 
@@ -145,10 +147,10 @@ export default function WorkerDashboard() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-headline flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-primary" /> Daily Attendance Check
+              <UserCheck className="h-5 w-5 text-primary" /> {t.attendanceCheck}
             </DialogTitle>
             <DialogDescription>
-              Please mark the attendance for all team members before starting work today ({today}).
+              {t.attendanceDesc} ({today}).
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-4">
@@ -166,11 +168,11 @@ export default function WorkerDashboard() {
                 >
                   <div className="flex items-center space-x-1">
                     <RadioGroupItem value="Present" id={`p-${idx}`} />
-                    <Label htmlFor={`p-${idx}`} className="text-xs cursor-pointer">Present</Label>
+                    <Label htmlFor={`p-${idx}`} className="text-xs cursor-pointer">{t.present}</Label>
                   </div>
                   <div className="flex items-center space-x-1">
                     <RadioGroupItem value="Absent" id={`a-${idx}`} />
-                    <Label htmlFor={`a-${idx}`} className="text-xs cursor-pointer text-destructive">Absent</Label>
+                    <Label htmlFor={`a-${idx}`} className="text-xs cursor-pointer text-destructive">{t.absent}</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -178,7 +180,7 @@ export default function WorkerDashboard() {
           </div>
           <DialogFooterUI>
             <Button className="w-full font-bold" onClick={handleAttendanceSubmit}>
-              Submit Attendance
+              {t.submitAttendance}
             </Button>
           </DialogFooterUI>
         </DialogContent>
@@ -199,7 +201,7 @@ export default function WorkerDashboard() {
                 {hasMarkedAttendance && (
                   <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md w-fit">
                     <CheckCircle className="h-3 w-3" />
-                    <span className="text-[10px] font-bold uppercase tracking-tight">Attendance marked for today</span>
+                    <span className="text-[10px] font-bold uppercase tracking-tight">{t.attendanceMarkedToday}</span>
                   </div>
                 )}
               </div>
@@ -210,7 +212,7 @@ export default function WorkerDashboard() {
             <DialogTrigger asChild>
               <Card className="bg-secondary/50 border-none cursor-pointer hover:bg-secondary/70 transition-colors">
                 <CardContent className="p-3 text-center">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Reward Points</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t.rewardPointsUpper}</p>
                   <p className="text-xl font-headline font-bold text-primary flex items-center justify-center gap-1">
                     <Award className="h-5 w-5 text-amber-500" /> {currentUser?.rewardPoints || 0}
                   </p>
@@ -220,27 +222,19 @@ export default function WorkerDashboard() {
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle className="font-headline flex items-center gap-2">
-                  <Award className="h-5 w-5 text-amber-500" /> Reward Breakdown
+                  <Award className="h-5 w-5 text-amber-500" /> {t.rewardBreakdown}
                 </DialogTitle>
                 <DialogDescription>
-                  Points earned for your team's consistent performance.
+                  {t.pointsEarnedInfo}
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                  <span className="text-sm font-medium">On-time Completion</span>
-                  <span className="font-bold text-emerald-600">+300 pts</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                  <span className="text-sm font-medium">Positive Citizen Feedback</span>
-                  <span className="font-bold text-emerald-600">+120 pts</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                  <span className="text-sm font-medium">Daily Streak Bonus</span>
-                  <span className="font-bold text-emerald-600">+30 pts</span>
+                  <span className="text-sm font-medium">{t.completed}</span>
+                  <span className="font-bold text-emerald-600">+100 pts</span>
                 </div>
                 <div className="pt-2 border-t flex justify-between items-center px-1">
-                  <span className="font-bold">Total Points</span>
+                  <span className="font-bold">{t.totalPoints}</span>
                   <span className="text-xl font-headline font-bold text-primary">{currentUser?.rewardPoints || 0} pts</span>
                 </div>
               </div>
@@ -251,15 +245,15 @@ export default function WorkerDashboard() {
         <Card className="border-none bg-secondary/20 shadow-sm">
           <CardHeader className="py-4 flex flex-row items-center justify-between border-b bg-secondary/10">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" /> Team Members & Attendance
+              <Users className="h-4 w-4 text-primary" /> {t.teamMembersAttendance}
             </CardTitle>
             {hasMarkedAttendance ? (
                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 uppercase">
-                 Updated Today
+                 {t.updatedToday}
                </span>
             ) : (
               <Button variant="outline" size="sm" onClick={() => setIsAttendanceModalOpen(true)} className="h-7 text-[10px] font-bold bg-white">
-                Submit Now
+                {t.submitNow}
               </Button>
             )}
           </CardHeader>
@@ -275,13 +269,13 @@ export default function WorkerDashboard() {
                       {member.status === 'Present' ? <UserCheck className="h-3.5 w-3.5" /> : <UserX className="h-3.5 w-3.5" />}
                       {member.name}
                     </div>
-                    <span className="text-[9px] uppercase tracking-wider">{member.status}</span>
+                    <span className="text-[9px] uppercase tracking-wider">{member.status === 'Present' ? t.present : t.absent}</span>
                   </div>
                 ))
               ) : currentUser?.teamMembers?.map((member, i) => (
                 <div key={i} className="px-3 py-2 bg-white rounded-xl text-xs font-bold border shadow-sm opacity-50 flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-slate-300 animate-pulse" />
-                  {member} (Pending)
+                  {member} ({t.pending})
                 </div>
               ))}
             </div>
@@ -291,12 +285,12 @@ export default function WorkerDashboard() {
 
       <div className="space-y-4">
         <h3 className="font-headline font-bold text-lg flex items-center gap-2">
-          <Clock className="h-5 w-5 text-primary" /> Active Tasks
+          <Clock className="h-5 w-5 text-primary" /> {t.activeTasks}
         </h3>
         {assignedTasks.length === 0 ? (
           <div className="text-center py-12 bg-secondary/20 rounded-xl border border-dashed">
             <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground/30 mb-2" />
-            <p className="text-muted-foreground font-medium">All caught up! No active tasks assigned to you.</p>
+            <p className="text-muted-foreground font-medium">{t.allCaughtUp}</p>
           </div>
         ) : (
           assignedTasks.map((task) => (
@@ -319,7 +313,9 @@ export default function WorkerDashboard() {
                     task.status === 'In Progress' ? "bg-blue-100 text-blue-700" : 
                     "bg-amber-100 text-amber-700 border border-amber-300"
                   )}>
-                    {task.status}
+                    {task.status === 'Pending' ? t.pending : 
+                     task.status === 'In Progress' ? t.inProgress : 
+                     task.status === 'Completed' ? t.completed : task.status}
                   </div>
                 </div>
               </CardHeader>
@@ -327,25 +323,19 @@ export default function WorkerDashboard() {
                 {task.status === 'Pending' && (
                   <div className="flex items-center justify-between text-xs text-rose-600 bg-rose-50 p-2 rounded-lg border border-rose-100 font-bold">
                     <div className="flex items-center gap-2">
-                      <Timer className="h-4 w-4 animate-pulse" /> Must respond within:
+                      <Timer className="h-4 w-4 animate-pulse" /> {t.mustRespondWithin}
                     </div>
                     <span className="font-mono text-sm">{timeLefts[task.id] || '--:--'}</span>
-                  </div>
-                )}
-                {task.status === 'In Progress' && (
-                  <div className="space-y-3">
-                    <p className="text-sm text-muted-foreground italic">Work is currently in progress. Proceed to the location and finish cleaning.</p>
-                    <Progress value={45} className="h-1.5" />
                   </div>
                 )}
                 {task.status === 'Partially Completed' && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm font-medium text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200">
                       <AlertCircle className="h-4 w-4" />
-                      Pending Disposal Verification
+                      {t.pendingDisposalVerification}
                     </div>
                     <p className="text-xs text-muted-foreground px-1">
-                      Your team QR is now active for this task. Proceed to a nearby disposal terminal to finalize.
+                      {language === 'ta' ? "பணியை இறுதி செய்ய கழிவு மேலாண்மை தளத்தில் QR-ஐ ஸ்கேன் செய்யவும்." : "Your team QR is now active for this task. Proceed to a nearby disposal terminal to finalize."}
                     </p>
                   </div>
                 )}
@@ -354,16 +344,16 @@ export default function WorkerDashboard() {
                 {task.status === 'Pending' && (
                   <>
                     <Button onClick={() => handleTaskAction(task.id, 'Accept')} className="flex-1 bg-primary font-bold gap-2">
-                      <CheckCircle2 className="h-4 w-4" /> Accept
+                      <CheckCircle2 className="h-4 w-4" /> {t.accept}
                     </Button>
                     <Button onClick={() => handleTaskAction(task.id, 'Reject')} variant="outline" className="flex-1 text-destructive font-bold gap-2">
-                      <XCircle className="h-4 w-4" /> Reject
+                      <XCircle className="h-4 w-4" /> {t.reject}
                     </Button>
                   </>
                 )}
                 {task.status === 'In Progress' && (
                   <Button onClick={() => handleMarkAsFinished(task.id)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2">
-                    <CheckCircle2 className="h-4 w-4" /> Mark Work Finished
+                    <CheckCircle2 className="h-4 w-4" /> {t.markWorkFinished}
                   </Button>
                 )}
                 {task.status === 'Partially Completed' && (
@@ -373,16 +363,16 @@ export default function WorkerDashboard() {
                   }}>
                     <DialogTrigger asChild>
                       <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold gap-2">
-                        <QrCode className="h-4 w-4" /> Show Verification QR
+                        <QrCode className="h-4 w-4" /> {t.showVerificationQr}
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
                         <DialogTitle className="font-headline flex items-center gap-2">
-                          <QrCode className="h-5 w-5 text-primary" /> Team Verification QR
+                          <QrCode className="h-5 w-5 text-primary" /> {t.verificationQrTitle}
                         </DialogTitle>
                         <DialogDescription>
-                          Scan this at the official disposal site terminal to confirm completion.
+                          {t.verificationQrDesc}
                         </DialogDescription>
                       </DialogHeader>
                       <div className="flex flex-col items-center justify-center gap-6 py-8">
@@ -391,18 +381,12 @@ export default function WorkerDashboard() {
                              <QrCode className="h-24 w-24 text-primary opacity-50" />
                           </div>
                         </div>
-                        <div className="text-center space-y-2">
-                          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Team ID: {currentUser?.teamNumber || currentUser?.id}</p>
-                          <p className="text-[10px] text-muted-foreground italic flex items-center justify-center gap-1">
-                            <Info className="h-3 w-3" /> External scan will trigger full completion
-                          </p>
-                        </div>
                         <Button 
                           onClick={() => simulateExternalScan(task.id)} 
                           variant="outline"
                           className="w-full h-10 text-xs font-bold"
                         >
-                          Simulate Terminal Scan (Prototype only)
+                          {t.simulateScan}
                         </Button>
                       </div>
                     </DialogContent>
