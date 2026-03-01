@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export type UserRole = 'Corporation Commissioner' | 'Ward Admin' | 'Zone Admin' | 'Worker' | 'Citizen';
 
@@ -111,53 +112,61 @@ const initialUsers: User[] = [
   }
 ];
 
-export const useStore = create<AppState>((set) => ({
-  currentUser: null,
-  tasks: [
+export const useStore = create<AppState>()(
+  persist(
+    (set) => ({
+      currentUser: null,
+      tasks: [
+        {
+          id: 'task-1',
+          name: 'Work-Dispose Waste',
+          location: 'Meenakshi Temple Gate',
+          status: 'Pending',
+          type: 'Sensor',
+          subType: 'Dustbin',
+          wardId: 'ward-1',
+          zoneId: 'Zone 4 (Vaikunth Nagar)',
+          createdAt: new Date().toISOString(),
+        }
+      ],
+      users: initialUsers,
+      attendance: {},
+      setCurrentUser: (user) => set({ currentUser: user }),
+      addUser: (user) => set((state) => ({ users: [...state.users, user] })),
+      addTask: (task) => set((state) => ({ tasks: [task, ...state.tasks] })),
+      updateTask: (taskId, updates) => set((state) => ({
+        tasks: state.tasks.map((t) => t.id === taskId ? { ...t, ...updates } : t)
+      })),
+      updateUser: (userId, updates) => set((state) => ({
+        users: state.users.map((u) => u.id === userId ? { ...u, ...updates } : u)
+      })),
+      setAttendance: (workerId, members) => set((state) => ({
+        attendance: {
+          ...state.attendance,
+          [workerId]: {
+            teamNumber: workerId,
+            date: new Date().toLocaleDateString(),
+            members
+          }
+        }
+      })),
+      addCitizenRewards: (citizenId, points) => set((state) => {
+        const updatedUsers = state.users.map(u => 
+          u.id === citizenId ? { ...u, rewardPoints: (u.rewardPoints || 0) + points } : u
+        );
+        const currentUser = state.currentUser?.id === citizenId 
+          ? { ...state.currentUser, rewardPoints: (state.currentUser.rewardPoints || 0) + (points || 0) }
+          : state.currentUser;
+          
+        return {
+          users: updatedUsers,
+          currentUser: currentUser as User | null
+        };
+      }),
+    }),
     {
-      id: 'task-1',
-      name: 'Work-Dispose Waste',
-      location: 'Meenakshi Temple Gate',
-      status: 'Pending',
-      type: 'Sensor',
-      subType: 'Dustbin',
-      wardId: 'ward-1',
-      zoneId: 'Zone 4 (Vaikunth Nagar)',
-      createdAt: new Date().toISOString(),
+      name: 'clean-madurai-storage',
+      storage: createJSONStorage(() => localStorage),
     }
-  ],
-  users: initialUsers,
-  attendance: {},
-  setCurrentUser: (user) => set({ currentUser: user }),
-  addUser: (user) => set((state) => ({ users: [...state.users, user] })),
-  addTask: (task) => set((state) => ({ tasks: [task, ...state.tasks] })),
-  updateTask: (taskId, updates) => set((state) => ({
-    tasks: state.tasks.map((t) => t.id === taskId ? { ...t, ...updates } : t)
-  })),
-  updateUser: (userId, updates) => set((state) => ({
-    users: state.users.map((u) => u.id === userId ? { ...u, ...updates } : u)
-  })),
-  setAttendance: (workerId, members) => set((state) => ({
-    attendance: {
-      ...state.attendance,
-      [workerId]: {
-        teamNumber: workerId,
-        date: new Date().toLocaleDateString(),
-        members
-      }
-    }
-  })),
-  addCitizenRewards: (citizenId, points) => set((state) => {
-    const updatedUsers = state.users.map(u => 
-      u.id === citizenId ? { ...u, rewardPoints: (u.rewardPoints || 0) + points } : u
-    );
-    const currentUser = state.currentUser?.id === citizenId 
-      ? { ...state.currentUser, rewardPoints: (state.currentUser.rewardPoints || 0) + points }
-      : state.currentUser;
-      
-    return {
-      users: updatedUsers,
-      currentUser: currentUser
-    };
-  }),
-}));
+  )
+);

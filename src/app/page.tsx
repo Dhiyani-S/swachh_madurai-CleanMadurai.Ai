@@ -16,6 +16,7 @@ export default function LandingPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { setCurrentUser, users, addUser } = useStore()
+  
   const [role, setRole] = React.useState<UserRole>('Citizen')
   const [userId, setUserId] = React.useState('')
   const [password, setPassword] = React.useState('')
@@ -31,12 +32,17 @@ export default function LandingPage() {
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const existingUser = users.find(u => u.id === userId && u.password === password && u.role === role)
+    // STRICT AUTHENTICATION: Check if User ID, Password, and Role all match
+    const existingUser = users.find(u => 
+      u.id === userId.trim() && 
+      u.password === password && 
+      u.role === role
+    )
 
     if (!existingUser) {
       toast({
         title: "Authentication Failed",
-        description: "Invalid User ID, password, or role selection. Please check your credentials.",
+        description: "Invalid credentials or incorrect role. Please check your details or sign up first.",
         variant: "destructive",
       })
       return
@@ -44,7 +50,6 @@ export default function LandingPage() {
 
     setCurrentUser(existingUser)
     
-    // Role-based redirection
     const dashboardRoutes: Record<UserRole, string> = {
       'Corporation Commissioner': '/dashboard/commissioner',
       'Ward Admin': '/dashboard/ward-admin',
@@ -52,6 +57,7 @@ export default function LandingPage() {
       'Worker': '/dashboard/worker',
       'Citizen': '/dashboard/citizen',
     }
+    
     router.push(dashboardRoutes[role])
     
     toast({
@@ -63,8 +69,7 @@ export default function LandingPage() {
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Check if user already exists
-    if (users.find(u => u.id === userId)) {
+    if (users.find(u => u.id === userId.trim())) {
       toast({
         title: "Registration Failed",
         description: "This User ID is already taken. Please choose another one.",
@@ -84,13 +89,13 @@ export default function LandingPage() {
     }
 
     const newUser: User = {
-      id: userId,
+      id: userId.trim(),
       password: password,
-      name: userId, // Defaulting name to ID for initial setup
+      name: userId.trim(), 
       role: role,
       rewardPoints: 0,
       zoneId: needsZone ? zone : undefined,
-      teamNumber: role === 'Worker' ? `Team ${userId}` : undefined,
+      teamNumber: role === 'Worker' ? `Team ${userId.trim()}` : undefined,
       teamMembers: role === 'Worker' ? ["Member 1", "Member 2"] : undefined
     }
 
@@ -98,10 +103,9 @@ export default function LandingPage() {
     
     toast({
       title: "Registration Successful",
-      description: "Your account has been created. You can now sign in.",
+      description: "Account created! You can now sign in with these details.",
     })
     
-    // Optionally switch to sign-in tab or auto-login
     setUserId('')
     setPassword('')
   }
