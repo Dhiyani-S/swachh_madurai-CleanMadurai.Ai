@@ -42,7 +42,7 @@ export default function CitizenDashboard() {
       }
     } catch (error) {
       setHasCameraPermission(false);
-      toast({ variant: 'destructive', title: 'Camera Access Denied', description: 'Enable camera to report.' });
+      toast({ variant: 'destructive', title: t.language === 'ta' ? 'அனுமதி மறுக்கப்பட்டது' : 'Camera Access Denied', description: 'Enable camera to report.' });
     }
   };
 
@@ -89,7 +89,7 @@ export default function CitizenDashboard() {
           assignedTo: zoneWorkers[0]?.id
         });
         addCitizenRewards(currentUser?.id || "", 50);
-        toast({ title: "Reported!", description: "AI verified issue. +50 Points earned." });
+        toast({ title: t.completed, description: "AI verified issue. +50 Points earned." });
       } else {
         addTask({
           id: `task-${Date.now()}`,
@@ -102,7 +102,7 @@ export default function CitizenDashboard() {
           createdAt: new Date().toISOString(),
           citizenId: currentUser?.id,
         });
-        toast({ title: "Submitted", description: "Request sent." });
+        toast({ title: t.submit, description: "Request sent." });
       }
       setAddress(""); setCapturedImage(null); setSelectedZone(""); setIssueType("");
     } catch (e) {
@@ -194,7 +194,7 @@ export default function CitizenDashboard() {
         <TabsContent value="private">
           <Card className="border-none shadow-lg">
             <CardHeader>
-              <CardTitle className="font-headline text-primary flex items-center gap-2"><Home className="h-6 w-6" /> Private Disposal Booking</CardTitle>
+              <CardTitle className="font-headline text-primary flex items-center gap-2"><Home className="h-6 w-6" /> {t.privateBooking}</CardTitle>
               <CardDescription>Direct doorstep collection for households</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

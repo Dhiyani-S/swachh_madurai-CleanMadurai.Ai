@@ -5,7 +5,7 @@ import { DashboardSidebar } from "@/components/dashboard/Sidebar"
 import { useStore } from "@/lib/store"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Bell, Search, Menu, Globe } from "lucide-react"
+import { Bell, Search, Menu, Globe, Wifi, WifiOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { 
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { translations } from "@/lib/translations"
 import { useToast } from "@/hooks/use-toast"
+import { Badge } from "@/components/ui/badge"
 
 export default function DashboardLayout({
   children,
@@ -27,22 +28,35 @@ export default function DashboardLayout({
   const { currentUser, language, setLanguage, tasks, updateTask } = useStore()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
+  const [isOnline, setIsOnline] = useState(true)
   const { toast } = useToast()
 
   useEffect(() => {
     setMounted(true)
+    setIsOnline(navigator.onLine)
+
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
     if (!currentUser) {
       router.push('/')
     }
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
   }, [currentUser, router])
 
-  // Automatic Task Timeout Logic (30 Minutes)
   useEffect(() => {
     if (!mounted) return;
 
     const checkTimeouts = () => {
       const now = new Date();
-      const timeoutLimit = 30 * 60 * 1000; // 30 minutes in ms
+      const timeoutLimit = 30 * 60 * 1000; 
 
       tasks.forEach(task => {
         if (task.status === 'Pending' && task.assignedTo && task.assignedAt) {
@@ -50,14 +64,12 @@ export default function DashboardLayout({
           const diff = now.getTime() - assignedTime.getTime();
 
           if (diff > timeoutLimit) {
-            // Task has timed out, unassign it
             updateTask(task.id, { assignedTo: undefined });
             
-            // Only notify if current user is relevant (Admin or the Worker who lost the task)
             if (currentUser?.role === 'Zone Admin' || currentUser?.id === task.assignedTo) {
               toast({
-                title: "Task Re-assigned",
-                description: `Task "${task.name}" was unassigned due to 30-minute response timeout.`,
+                title: language === 'ta' ? "பணி மீண்டும் ஒதுக்கப்பட்டது" : "Task Re-assigned",
+                description: language === 'ta' ? "30 நிமிடம் தாமதமானதால் பணி திரும்பப் பெறப்பட்டது." : `Task "${task.name}" was unassigned due to 30-minute response timeout.`,
                 variant: "destructive"
               });
             }
@@ -66,9 +78,9 @@ export default function DashboardLayout({
       });
     };
 
-    const interval = setInterval(checkTimeouts, 10000); // Check every 10 seconds
+    const interval = setInterval(checkTimeouts, 10000); 
     return () => clearInterval(interval);
-  }, [mounted, tasks, updateTask, currentUser, toast]);
+  }, [mounted, tasks, updateTask, currentUser, toast, language]);
 
   if (!mounted || !currentUser) return null
 
@@ -84,12 +96,12 @@ export default function DashboardLayout({
             <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="h-6 w-6" />
             </Button>
-            {!isWorker && (
-              <div className="relative w-full max-w-md hidden sm:block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search..." className="pl-9 bg-secondary/30 border-none h-10" />
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              <Badge variant={isOnline ? "outline" : "destructive"} className="gap-1 hidden sm:flex">
+                {isOnline ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
+                {isOnline ? t.liveMode : t.offlineReady}
+              </Badge>
+            </div>
           </div>
           <div className="flex items-center gap-2 md:gap-4">
             <Button 
@@ -100,11 +112,6 @@ export default function DashboardLayout({
             >
               <Globe className="h-4 w-4" />
               <span className="hidden sm:inline">{language === 'en' ? 'தமிழ்' : 'English'}</span>
-            </Button>
-            
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 h-2 w-2 bg-destructive rounded-full border-2 border-card" />
             </Button>
             
             <DropdownMenu>
@@ -119,7 +126,9 @@ export default function DashboardLayout({
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>{t.settings}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive" onClick={() => router.push('/')}>{t.logout}</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive" onClick={() => {
+                   router.push('/')
+                }}>{t.logout}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
