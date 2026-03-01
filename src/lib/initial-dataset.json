@@ -27,7 +27,7 @@
     {
       "id": "04",
       "password": "123",
-      "name": "Field Team Leader",
+      "name": "Field Team",
       "role": "Worker",
       "teamNumber": "Team ZA-01",
       "zoneId": "ZA - Zone A (North)",
@@ -40,7 +40,11 @@
         { "id": "m1", "name": "Muthu", "age": 28, "contactNumber": "9000000002", "address": "North Madurai" },
         { "id": "m2", "name": "Pandi", "age": 32, "contactNumber": "9000000003", "address": "North Madurai" }
       ],
-      "teamMembers": ["Muthu", "Pandi"]
+      "teamMembers": ["Muthu", "Pandi"],
+      "teamRoster": [
+        { "id": "m1", "name": "Muthu", "age": 28, "contactNumber": "9000000002", "address": "North Madurai" },
+        { "id": "m2", "name": "Pandi", "age": 32, "contactNumber": "9000000003", "address": "North Madurai" }
+      ]
     },
     {
       "id": "05",

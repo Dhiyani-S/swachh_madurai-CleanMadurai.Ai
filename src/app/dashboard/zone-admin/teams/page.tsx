@@ -48,7 +48,7 @@ export default function ZoneAdminTeams() {
 
     addUser({
       id: newTeam.id,
-      name: `Team Leader ${newTeam.id}`,
+      name: `Team ${newTeam.id}`,
       password: newTeam.password,
       role: 'Worker',
       teamNumber: newTeam.teamNumber,
@@ -107,28 +107,28 @@ export default function ZoneAdminTeams() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-4xl font-headline font-bold text-primary">Team & Roster Management</h1>
-          <p className="text-muted-foreground">Register workers and manage their daily team members for {currentZone}</p>
+          <p className="text-muted-foreground">Register teams and manage their daily members for {currentZone}</p>
         </div>
         
         <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2 font-bold h-12 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30">
-              <UserPlus className="h-5 w-5" /> Register Worker
+              <UserPlus className="h-5 w-5" /> Register Team
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px] bg-zinc-900 border-white/10 text-white rounded-[2.5rem] backdrop-blur-3xl">
             <DialogHeader>
-              <DialogTitle className="font-headline text-2xl">Create Worker Account</DialogTitle>
+              <DialogTitle className="font-headline text-2xl">Create Team Account</DialogTitle>
               <DialogDescription className="text-white/60">
-                This account will be used by the Team Leader to sign in and mark attendance.
+                This account will be used by the Team to sign in and mark attendance.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleRegister} className="space-y-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="id">Worker User ID</Label>
+                <Label htmlFor="id">Team User ID</Label>
                 <Input 
                   id="id" 
-                  placeholder="e.g. wkr-001" 
+                  placeholder="e.g. team-001" 
                   className="bg-white/5 border-white/10 text-white rounded-xl"
                   value={newTeam.id} 
                   onChange={e => setNewTeam({...newTeam, id: e.target.value})}
@@ -187,7 +187,7 @@ export default function ZoneAdminTeams() {
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div>
                   <CardTitle className="text-2xl font-headline font-bold text-white">{team.teamNumber}</CardTitle>
-                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">Worker ID: {team.id}</p>
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">User ID: {team.id}</p>
                 </div>
                 <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 rounded-full px-4">
                   {team.teamRoster?.length || 0} Members
@@ -229,7 +229,7 @@ export default function ZoneAdminTeams() {
           <DialogHeader className="px-4">
             <DialogTitle className="font-headline text-4xl text-primary mt-4">Team Roster: {selectedTeam?.teamNumber}</DialogTitle>
             <DialogDescription className="text-white/60 text-lg">
-              Manage members associated with this worker account. These members will appear for daily attendance marking.
+              Manage members associated with this team account. These members will appear for daily attendance marking.
             </DialogDescription>
           </DialogHeader>
 
