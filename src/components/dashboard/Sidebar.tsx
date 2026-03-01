@@ -29,17 +29,17 @@ export function DashboardSidebar() {
 
   const t = translations[language || 'en'];
 
-  // Mapping routes for each role with safety checks
+  // Mapping routes for each role with robust normalization
   const roleRoutes: Record<string, Array<{ name: string; icon: any; href: string }>> = {
-    'commissioner': [
+    'corporation commissioner': [
       { name: t.performance, icon: LayoutDashboard, href: '/dashboard/commissioner' },
       { name: 'Analytics', icon: ClipboardList, href: '/dashboard/commissioner/reports' },
     ],
-    'ward_admin': [
+    'ward admin': [
       { name: t.wardAdmin, icon: LayoutDashboard, href: '/dashboard/ward-admin' },
       { name: 'Tasks', icon: ClipboardList, href: '/dashboard/ward-admin/tasks' },
     ],
-    'zone_admin': [
+    'zone admin': [
       { name: t.zoneAdmin, icon: LayoutDashboard, href: '/dashboard/zone-admin' },
       { name: 'Team Mgmt', icon: Users, href: '/dashboard/zone-admin/teams' },
     ],
@@ -53,9 +53,9 @@ export function DashboardSidebar() {
     ],
   }
 
-  // Get current user role in a consistent lowercase format
+  // Fallback for case sensitivity or slight name mismatches
   const currentRole = currentUser?.role?.toLowerCase() || '';
-  const routes = roleRoutes[currentRole] || [];
+  const routes = roleRoutes[currentRole] || roleRoutes[currentRole.replace(' ', '_')] || [];
 
   return (
     <div className="hidden border-r border-white/10 bg-black/20 backdrop-blur-[50px] md:block w-64 h-screen fixed left-0 top-0 z-50">

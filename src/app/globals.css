@@ -44,7 +44,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  z-index: -1; /* Placed behind content but in front of html background */
+  z-index: -1; 
 }
 
 /* Clearer overlay to show the heritage and cleanliness image */
