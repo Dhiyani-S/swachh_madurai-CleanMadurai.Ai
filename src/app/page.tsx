@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -10,9 +11,11 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useStore, UserRole } from "@/lib/store"
 import { Recycle, ShieldCheck, MapPin, Users, UserCircle } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 export default function LandingPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const { setCurrentUser } = useStore()
   const [role, setRole] = React.useState<UserRole>('Citizen')
   const [userId, setUserId] = React.useState('')
@@ -21,9 +24,19 @@ export default function LandingPage() {
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (role === 'Worker' && !zone) {
+      toast({
+        title: "Zone Selection Required",
+        description: "Please select your assigned zone to continue.",
+        variant: "destructive",
+      })
+      return
+    }
+
     // Simulated auth
     const user = {
-      id: userId,
+      id: userId || "user-123",
       name: userId || "User",
       role: role,
       rewardPoints: role === 'Worker' ? 450 : 0,
@@ -33,7 +46,7 @@ export default function LandingPage() {
     setCurrentUser(user)
     
     // Role-based redirection
-    const dashboardRoutes = {
+    const dashboardRoutes: Record<UserRole, string> = {
       'Corporation Commissioner': '/dashboard/commissioner',
       'Ward Admin': '/dashboard/ward-admin',
       'Zone Admin': '/dashboard/zone-admin',
@@ -97,18 +110,18 @@ export default function LandingPage() {
                     </Select>
                   </div>
                   {role === 'Worker' && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                      <Label htmlFor="signin-zone">Select your Zone</Label>
-                      <Select value={zone} onValueChange={setZone} required>
+                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <Label htmlFor="signin-zone">Assigned Zone</Label>
+                      <Select value={zone} onValueChange={setZone}>
                         <SelectTrigger id="signin-zone">
-                          <SelectValue placeholder="Select your Zone" />
+                          <SelectValue placeholder="Which zone are you assigned to?" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="zone-1">Zone 1 (Main City)</SelectItem>
-                          <SelectItem value="zone-2">Zone 2 (Anna Nagar)</SelectItem>
-                          <SelectItem value="zone-3">Zone 3 (Madurai West)</SelectItem>
-                          <SelectItem value="zone-4">Zone 4 (Vaikunth Nagar)</SelectItem>
-                          <SelectItem value="zone-5">Zone 5 (Goripalayam)</SelectItem>
+                          <SelectItem value="Zone 1 (Central)">Zone 1 (Central)</SelectItem>
+                          <SelectItem value="Zone 2 (Anna Nagar)">Zone 2 (Anna Nagar)</SelectItem>
+                          <SelectItem value="Zone 3 (Madurai West)">Zone 3 (Madurai West)</SelectItem>
+                          <SelectItem value="Zone 4 (Vaikunth Nagar)">Zone 4 (Vaikunth Nagar)</SelectItem>
+                          <SelectItem value="Zone 5 (Goripalayam)">Zone 5 (Goripalayam)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -130,8 +143,8 @@ export default function LandingPage() {
               <form onSubmit={handleSignUp}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-id">User ID</Label>
-                    <Input id="signup-id" placeholder="Enter desired User ID" required value={userId} onChange={e => setUserId(e.target.value)} />
+                    <Label htmlFor="signup-id">Full Name</Label>
+                    <Input id="signup-id" placeholder="Enter your name" required value={userId} onChange={e => setUserId(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
@@ -153,18 +166,18 @@ export default function LandingPage() {
                     </Select>
                   </div>
                   {role === 'Worker' && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
                       <Label htmlFor="signup-zone">Assigned Zone</Label>
-                      <Select value={zone} onValueChange={setZone} required>
+                      <Select value={zone} onValueChange={setZone}>
                         <SelectTrigger id="signup-zone">
                           <SelectValue placeholder="Select your Zone" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="zone-1">Zone 1 (Main City)</SelectItem>
-                          <SelectItem value="zone-2">Zone 2 (Anna Nagar)</SelectItem>
-                          <SelectItem value="zone-3">Zone 3 (Madurai West)</SelectItem>
-                          <SelectItem value="zone-4">Zone 4 (Vaikunth Nagar)</SelectItem>
-                          <SelectItem value="zone-5">Zone 5 (Goripalayam)</SelectItem>
+                          <SelectItem value="Zone 1 (Central)">Zone 1 (Central)</SelectItem>
+                          <SelectItem value="Zone 2 (Anna Nagar)">Zone 2 (Anna Nagar)</SelectItem>
+                          <SelectItem value="Zone 3 (Madurai West)">Zone 3 (Madurai West)</SelectItem>
+                          <SelectItem value="Zone 4 (Vaikunth Nagar)">Zone 4 (Vaikunth Nagar)</SelectItem>
+                          <SelectItem value="Zone 5 (Goripalayam)">Zone 5 (Goripalayam)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
