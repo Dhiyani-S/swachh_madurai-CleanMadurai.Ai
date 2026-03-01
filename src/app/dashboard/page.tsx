@@ -3,7 +3,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useStore, UserRole } from "@/lib/store"
+import { useStore } from "@/lib/store"
 import { Loader2 } from "lucide-react"
 
 export default function DashboardRedirect() {
@@ -16,15 +16,27 @@ export default function DashboardRedirect() {
       return
     }
 
-    const routes: Record<UserRole, string> = {
-      'Corporation Commissioner': '/dashboard/commissioner',
-      'Ward Admin': '/dashboard/ward-admin',
-      'Zone Admin': '/dashboard/zone-admin',
-      'Worker': '/dashboard/worker',
-      'Citizen': '/dashboard/citizen',
+    // Robust route mapping to handle both store-level keys and display roles
+    const routes: Record<string, string> = {
+      'commissioner': '/dashboard/commissioner',
+      'corporation commissioner': '/dashboard/commissioner',
+      'ward_admin': '/dashboard/ward-admin',
+      'ward admin': '/dashboard/ward-admin',
+      'zone_admin': '/dashboard/zone-admin',
+      'zone admin': '/dashboard/zone-admin',
+      'worker': '/dashboard/worker',
+      'citizen': '/dashboard/citizen',
     }
 
-    router.push(routes[currentUser.role])
+    const roleKey = currentUser.role?.toLowerCase() || ''
+    const targetPath = routes[roleKey]
+
+    if (targetPath) {
+      router.push(targetPath)
+    } else {
+      console.error(`Unknown role: ${currentUser.role}. Falling back to landing page.`)
+      router.push("/")
+    }
   }, [currentUser, router])
 
   return (

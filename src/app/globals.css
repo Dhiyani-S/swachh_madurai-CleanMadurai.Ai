@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,7 +11,7 @@
     --card-foreground: 150 20% 96%;
     --popover: 160 40% 6%;
     --popover-foreground: 150 20% 96%;
-    /* Bright Saffron-Yellow matching the iconic Madurai sign */
+    /* Vibrant Saffron-Yellow from the iconic Madurai sign */
     --primary: 47 100% 50%; 
     --primary-foreground: 160 40% 4%;
     --secondary: 160 20% 12%;
@@ -27,6 +28,7 @@
     --radius: 2.5rem;
   }
 
+  /* CRITICAL: Ensure root and body are transparent to let the background div show through */
   html {
     background: transparent !important;
   }
@@ -37,7 +39,7 @@
   }
 }
 
-/* Global Madurai Background */
+/* Global Madurai Heritage Background */
 .madurai-bg {
   position: fixed;
   inset: 0;
@@ -48,7 +50,7 @@
   z-index: -1; 
 }
 
-/* Translucent overlay to ensure text readability */
+/* Translucent Saffron-Green overlay to ensure text readability */
 .madurai-bg::after {
   content: '';
   position: absolute;
@@ -57,7 +59,7 @@
   z-index: 0;
 }
 
-/* Glassmorphism Styles */
+/* Deep Glassmorphism Styles for all panels */
 .glass-panel {
   background: rgba(10, 26, 16, 0.65) !important;
   backdrop-filter: blur(25px) !important;
@@ -78,12 +80,12 @@
   border-bottom: 1px solid rgba(255, 200, 0, 0.1) !important;
 }
 
-/* Transparent Card Overrides */
+/* Force Glassmorphism on Cards */
 .card, [class*="card"], .bg-card {
   @apply glass-panel;
 }
 
-/* Input styles */
+/* Input styles with Glassmorphism */
 input, select, textarea {
   background: rgba(5, 15, 10, 0.5) !important;
   border: 1px solid rgba(255, 200, 0, 0.25) !important;
@@ -95,12 +97,13 @@ input::placeholder {
   color: rgba(232, 245, 238, 0.4) !important;
 }
 
-/* Saffron-Yellow Button Styles */
+/* Bright Saffron-Yellow Button Styles */
 button.bg-primary, .btn-primary {
   background: hsl(var(--primary)) !important;
   color: hsl(var(--primary-foreground)) !important;
   font-weight: 800 !important;
   box-shadow: 0 4px 20px rgba(255, 200, 0, 0.3) !important;
+  transition: all 0.3s ease;
 }
 
 button.bg-primary:hover {
