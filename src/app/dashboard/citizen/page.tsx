@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -8,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Camera, Send, History, Trash2, Home, MapPin, CheckCircle, Clock, CreditCard, RefreshCw } from "lucide-react"
+import { Camera, Send, History, Trash2, Home, MapPin, CheckCircle, Clock, CreditCard, RefreshCw, Award } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useStore, Task } from "@/lib/store"
 import { StatusBadge } from "@/components/dashboard/StatusBadge"
@@ -16,8 +15,12 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function CitizenDashboard() {
   const { toast } = useToast()
-  const { tasks, addTask, updateTask, currentUser } = useStore()
+  const { tasks, addTask, updateTask, currentUser, addCitizenRewards } = useStore()
   const [submitting, setSubmitting] = React.useState(false)
+  const [selectedZone, setSelectedZone] = React.useState<string>("")
+  const [selectedWard, setSelectedWard] = React.useState<string>("")
+  const [address, setAddress] = React.useState<string>("")
+  const [issueType, setIssueType] = React.useState<string>("")
   
   // Camera State
   const videoRef = React.useRef<HTMLVideoElement>(null)
@@ -53,7 +56,6 @@ export default function CitizenDashboard() {
         const dataUri = canvas.toDataURL('image/jpeg');
         setCapturedImage(dataUri);
         
-        // Stop the stream after capture to save battery/resource
         const stream = videoRef.current.srcObject as MediaStream;
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
@@ -68,16 +70,25 @@ export default function CitizenDashboard() {
   };
 
   const handleSubmit = (type: 'public' | 'private') => {
+    if (!selectedZone || !address) {
+      toast({
+        variant: 'destructive',
+        title: "Missing Information",
+        description: "Please select a zone and provide an address.",
+      });
+      return;
+    }
+
     setSubmitting(true)
     
     const newTask: Task = {
       id: `task-${Date.now()}`,
-      name: type === 'public' ? 'Public Issue Report' : 'Private Collection Request',
-      location: 'Current Location',
+      name: type === 'public' ? `Public Complaint: ${issueType || 'Waste Cleanup'}` : 'Private Collection Request',
+      location: address,
       status: 'Pending',
       type: type === 'public' ? 'Citizen Public' : 'Citizen Private',
-      wardId: 'ward-1',
-      zoneId: 'Zone 4 (Vaikunth Nagar)',
+      wardId: selectedWard || 'Ward 1',
+      zoneId: selectedZone,
       createdAt: new Date().toISOString(),
       citizenId: currentUser?.id,
       imageProof: type === 'public' ? capturedImage || undefined : undefined,
@@ -86,12 +97,24 @@ export default function CitizenDashboard() {
 
     setTimeout(() => {
       addTask(newTask)
+      
+      if (type === 'public') {
+        // Reward citizen for public reporting
+        addCitizenRewards(currentUser?.id || "", 50);
+        toast({
+          title: "Report Submitted!",
+          description: "Thank you for being a responsible citizen. 50 reward points added to your profile!",
+        });
+      } else {
+        toast({
+          title: "Request Submitted",
+          description: "Zone admin will generate your payment receipt shortly.",
+        });
+      }
+      
       setSubmitting(false)
       setCapturedImage(null)
-      toast({
-        title: "Request Submitted",
-        description: type === 'public' ? "The authorities have been notified." : "Zone admin will generate your payment receipt shortly.",
-      })
+      setAddress("")
     }, 1500)
   }
 
@@ -107,50 +130,27 @@ export default function CitizenDashboard() {
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-3xl font-headline font-bold text-primary">Citizen Portal</h1>
-        <p className="text-muted-foreground">Submit cleaning requests and track progress in your area</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-headline font-bold text-primary">Citizen Portal</h1>
+          <p className="text-muted-foreground">Submit cleaning requests and track progress in your area</p>
+        </div>
+        <Card className="bg-primary/5 border-primary/20 shadow-none px-4 py-2">
+          <div className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-amber-500" />
+            <div>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">My Rewards</p>
+              <p className="text-xl font-headline font-bold text-primary">{currentUser?.rewardPoints || 0}</p>
+            </div>
+          </div>
+        </Card>
       </div>
 
-      <Tabs defaultValue="private" className="w-full">
+      <Tabs defaultValue="public" className="w-full">
         <TabsList className="grid w-full grid-cols-2 bg-secondary/50 h-12">
-          <TabsTrigger value="private" className="font-bold flex gap-2"><Home className="h-4 w-4" /> Private Service</TabsTrigger>
           <TabsTrigger value="public" className="font-bold flex gap-2" onClick={() => !capturedImage && getCameraPermission()}><Trash2 className="h-4 w-4" /> Public Complaint</TabsTrigger>
+          <TabsTrigger value="private" className="font-bold flex gap-2"><Home className="h-4 w-4" /> Private Service</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="private">
-          <Card className="border-none shadow-lg">
-            <CardHeader>
-              <CardTitle className="font-headline">Request Collection/Cleaning</CardTitle>
-              <CardDescription>Scheduled waste collection or cleaning for private premises</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Zone</Label>
-                  <Select><SelectTrigger><SelectValue placeholder="Select Zone" /></SelectTrigger><SelectContent><SelectItem value="z1">Zone 4 (Vaikunth Nagar)</SelectItem></SelectContent></Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Ward</Label>
-                  <Select><SelectTrigger><SelectValue placeholder="Select Ward" /></SelectTrigger><SelectContent><SelectItem value="w1">Ward 14</SelectItem></SelectContent></Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Area / Address</Label>
-                <Input placeholder="Enter your full address" />
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                className="w-full font-bold h-12 text-lg gap-2" 
-                onClick={() => handleSubmit('private')}
-                disabled={submitting}
-              >
-                {submitting ? "Processing..." : <><Send className="h-5 w-5" /> Submit Private Request</>}
-              </Button>
-            </CardFooter>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="public">
           <Card className="border-none shadow-lg">
@@ -158,19 +158,40 @@ export default function CitizenDashboard() {
               <CardTitle className="font-headline text-rose-600 flex items-center gap-2">
                 <Trash2 className="h-6 w-6" /> Report Public Issue
               </CardTitle>
-              <CardDescription>Flag overflows or leakages with photo proof</CardDescription>
+              <CardDescription>Take a photo and help us keep the city clean. Earn rewards for every report!</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Zone</Label>
+                  <Select value={selectedZone} onValueChange={setSelectedZone}>
+                    <SelectTrigger><SelectValue placeholder="Select Zone" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Zone 1 (Central)">Zone 1 (Central)</SelectItem>
+                      <SelectItem value="Zone 2 (Anna Nagar)">Zone 2 (Anna Nagar)</SelectItem>
+                      <SelectItem value="Zone 3 (Madurai West)">Zone 3 (Madurai West)</SelectItem>
+                      <SelectItem value="Zone 4 (Vaikunth Nagar)">Zone 4 (Vaikunth Nagar)</SelectItem>
+                      <SelectItem value="Zone 5 (Goripalayam)">Zone 5 (Goripalayam)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Issue Type</Label>
+                  <Select value={issueType} onValueChange={setIssueType}>
+                    <SelectTrigger><SelectValue placeholder="What is wrong?" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Overflowing Dustbin">Overflowing Dustbin</SelectItem>
+                      <SelectItem value="Drainage Leakage">Drainage Leakage</SelectItem>
+                      <SelectItem value="Water Leakage">Water Leakage</SelectItem>
+                      <SelectItem value="Littering">Littering on Street</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               <div className="space-y-2">
-                <Label>Issue Type</Label>
-                <Select>
-                  <SelectTrigger><SelectValue placeholder="What is wrong?" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="overflow">Dustbin Overflow</SelectItem>
-                    <SelectItem value="drainage">Drainage Leakage</SelectItem>
-                    <SelectItem value="water">Water Leakage</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Specific Location / Landmarks</Label>
+                <Input placeholder="Describe the exact location" value={address} onChange={e => setAddress(e.target.value)} />
               </div>
               
               <div className="space-y-2">
@@ -230,7 +251,57 @@ export default function CitizenDashboard() {
                 onClick={() => handleSubmit('public')}
                 disabled={submitting || (!capturedImage && hasCameraPermission !== false)}
               >
-                {submitting ? "Reporting..." : <><Send className="h-5 w-5" /> File Public Report</>}
+                {submitting ? "Reporting..." : <><Send className="h-5 w-5" /> File Public Report & Earn Rewards</>}
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="private">
+          <Card className="border-none shadow-lg">
+            <CardHeader>
+              <CardTitle className="font-headline">Request Private Service</CardTitle>
+              <CardDescription>Scheduled waste collection or cleaning for your premises</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Zone</Label>
+                  <Select value={selectedZone} onValueChange={setSelectedZone}>
+                    <SelectTrigger><SelectValue placeholder="Select Zone" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Zone 1 (Central)">Zone 1 (Central)</SelectItem>
+                      <SelectItem value="Zone 2 (Anna Nagar)">Zone 2 (Anna Nagar)</SelectItem>
+                      <SelectItem value="Zone 3 (Madurai West)">Zone 3 (Madurai West)</SelectItem>
+                      <SelectItem value="Zone 4 (Vaikunth Nagar)">Zone 4 (Vaikunth Nagar)</SelectItem>
+                      <SelectItem value="Zone 5 (Goripalayam)">Zone 5 (Goripalayam)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Ward</Label>
+                  <Select value={selectedWard} onValueChange={setSelectedWard}>
+                    <SelectTrigger><SelectValue placeholder="Select Ward" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Ward 1">Ward 1</SelectItem>
+                      <SelectItem value="Ward 2">Ward 2</SelectItem>
+                      <SelectItem value="Ward 3">Ward 3</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Full Address</Label>
+                <Input placeholder="Enter your full home/office address" value={address} onChange={e => setAddress(e.target.value)} />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                className="w-full font-bold h-12 text-lg gap-2" 
+                onClick={() => handleSubmit('private')}
+                disabled={submitting}
+              >
+                {submitting ? "Processing..." : <><Send className="h-5 w-5" /> Submit Private Request</>}
               </Button>
             </CardFooter>
           </Card>
@@ -256,7 +327,7 @@ export default function CitizenDashboard() {
                   <div className="flex-1">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-bold text-sm">{task.name}</p>
+                        <p className="font-bold text-sm truncate max-w-[150px]">{task.name}</p>
                         <p className="text-[10px] text-muted-foreground">{new Date(task.createdAt).toLocaleDateString()}</p>
                       </div>
                       <span className="text-[10px] font-bold text-muted-foreground uppercase">{task.status}</span>
@@ -284,15 +355,25 @@ export default function CitizenDashboard() {
 
         <Card className="border-none shadow-md bg-accent/10">
           <CardHeader>
-            <CardTitle className="font-headline text-xl text-primary">Local Efficiency</CardTitle>
-            <CardDescription>Zone 4 (Vaikunth Nagar)</CardDescription>
+            <CardTitle className="font-headline text-xl text-primary">Rewards Program</CardTitle>
+            <CardDescription>How to earn more points</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Cleaning Frequency</span>
-              <StatusBadge status="Green" />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span>Public Issue Report</span>
+                <span className="font-bold text-emerald-600">+50 Points</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span>Verification Photo</span>
+                <span className="font-bold text-emerald-600">+20 Points</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span>Successful Cleanup</span>
+                <span className="font-bold text-emerald-600">+100 Points</span>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">Your zone has a 98% response rate within the last 24 hours.</p>
+            <p className="text-xs text-muted-foreground pt-2 border-t">Points can be redeemed for property tax discounts and city services.</p>
           </CardContent>
         </Card>
       </div>

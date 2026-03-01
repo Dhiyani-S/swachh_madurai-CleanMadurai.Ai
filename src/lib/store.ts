@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 export type UserRole = 'Corporation Commissioner' | 'Ward Admin' | 'Zone Admin' | 'Worker' | 'Citizen';
@@ -13,12 +12,12 @@ export interface TeamMember {
 
 export interface User {
   id: string;
-  name: string; // Leader Name
+  name: string; // Leader Name or Citizen Name
   role: UserRole;
   wardId?: string;
   zoneId?: string;
   teamNumber?: string; // Display name like "Team [ID]"
-  rewardPoints?: number;
+  rewardPoints: number;
   members?: TeamMember[];
   age?: number;
   contactNumber?: string;
@@ -68,6 +67,7 @@ interface AppState {
   currentUser: User | null;
   tasks: Task[];
   teams: User[]; // List of worker teams in the zone
+  citizens: User[]; // Track citizens for rewards
   attendance: Record<string, TeamAttendance>;
   setCurrentUser: (user: User | null) => void;
   addTask: (task: Task) => void;
@@ -75,6 +75,7 @@ interface AppState {
   addTeam: (team: User) => void;
   updateTeam: (workerId: string, updates: Partial<User>) => void;
   setAttendance: (workerId: string, members: MemberAttendance[]) => void;
+  addCitizenRewards: (citizenId: string, points: number) => void;
 }
 
 const initialTeams: User[] = [
@@ -111,6 +112,7 @@ export const useStore = create<AppState>((set) => ({
     }
   ],
   teams: initialTeams,
+  citizens: [],
   attendance: {},
   setCurrentUser: (user) => set({ currentUser: user }),
   addTask: (task) => set((state) => ({ tasks: [task, ...state.tasks] })),
@@ -131,4 +133,14 @@ export const useStore = create<AppState>((set) => ({
       }
     }
   })),
+  addCitizenRewards: (citizenId, points) => set((state) => {
+    const isCurrentUser = state.currentUser?.id === citizenId;
+    const updatedUser = isCurrentUser && state.currentUser 
+      ? { ...state.currentUser, rewardPoints: (state.currentUser.rewardPoints || 0) + points }
+      : state.currentUser;
+      
+    return {
+      currentUser: updatedUser
+    };
+  }),
 }));
