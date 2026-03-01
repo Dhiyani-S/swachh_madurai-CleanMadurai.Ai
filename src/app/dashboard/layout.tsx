@@ -89,9 +89,9 @@ export default function DashboardLayout({
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden selection:bg-primary selection:text-white">
-      {/* Fixed Background Layer */}
+      {/* Fixed Background Layer with Higher Opacity */}
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-30 z-0 transition-opacity duration-1000" 
+        className="fixed inset-0 bg-cover bg-center opacity-50 z-0 transition-opacity duration-1000" 
         style={{ backgroundImage: `url(${maduraiBg})` }}
       />
       <div className="fixed inset-0 bg-gradient-to-br from-black/80 via-black/40 to-primary/10 z-1" />
@@ -146,7 +146,7 @@ export default function DashboardLayout({
           </header>
 
           <main className="flex-1 p-4 md:p-12 overflow-y-auto">
-            {/* Centered Content Wrapper */}
+            {/* Centered Content Wrapper with Glassmorphism */}
             <div className="max-w-6xl mx-auto w-full">
               <div className="bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md rounded-[2.5rem] shadow-2xl p-6 md:p-10 border border-white/20 min-h-[calc(100vh-10rem)]">
                 {children}
