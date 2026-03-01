@@ -89,10 +89,11 @@ export default function DashboardLayout({
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden selection:bg-primary selection:text-white">
-      {/* Fixed Background Layer with Higher Opacity */}
+      {/* Fixed Background Layer with High Opacity for Aerial Impact */}
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-50 z-0 transition-opacity duration-1000" 
+        className="fixed inset-0 bg-cover bg-center opacity-70 z-0 transition-opacity duration-1000" 
         style={{ backgroundImage: `url(${maduraiBg})` }}
+        data-ai-hint="madurai temple aerial"
       />
       <div className="fixed inset-0 bg-gradient-to-br from-black/80 via-black/40 to-primary/10 z-1" />
       

@@ -44,9 +44,9 @@ export default function LandingPage() {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-60 scale-105" 
+          className="absolute inset-0 bg-cover bg-center opacity-80 scale-105" 
           style={{ backgroundImage: `url(${maduraiBg})` }}
-          data-ai-hint="madurai temple"
+          data-ai-hint="madurai temple aerial"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20" />
         
@@ -120,17 +120,15 @@ export default function LandingPage() {
 
     addUser(newUser)
     toast({ title: "Success", description: "Account created! You can now sign in." })
-    // Switch to sign in tab
-    const signInTab = document.querySelector('[value="signin"]') as HTMLElement
-    if (signInTab) signInTab.click()
+    // Use state or a ref to switch tabs if needed, or simply let the user click
   }
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-70 scale-105" 
+        className="fixed inset-0 bg-cover bg-center opacity-80 scale-105" 
         style={{ backgroundImage: `url(${maduraiBg})` }}
-        data-ai-hint="madurai temple"
+        data-ai-hint="madurai temple aerial"
       />
       <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/40 to-primary/20" />
       
