@@ -46,7 +46,7 @@ export function DashboardSidebar() {
       { name: 'Task Board', icon: ClipboardList, href: '/dashboard/zone-admin/tasks' },
     ],
     'Worker': [
-      { name: 'My Tasks', icon: ClipboardList, href: '/dashboard/worker' },
+      { name: 'Tasks', icon: ClipboardList, href: '/dashboard/worker' },
       { name: 'Rewards', icon: Award, href: '/dashboard/worker/rewards' },
     ],
     'Citizen': [
