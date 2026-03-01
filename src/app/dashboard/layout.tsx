@@ -4,7 +4,7 @@ import { DashboardSidebar } from "@/components/dashboard/Sidebar"
 import { useStore } from "@/lib/store"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
-import { Bell, Search, User, Menu } from "lucide-react"
+import { Bell, Search, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { 
@@ -32,6 +32,8 @@ export default function DashboardLayout({
 
   if (!currentUser) return null
 
+  const isWorker = currentUser.role === 'Worker'
+
   return (
     <div className="flex min-h-screen bg-background">
       <DashboardSidebar />
@@ -41,10 +43,12 @@ export default function DashboardLayout({
             <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="h-6 w-6" />
             </Button>
-            <div className="relative w-full max-w-md hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search tasks, zones, wards..." className="pl-9 bg-secondary/30 border-none h-10" />
-            </div>
+            {!isWorker && (
+              <div className="relative w-full max-w-md hidden sm:block">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search tasks, zones, wards..." className="pl-9 bg-secondary/30 border-none h-10" />
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2 md:gap-4">
             <Button variant="ghost" size="icon" className="relative">
