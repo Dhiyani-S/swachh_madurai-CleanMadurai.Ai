@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-cleaning",
+      "description": "City workers cleaning a street in Madurai",
+      "imageUrl": "https://images.unsplash.com/photo-1615770877212-d0aaba1b1962?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjaXR5JTIwY2xlYW5pbmd8ZW58MHx8fHwxNzcyMzMyOTk5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "city cleaning"
+    },
+    {
+      "id": "dustbin-overflow",
+      "description": "An overflowing public dustbin",
+      "imageUrl": "https://images.unsplash.com/photo-1760035434908-143b5f5fa90b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxvdmVyZmxvd2luZyUyMGR1c3RiaW58ZW58MHx8fHwxNzcyMzMyOTk5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "overflowing dustbin"
+    },
+    {
+      "id": "waste-disposal",
+      "description": "Waste disposal processing unit",
+      "imageUrl": "https://images.unsplash.com/photo-1635605007233-f89705544846?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxyZWN5Y2xpbmclMjBwbGFudHxlbnwwfHx8fDE3NzIzMzI5OTl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "recycling plant"
+    }
+  ]
 }
