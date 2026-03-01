@@ -28,7 +28,9 @@ import {
   Zap,
   Eye,
   Settings2,
-  Fingerprint
+  Fingerprint,
+  TrendingUp,
+  XCircle
 } from "lucide-react"
 import { useStore, Task, User, TeamMember, SensorSubType } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
@@ -189,6 +191,18 @@ export default function ZoneAdminDashboard() {
     toast({ title: "Profile Updated", description: "Member details saved successfully." })
   }
 
+  // Calculate stats for each team
+  const teamPerformanceData = zoneTeams.map(team => {
+    const teamTasks = tasks.filter(t => t.assignedTo === team.id);
+    const completed = teamTasks.filter(t => t.status === 'Completed').length;
+    const incomplete = teamTasks.filter(t => t.status !== 'Completed').length;
+    return {
+      ...team,
+      completed,
+      incomplete
+    };
+  });
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -319,47 +333,79 @@ export default function ZoneAdminDashboard() {
         </TabsContent>
 
         <TabsContent value="performance" className="pt-6">
-          <Card className="border-none shadow-md">
-            <CardHeader>
-              <CardTitle>Team Wise Performance Comparison</CardTitle>
-              <CardDescription>Comparative metrics for all teams in {currentZone}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-8">
-                {zoneTeams.length === 0 ? (
-                   <div className="py-12 text-center text-muted-foreground">No teams active in this zone yet.</div>
-                ) : zoneTeams.map(team => (
-                  <div key={team.id} className="space-y-3 p-4 rounded-xl border bg-secondary/5">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
-                           {team.id.charAt(team.id.length - 1)}
-                         </div>
-                         <div>
-                           <p className="font-bold">{team.teamNumber}</p>
-                           <p className="text-xs text-muted-foreground">Lead: {team.name}</p>
-                         </div>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <div className="text-right">
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase">Reward Points</p>
-                          <p className="font-headline font-bold text-lg text-primary">{team.rewardPoints || 0} pts</p>
-                        </div>
-                        <StatusBadge status={(team.rewardPoints || 0) > 400 ? 'Green' : (team.rewardPoints || 0) > 300 ? 'Yellow' : 'Red'} />
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-[10px] font-bold uppercase text-muted-foreground">
-                        <span>Efficiency Level</span>
-                        <span>{Math.round(((team.rewardPoints || 0) / 600) * 100)}%</span>
-                      </div>
-                      <Progress value={((team.rewardPoints || 0) / 600) * 100} className="h-2" />
-                    </div>
+          <div className="grid grid-cols-1 gap-6">
+            <Card className="border-none shadow-md">
+              <CardHeader>
+                <CardTitle className="font-headline text-2xl text-primary flex items-center gap-2">
+                  <TrendingUp className="h-6 w-6" /> Team Performance Analysis
+                </CardTitle>
+                <CardDescription>Live tracking of task completion and rewards in {currentZone}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {teamPerformanceData.length === 0 ? (
+                  <div className="py-20 text-center text-muted-foreground italic">
+                    <Users className="h-12 w-12 mx-auto opacity-20 mb-4" />
+                    No team performance data available.
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                ) : (
+                  teamPerformanceData.map(team => (
+                    <div key={team.id} className="bg-secondary/20 rounded-2xl p-6 border group hover:border-primary/50 transition-all">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="flex items-center gap-4">
+                          <div className="h-14 w-14 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-headline text-xl font-bold">
+                            {team.id.charAt(team.id.length - 1).toUpperCase()}
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-primary">{team.teamNumber}</h3>
+                            <p className="text-sm text-muted-foreground">Lead: {team.name}</p>
+                            <div className="flex gap-2 mt-2">
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-white border">ID: {team.id}</span>
+                              <StatusBadge 
+                                status={team.rewardPoints && team.rewardPoints > 400 ? 'Green' : team.rewardPoints && team.rewardPoints > 200 ? 'Yellow' : 'Red'} 
+                                className="text-[9px]"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-8 px-6 md:border-l md:border-r border-slate-300">
+                          <div className="text-center">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Completed</p>
+                            <div className="flex items-center justify-center gap-1 text-emerald-600">
+                              <CheckCircle className="h-4 w-4" />
+                              <span className="text-2xl font-headline font-bold">{team.completed}</span>
+                            </div>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Incomplete</p>
+                            <div className="flex items-center justify-center gap-1 text-rose-500">
+                              <XCircle className="h-4 w-4" />
+                              <span className="text-2xl font-headline font-bold">{team.incomplete}</span>
+                            </div>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Rewards</p>
+                            <div className="flex items-center justify-center gap-1 text-primary">
+                              <Zap className="h-4 w-4 fill-current" />
+                              <span className="text-2xl font-headline font-bold">{team.rewardPoints || 0}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="w-full md:w-48 space-y-2">
+                          <div className="flex justify-between items-center text-[10px] font-bold uppercase">
+                            <span className="text-muted-foreground">Efficiency</span>
+                            <span className="text-primary">{Math.round((team.completed / (team.completed + team.incomplete || 1)) * 100)}%</span>
+                          </div>
+                          <Progress value={(team.completed / (team.completed + team.incomplete || 1)) * 100} className="h-2" />
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="teams" className="pt-6">
