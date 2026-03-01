@@ -7,15 +7,15 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Camera, Send, History, Trash2, Home, MapPin, CheckCircle, Clock, CreditCard, RefreshCw, Award } from "lucide-react"
+import { Camera, Send, History, Trash2, Home, MapPin, CheckCircle, Clock, CreditCard, RefreshCw, Award, Zap, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useStore, Task } from "@/lib/store"
-import { StatusBadge } from "@/components/dashboard/StatusBadge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { verifyPublicReport } from "@/ai/flows/verify-public-report-flow"
 
 export default function CitizenDashboard() {
   const { toast } = useToast()
-  const { tasks, addTask, updateTask, currentUser, addCitizenRewards } = useStore()
+  const { tasks, addTask, updateTask, currentUser, addCitizenRewards, users } = useStore()
   const [submitting, setSubmitting] = React.useState(false)
   const [selectedZone, setSelectedZone] = React.useState<string>("")
   const [selectedWard, setSelectedWard] = React.useState<string>("")
@@ -69,7 +69,7 @@ export default function CitizenDashboard() {
     getCameraPermission();
   };
 
-  const handleSubmit = (type: 'public' | 'private') => {
+  const handleSubmit = async (type: 'public' | 'private') => {
     if (!selectedZone || !address) {
       toast({
         variant: 'destructive',
@@ -79,43 +79,99 @@ export default function CitizenDashboard() {
       return;
     }
 
-    setSubmitting(true)
-    
-    const newTask: Task = {
-      id: `task-${Date.now()}`,
-      name: type === 'public' ? `Public Complaint: ${issueType || 'Waste Cleanup'}` : 'Private Collection Request',
-      location: address,
-      status: 'Pending',
-      type: type === 'public' ? 'Citizen Public' : 'Citizen Private',
-      wardId: selectedWard || 'Ward 1',
-      zoneId: selectedZone,
-      createdAt: new Date().toISOString(),
-      citizenId: currentUser?.id,
-      imageProof: type === 'public' ? capturedImage || undefined : undefined,
-      paymentStatus: type === 'private' ? 'Unpaid' : undefined
+    if (type === 'public' && !capturedImage) {
+      toast({
+        variant: 'destructive',
+        title: "Photo Required",
+        description: "Please capture a photo of the issue for AI verification.",
+      });
+      return;
     }
 
-    setTimeout(() => {
-      addTask(newTask)
-      
-      if (type === 'public') {
-        // Reward citizen for public reporting
-        addCitizenRewards(currentUser?.id || "", 50);
+    setSubmitting(true)
+
+    try {
+      if (type === 'public' && capturedImage) {
         toast({
-          title: "Report Submitted!",
-          description: "Thank you for being a responsible citizen. 50 reward points added to your profile!",
+          title: "AI Verifying...",
+          description: "Analyzing your report using CleanMadurai AI.",
+        });
+
+        const aiResult = await verifyPublicReport({
+          photoDataUri: capturedImage,
+          description: `Citizen reports ${issueType} at ${address}`
+        });
+
+        if (!aiResult.isValid) {
+          toast({
+            variant: 'destructive',
+            title: "Verification Failed",
+            description: `AI could not verify this as a legitimate waste issue. Reason: ${aiResult.reasoning}`,
+          });
+          setSubmitting(false);
+          return;
+        }
+
+        // Automatic Assignment Logic
+        const zoneWorkers = users.filter(u => u.role === 'Worker' && u.zoneId === selectedZone);
+        // Find worker with least tasks (simplified for prototype)
+        const suggestedWorker = zoneWorkers[0];
+
+        const newTask: Task = {
+          id: `task-${Date.now()}`,
+          name: `Public Complaint: ${issueType || 'Waste Cleanup'}`,
+          location: address,
+          status: suggestedWorker ? 'Pending' : 'Pending',
+          type: 'Citizen Public',
+          wardId: selectedWard || 'Ward 1',
+          zoneId: selectedZone,
+          createdAt: new Date().toISOString(),
+          citizenId: currentUser?.id,
+          imageProof: capturedImage,
+          assignedTo: suggestedWorker?.id
+        };
+
+        addTask(newTask);
+        addCitizenRewards(currentUser?.id || "", 50);
+
+        toast({
+          title: "AI Verified & Assigned!",
+          description: suggestedWorker 
+            ? `Report validated! Task automatically assigned to ${suggestedWorker.name}. +50 Rewards earned.`
+            : "Report validated! Task added to the zone queue. +50 Rewards earned.",
         });
       } else {
+        // Private Service Flow
+        const newTask: Task = {
+          id: `task-${Date.now()}`,
+          name: 'Private Collection Request',
+          location: address,
+          status: 'Pending',
+          type: 'Citizen Private',
+          wardId: selectedWard || 'Ward 1',
+          zoneId: selectedZone,
+          createdAt: new Date().toISOString(),
+          citizenId: currentUser?.id,
+          paymentStatus: 'Unpaid'
+        };
+        addTask(newTask);
         toast({
           title: "Request Submitted",
           description: "Zone admin will generate your payment receipt shortly.",
         });
       }
-      
-      setSubmitting(false)
-      setCapturedImage(null)
-      setAddress("")
-    }, 1500)
+
+      setAddress("");
+      setCapturedImage(null);
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: "System Error",
+        description: "AI verification service is currently offline. Please try again later.",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const handlePayment = (taskId: string) => {
@@ -156,9 +212,9 @@ export default function CitizenDashboard() {
           <Card className="border-none shadow-lg">
             <CardHeader>
               <CardTitle className="font-headline text-rose-600 flex items-center gap-2">
-                <Trash2 className="h-6 w-6" /> Report Public Issue
+                <Zap className="h-6 w-6 fill-rose-600" /> AI-Verified Reporting
               </CardTitle>
-              <CardDescription>Take a photo and help us keep the city clean. Earn rewards for every report!</CardDescription>
+              <CardDescription>Our AI instantly verifies your report and dispatches nearby teams. Earn 50 credits for valid issues!</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -195,7 +251,7 @@ export default function CitizenDashboard() {
               </div>
               
               <div className="space-y-2">
-                <Label>Photo Proof</Label>
+                <Label>Photo Proof (AI Analyzed)</Label>
                 <div className="relative rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center">
                   {capturedImage ? (
                     <img src={capturedImage} alt="Captured proof" className="w-full h-full object-cover" />
@@ -251,7 +307,11 @@ export default function CitizenDashboard() {
                 onClick={() => handleSubmit('public')}
                 disabled={submitting || (!capturedImage && hasCameraPermission !== false)}
               >
-                {submitting ? "Reporting..." : <><Send className="h-5 w-5" /> File Public Report & Earn Rewards</>}
+                {submitting ? (
+                  <><Loader2 className="h-5 w-5 animate-spin" /> Analyzing Report...</>
+                ) : (
+                  <><Send className="h-5 w-5" /> File AI Report & Earn Rewards</>
+                )}
               </Button>
             </CardFooter>
           </Card>
@@ -332,6 +392,11 @@ export default function CitizenDashboard() {
                       </div>
                       <span className="text-[10px] font-bold text-muted-foreground uppercase">{task.status}</span>
                     </div>
+                    {task.assignedTo && task.status !== 'Completed' && (
+                      <p className="text-[10px] text-primary font-bold mt-1 flex items-center gap-1">
+                        <Zap className="h-3 w-3" /> Auto-assigned to {users.find(u => u.id === task.assignedTo)?.name || 'Worker'}
+                      </p>
+                    )}
                     {task.paymentStatus === 'Unpaid' && (
                       <Button 
                         size="sm" 
@@ -361,7 +426,7 @@ export default function CitizenDashboard() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span>Public Issue Report</span>
+                <span>AI-Verified Public Report</span>
                 <span className="font-bold text-emerald-600">+50 Points</span>
               </div>
               <div className="flex items-center justify-between text-sm">
