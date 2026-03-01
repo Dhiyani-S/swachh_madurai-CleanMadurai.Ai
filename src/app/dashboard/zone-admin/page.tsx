@@ -55,7 +55,7 @@ export default function ZoneAdminDashboard() {
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false)
   const [isNewTeamModalOpen, setIsNewTeamModalOpen] = React.useState(false)
-  const [editingMember, setEditingMember] = React.useState<{ teamNumber: string, member: TeamMember } | null>(null)
+  const [editingMember, setEditingMember] = React.useState<{ workerId: string, member: TeamMember } | null>(null)
 
   // Auto-forwarding logic: Check tasks unassigned for > 30 mins
   React.useEffect(() => {
@@ -78,20 +78,20 @@ export default function ZoneAdminDashboard() {
     return () => clearInterval(interval)
   }, [zoneTasks, updateTask, toast])
 
-  const handleAssignTask = (taskId: string, teamNumber: string) => {
-    if (!teamNumber) return
+  const handleAssignTask = (taskId: string, workerId: string) => {
+    if (!workerId) return
     const task = zoneTasks.find(t => t.id === taskId)
     if (!task) return
 
     updateTask(taskId, { 
-      assignedTo: teamNumber, 
+      assignedTo: workerId, 
       status: 'Pending',
       paymentStatus: task.type === 'Citizen Private' ? 'Unpaid' : undefined
     })
     
     toast({
       title: "Task Assigned",
-      description: `Task allocated to ${teamNumber}. Citizen will be notified.`,
+      description: `Task allocated to ${workerId}. Citizen will be notified.`,
     })
   }
 
@@ -122,23 +122,28 @@ export default function ZoneAdminDashboard() {
   const handleCreateTeam = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
-    const teamNumber = fd.get('teamNumber') as string
-    const leaderName = fd.get('leaderName') as string
     const workerUserId = fd.get('workerUserId') as string
+    const leaderName = fd.get('leaderName') as string
+    const age = parseInt(fd.get('age') as string)
+    const contactNumber = fd.get('contact') as string
+    const address = fd.get('address') as string
 
     const newTeam: User = {
-      id: workerUserId || `team-${Date.now()}`,
+      id: workerUserId,
       name: leaderName,
       role: 'Worker',
-      teamNumber: `Team ${teamNumber}`,
+      teamNumber: `Team ${workerUserId}`,
       zoneId: currentZone,
       rewardPoints: 0,
-      members: []
+      members: [],
+      age,
+      contactNumber,
+      address
     }
 
     addTeam(newTeam)
     setIsNewTeamModalOpen(false)
-    toast({ title: "New Team Created", description: `${newTeam.teamNumber} is now active with ID: ${newTeam.id}` })
+    toast({ title: "New Team Created", description: `${newTeam.teamNumber} is now active.` })
   }
 
   const handleAddMember = (e: React.FormEvent<HTMLFormElement>) => {
@@ -155,9 +160,9 @@ export default function ZoneAdminDashboard() {
     }
 
     const updatedMembers = [...(selectedTeam.members || []), newMember]
-    updateTeam(selectedTeam.teamNumber!, { members: updatedMembers })
+    updateTeam(selectedTeam.id, { members: updatedMembers })
     setIsAddModalOpen(false)
-    toast({ title: "Member Added", description: `${newMember.name} joined ${selectedTeam.teamNumber}.` })
+    toast({ title: "Member Added", description: `${newMember.name} joined the team.` })
   }
 
   const handleEditMemberSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -165,7 +170,7 @@ export default function ZoneAdminDashboard() {
     if (!editingMember) return
     const fd = new FormData(e.currentTarget)
     
-    const team = teams.find(t => t.teamNumber === editingMember.teamNumber)
+    const team = teams.find(t => t.id === editingMember.workerId)
     if (!team) return
 
     const updatedMembers = team.members?.map(m => 
@@ -178,7 +183,7 @@ export default function ZoneAdminDashboard() {
       } : m
     )
 
-    updateTeam(editingMember.teamNumber, { members: updatedMembers })
+    updateTeam(editingMember.workerId, { members: updatedMembers })
     setIsEditModalOpen(false)
     setEditingMember(null)
     toast({ title: "Profile Updated", description: "Member details saved successfully." })
@@ -254,17 +259,12 @@ export default function ZoneAdminDashboard() {
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          {task.type === 'Citizen Public' && (
-                             <Button variant="ghost" size="icon" className="text-primary" title="Check Image Proof">
-                               <Eye className="h-4 w-4" />
-                             </Button>
-                          )}
                           <select 
                             className="text-xs p-2 border rounded-md bg-white shadow-sm outline-none focus:ring-2 focus:ring-primary/20"
                             onChange={(e) => handleAssignTask(task.id, e.target.value)}
                           >
                             <option value="">Assign Worker...</option>
-                            {zoneTeams.map(team => <option key={team.id} value={team.teamNumber}>{team.teamNumber}</option>)}
+                            {zoneTeams.map(team => <option key={team.id} value={team.id}>{team.id}</option>)}
                           </select>
                         </div>
                       </div>
@@ -306,7 +306,7 @@ export default function ZoneAdminDashboard() {
                             onChange={(e) => handleAssignTask(task.id, e.target.value)}
                           >
                             <option value="">Assign Worker...</option>
-                            {zoneTeams.map(team => <option key={team.id} value={team.teamNumber}>{team.teamNumber}</option>)}
+                            {zoneTeams.map(team => <option key={team.id} value={team.id}>{team.id}</option>)}
                           </select>
                         </div>
                       </div>
@@ -333,7 +333,7 @@ export default function ZoneAdminDashboard() {
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">
                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
-                           {team.teamNumber?.split(' ')[1]}
+                           {team.id.charAt(team.id.length - 1)}
                          </div>
                          <div>
                            <p className="font-bold">{team.teamNumber}</p>
@@ -367,27 +367,29 @@ export default function ZoneAdminDashboard() {
             {zoneTeams.length === 0 ? (
                <div className="col-span-full py-20 text-center space-y-4">
                   <Users className="h-12 w-12 mx-auto text-muted-foreground/30" />
-                  <p className="text-muted-foreground">No teams registered. Create your first team using the "New Team" button above.</p>
+                  <p className="text-muted-foreground">No teams registered.</p>
                </div>
             ) : zoneTeams.map(team => (
               <Card key={team.id} className="border-none shadow-md flex flex-col group hover:ring-2 hover:ring-primary/20 transition-all">
                 <CardHeader className="pb-3 border-b bg-secondary/10">
                   <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg font-headline text-primary">{team.teamNumber}</CardTitle>
-                      <CardDescription className="flex items-center gap-1"><UserCircle className="h-3 w-3" /> Leader: {team.name}</CardDescription>
-                      <div className="mt-1 flex items-center gap-1 text-[10px] font-bold text-muted-foreground bg-white w-fit px-1.5 py-0.5 rounded border">
-                        <Fingerprint className="h-3 w-3" /> ID: {team.id}
+                    <div className="space-y-1">
+                      <CardTitle className="text-lg font-headline text-primary">Leader: {team.name}</CardTitle>
+                      <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
+                        <span className="font-bold text-primary/80">Age: {team.age}</span>
+                        <span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {team.contactNumber}</span>
+                        <span className="flex items-center gap-1"><MapIcon className="h-3 w-3" /> {team.address}</span>
+                      </div>
+                      <div className="mt-2 flex items-center gap-1 text-[10px] font-bold text-muted-foreground bg-white w-fit px-1.5 py-0.5 rounded border">
+                        <Fingerprint className="h-3 w-3" /> User ID: {team.id}
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold" onClick={() => {
-                        setSelectedTeam(team)
-                        setIsAddModalOpen(true)
-                      }}>
-                        <Plus className="h-3 w-3 mr-1" /> Member
-                      </Button>
-                    </div>
+                    <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold" onClick={() => {
+                      setSelectedTeam(team)
+                      setIsAddModalOpen(true)
+                    }}>
+                      <Plus className="h-3 w-3 mr-1" /> Member
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-3 flex-1">
@@ -410,7 +412,7 @@ export default function ZoneAdminDashboard() {
                       </div>
                       <div className="flex gap-1 opacity-0 group-hover/member:opacity-100 transition-opacity">
                         <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => {
-                          setEditingMember({ teamNumber: team.teamNumber!, member })
+                          setEditingMember({ workerId: team.id, member })
                           setIsEditModalOpen(true)
                         }}>
                           <Edit2 className="h-3.5 w-3.5" />
@@ -421,7 +423,7 @@ export default function ZoneAdminDashboard() {
                 </CardContent>
                 <CardFooter className="pt-0 pb-4">
                    <Button variant="ghost" className="w-full text-[10px] font-bold text-muted-foreground h-8 hover:text-primary">
-                     <Settings2 className="h-3 w-3 mr-1" /> Manage Team Settings
+                     <Settings2 className="h-3 w-3 mr-1" /> Team Controls
                    </Button>
                 </CardFooter>
               </Card>
@@ -432,27 +434,35 @@ export default function ZoneAdminDashboard() {
 
       {/* New Team Modal */}
       <Dialog open={isNewTeamModalOpen} onOpenChange={setIsNewTeamModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Register New Team</DialogTitle>
-            <DialogDescription>Create a new worker team for {currentZone}</DialogDescription>
+            <DialogTitle>Register New Team Leader</DialogTitle>
+            <DialogDescription>Setup a new team for {currentZone}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateTeam} className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label>Worker User ID (Login Username)</Label>
+              <Input name="workerUserId" placeholder="e.g. worker-101" required />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Team Number ID</Label>
-                <Input name="teamNumber" placeholder="e.g. 15" required />
+                <Label>Leader Name</Label>
+                <Input name="leaderName" placeholder="Full Name" required />
               </div>
               <div className="space-y-2">
-                <Label>Worker User ID (Login ID)</Label>
-                <Input name="workerUserId" placeholder="e.g. worker-15" required />
+                <Label>Age</Label>
+                <Input name="age" type="number" placeholder="Leader Age" required />
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Team Leader Name</Label>
-              <Input name="leaderName" placeholder="Full Name of Team Leader" required />
+              <Label>Leader Phone Number</Label>
+              <Input name="contact" placeholder="987xxxxxxx" required />
             </div>
-            <Button type="submit" className="w-full font-bold h-11">Create Active Team</Button>
+            <div className="space-y-2">
+              <Label>Leader Address</Label>
+              <Input name="address" placeholder="Full residential address" required />
+            </div>
+            <Button type="submit" className="w-full font-bold h-11">Register Team</Button>
           </form>
         </DialogContent>
       </Dialog>
@@ -461,7 +471,7 @@ export default function ZoneAdminDashboard() {
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Team Member to {selectedTeam?.teamNumber}</DialogTitle>
+            <DialogTitle>Add Team Member</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddMember} className="space-y-4 pt-4">
             <div className="grid grid-cols-2 gap-4">
@@ -475,14 +485,14 @@ export default function ZoneAdminDashboard() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Contact Number</Label>
+              <Label>Phone Number</Label>
               <Input name="contact" placeholder="987xxxxxxx" required />
             </div>
             <div className="space-y-2">
               <Label>Address</Label>
               <Input name="address" placeholder="Residential address" required />
             </div>
-            <Button type="submit" className="w-full font-bold">Register Member</Button>
+            <Button type="submit" className="w-full font-bold">Add Member</Button>
           </form>
         </DialogContent>
       </Dialog>
@@ -491,7 +501,7 @@ export default function ZoneAdminDashboard() {
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Member: {editingMember?.member.name}</DialogTitle>
+            <DialogTitle>Edit Member Details</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleEditMemberSubmit} className="space-y-4 pt-4">
             <div className="grid grid-cols-2 gap-4">
@@ -505,7 +515,7 @@ export default function ZoneAdminDashboard() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Contact Number</Label>
+              <Label>Phone Number</Label>
               <Input name="contact" defaultValue={editingMember?.member.contactNumber} required />
             </div>
             <div className="space-y-2">

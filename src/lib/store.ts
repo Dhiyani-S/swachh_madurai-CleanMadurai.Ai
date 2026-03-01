@@ -13,13 +13,16 @@ export interface TeamMember {
 
 export interface User {
   id: string;
-  name: string;
+  name: string; // Leader Name
   role: UserRole;
   wardId?: string;
   zoneId?: string;
-  teamNumber?: string;
+  teamNumber?: string; // Display name like "Team [ID]"
   rewardPoints?: number;
   members?: TeamMember[];
+  age?: number;
+  contactNumber?: string;
+  address?: string;
 }
 
 export type TaskType = 'Sensor' | 'Citizen Public' | 'Citizen Private';
@@ -32,7 +35,7 @@ export interface Task {
   status: 'Pending' | 'In Progress' | 'Partially Completed' | 'Completed';
   type: TaskType;
   subType?: SensorSubType;
-  assignedTo?: string; // Team Number
+  assignedTo?: string; // Worker User ID
   wardId: string;
   zoneId: string;
   createdAt: string;
@@ -70,32 +73,24 @@ interface AppState {
   addTask: (task: Task) => void;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
   addTeam: (team: User) => void;
-  updateTeam: (teamNumber: string, updates: Partial<User>) => void;
-  setAttendance: (teamNumber: string, members: MemberAttendance[]) => void;
+  updateTeam: (workerId: string, updates: Partial<User>) => void;
+  setAttendance: (workerId: string, members: MemberAttendance[]) => void;
 }
 
 const initialTeams: User[] = [
   {
-    id: 'team-04',
-    name: 'Karthik (Lead)',
+    id: 'worker-04',
+    name: 'Karthik',
     role: 'Worker',
-    teamNumber: 'Team 04',
+    teamNumber: 'Team worker-04',
     zoneId: 'Zone 4 (Vaikunth Nagar)',
     rewardPoints: 450,
+    age: 28,
+    contactNumber: '9876543210',
+    address: '12, West St, Madurai',
     members: [
-      { id: 'm1', name: 'Karthik', age: 28, contactNumber: '9876543210', address: '12, West St, Madurai' },
-      { id: 'm2', name: 'Siva', age: 32, contactNumber: '9876543211', address: '45, East St, Madurai' }
-    ]
-  },
-  {
-    id: 'team-08',
-    name: 'Meena (Lead)',
-    role: 'Worker',
-    teamNumber: 'Team 08',
-    zoneId: 'Zone 4 (Vaikunth Nagar)',
-    rewardPoints: 320,
-    members: [
-      { id: 'm3', name: 'Meena', age: 26, contactNumber: '9876543212', address: '7, South St, Madurai' }
+      { id: 'm1', name: 'Siva', age: 32, contactNumber: '9876543211', address: '45, East St, Madurai' },
+      { id: 'm2', name: 'Meena', age: 26, contactNumber: '9876543212', address: '7, South St, Madurai' }
     ]
   }
 ];
@@ -123,14 +118,14 @@ export const useStore = create<AppState>((set) => ({
     tasks: state.tasks.map((t) => t.id === taskId ? { ...t, ...updates } : t)
   })),
   addTeam: (team) => set((state) => ({ teams: [...state.teams, team] })),
-  updateTeam: (teamNumber, updates) => set((state) => ({
-    teams: state.teams.map((t) => t.teamNumber === teamNumber ? { ...t, ...updates } : t)
+  updateTeam: (workerId, updates) => set((state) => ({
+    teams: state.teams.map((t) => t.id === workerId ? { ...t, ...updates } : t)
   })),
-  setAttendance: (teamNumber, members) => set((state) => ({
+  setAttendance: (workerId, members) => set((state) => ({
     attendance: {
       ...state.attendance,
-      [teamNumber]: {
-        teamNumber,
+      [workerId]: {
+        teamNumber: workerId,
         date: new Date().toLocaleDateString(),
         members
       }
