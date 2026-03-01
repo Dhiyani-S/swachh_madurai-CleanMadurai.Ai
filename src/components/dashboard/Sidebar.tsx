@@ -31,6 +31,10 @@ export function DashboardSidebar() {
 
   // Mapping routes for each role with robust normalization
   const roleRoutes: Record<string, Array<{ name: string; icon: any; href: string }>> = {
+    'commissioner': [
+      { name: t.performance, icon: LayoutDashboard, href: '/dashboard/commissioner' },
+      { name: 'Analytics', icon: ClipboardList, href: '/dashboard/commissioner/reports' },
+    ],
     'corporation commissioner': [
       { name: t.performance, icon: LayoutDashboard, href: '/dashboard/commissioner' },
       { name: 'Analytics', icon: ClipboardList, href: '/dashboard/commissioner/reports' },
@@ -53,7 +57,7 @@ export function DashboardSidebar() {
     ],
   }
 
-  // Fallback for case sensitivity or slight name mismatches
+  // Normalize current role for safe mapping
   const currentRole = currentUser?.role?.toLowerCase() || '';
   const routes = roleRoutes[currentRole] || roleRoutes[currentRole.replace('_', ' ')] || [];
 

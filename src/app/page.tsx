@@ -86,7 +86,12 @@ export default function LandingPage() {
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
-    const existingUser = users.find(u => u.id === userId.trim() && u.password === password && (u.role === role))
+    // Normalizing role lookup for robustness
+    const existingUser = users.find(u => 
+      u.id === userId.trim() && 
+      u.password === password && 
+      (u.role.toLowerCase().replace(' ', '_') === role.toLowerCase().replace(' ', '_'))
+    )
     if (!existingUser) {
       toast({ title: t.signIn + " Failed", description: "Invalid credentials or unauthorized role.", variant: "destructive" })
       return
@@ -116,7 +121,7 @@ export default function LandingPage() {
 
     const newUser: User = {
       id: signUpId,
-      name: signUpId,
+      name: signUpId, // Use ID as name if field is removed
       password: signUpPassword,
       role: signUpRole,
       zone: signUpRole === 'zone_admin' ? signUpZone : undefined,
@@ -127,11 +132,9 @@ export default function LandingPage() {
     
     toast({ title: "Success", description: "Account created successfully. Please Sign In." })
     
-    // Clear fields
     setSignUpId('')
     setSignUpPassword('')
     setSignUpZone('')
-    
     setIsSubmitting(false)
   }
 
