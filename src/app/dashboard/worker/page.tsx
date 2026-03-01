@@ -28,12 +28,14 @@ import {
   AlertCircle,
   Info,
   UserCheck,
-  UserX
+  UserX,
+  ArrowRight
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function WorkerDashboard() {
   const { currentUser, tasks, updateTask, attendance, setAttendance } = useStore()
@@ -43,18 +45,26 @@ export default function WorkerDashboard() {
   const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null)
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = React.useState(false)
   const [attendanceState, setAttendanceState] = React.useState<MemberAttendance[]>([])
+  const [forwardedMessage, setForwardedMessage] = React.useState<string | null>(null)
 
   const today = new Date().toLocaleDateString()
   const currentTeamAttendance = currentUser?.teamNumber ? attendance[currentUser.teamNumber] : null
   const hasMarkedAttendance = currentTeamAttendance?.date === today
 
   React.useEffect(() => {
-    // Only trigger if attendance hasn't been marked for TODAY
     if (!hasMarkedAttendance && currentUser?.teamMembers) {
       setAttendanceState(currentUser.teamMembers.map(m => ({ name: m, status: 'Present' })))
       setIsAttendanceModalOpen(true)
     }
   }, [hasMarkedAttendance, currentUser])
+
+  const triggerForwarding = (taskName: string) => {
+    setForwardedMessage(`this taskk is forward to ather team: ${taskName}`);
+    // Keep message for 5 minutes
+    setTimeout(() => {
+      setForwardedMessage(null);
+    }, 5 * 60 * 1000);
+  };
 
   const handleAttendanceSubmit = () => {
     if (currentUser?.teamNumber) {
@@ -68,6 +78,7 @@ export default function WorkerDashboard() {
   }
 
   const handleTaskAction = (taskId: string, action: 'Accept' | 'Reject') => {
+    const task = tasks.find(t => t.id === taskId);
     if (action === 'Accept') {
       updateTask(taskId, { status: 'In Progress', assignedTo: currentUser?.teamNumber })
       toast({
@@ -75,8 +86,25 @@ export default function WorkerDashboard() {
         description: "Proceed to the location to begin work.",
       })
     } else {
+      // Reject: Resets task and simulates forwarding
       updateTask(taskId, { status: 'Pending', assignedTo: undefined })
+      if (task) triggerForwarding(task.name);
+      toast({
+        title: "Task Rejected",
+        description: "The task has been released for other teams.",
+      })
     }
+  }
+
+  const simulateTimeout = (taskId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    updateTask(taskId, { status: 'Pending', assignedTo: undefined });
+    if (task) triggerForwarding(task.name);
+    toast({
+      variant: "destructive",
+      title: "Response Time Expired",
+      description: "30 minutes exceeded. Task forwarded to another team.",
+    });
   }
 
   const handleMarkAsFinished = (taskId: string) => {
@@ -99,6 +127,18 @@ export default function WorkerDashboard() {
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
+      {/* Forwarded Message Notification */}
+      {forwardedMessage && (
+        <Alert className="bg-amber-50 border-amber-200 text-amber-800 animate-in fade-in slide-in-from-top-4">
+          <ArrowRight className="h-4 w-4" />
+          <AlertTitle className="font-bold">Task Forwarded</AlertTitle>
+          <AlertDescription>
+            {forwardedMessage}
+            <p className="text-[10px] mt-1 opacity-70 italic">(This message will persist for 5 minutes)</p>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Attendance Check Modal */}
       <Dialog open={isAttendanceModalOpen} onOpenChange={setIsAttendanceModalOpen}>
         <DialogContent className="sm:max-w-md">
@@ -250,7 +290,7 @@ export default function WorkerDashboard() {
 
       <div className="space-y-4">
         <h3 className="font-headline font-bold text-lg flex items-center gap-2">
-          <Clock className="h-5 w-5 text-primary" /> Active Tasks
+          <Clock className="h-5 w-5 text-primary" /> Tasks
         </h3>
         {tasks.filter(t => t.status !== 'Completed').length === 0 ? (
           <div className="text-center py-12 bg-secondary/20 rounded-xl border border-dashed">
@@ -284,8 +324,18 @@ export default function WorkerDashboard() {
               </CardHeader>
               <CardContent>
                 {task.status === 'Pending' && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 p-2 rounded-lg">
-                    <Timer className="h-3 w-3" /> Must respond within 30 minutes
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 p-2 rounded-lg">
+                      <Timer className="h-3 w-3" /> Must respond within 30 minutes
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-[10px] text-muted-foreground hover:text-destructive h-6"
+                      onClick={() => simulateTimeout(task.id)}
+                    >
+                      (Simulate 30m No Response)
+                    </Button>
                   </div>
                 )}
                 {task.status === 'In Progress' && (
@@ -343,7 +393,6 @@ export default function WorkerDashboard() {
                       </DialogHeader>
                       <div className="flex flex-col items-center justify-center gap-6 py-8">
                         <div className="p-4 bg-white rounded-2xl border shadow-inner">
-                          {/* Placeholder for QR code */}
                           <div className="w-48 h-48 bg-slate-100 flex items-center justify-center border-4 border-slate-200">
                              <QrCode className="h-24 w-24 text-primary opacity-50" />
                           </div>
