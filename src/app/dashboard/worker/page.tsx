@@ -83,7 +83,7 @@ export default function WorkerDashboard() {
     updateTask(taskId, { status: 'Partially Completed' })
     toast({
       title: "Work Recorded",
-      description: "Work marked as finished. Please present your profile QR for final verification.",
+      description: "Work marked as finished. Please show your team QR at the disposal site for final verification.",
     })
   }
 
@@ -93,7 +93,7 @@ export default function WorkerDashboard() {
     setSelectedTaskId(null)
     toast({
       title: "Verification Successful",
-      description: "The authority has scanned your QR. Task fully completed!",
+      description: "Disposal site scanner verified your team. Task fully completed!",
     })
   }
 
@@ -210,7 +210,7 @@ export default function WorkerDashboard() {
         <Card className="border-none bg-secondary/20 shadow-sm">
           <CardHeader className="py-4 flex flex-row items-center justify-between border-b bg-secondary/10">
             <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" /> Team Attendance Status
+              <Users className="h-4 w-4 text-primary" /> Team Members & Attendance
             </CardTitle>
             {hasMarkedAttendance ? (
                <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 uppercase">
@@ -298,10 +298,10 @@ export default function WorkerDashboard() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 text-sm font-medium text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200">
                       <AlertCircle className="h-4 w-4" />
-                      Pending External Verification
+                      Pending Disposal Verification
                     </div>
                     <p className="text-xs text-muted-foreground px-1">
-                      Please present your team QR code to the on-site inspector or sensor terminal to finalize the task.
+                      Your team QR is now active for this task. Proceed to a nearby disposal terminal to finalize.
                     </p>
                   </div>
                 )}
@@ -335,10 +335,10 @@ export default function WorkerDashboard() {
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
                         <DialogTitle className="font-headline flex items-center gap-2">
-                          <QrCode className="h-5 w-5 text-primary" /> Task Verification QR
+                          <QrCode className="h-5 w-5 text-primary" /> Team Verification QR
                         </DialogTitle>
                         <DialogDescription>
-                          Show this code to the authority at <strong>{task.location}</strong>.
+                          show this qr to the near by disposal place
                         </DialogDescription>
                       </DialogHeader>
                       <div className="flex flex-col items-center justify-center gap-6 py-8">
@@ -359,7 +359,7 @@ export default function WorkerDashboard() {
                           variant="outline"
                           className="w-full h-10 text-xs font-bold"
                         >
-                          Simulate External Scan (Prototype only)
+                          Simulate Terminal Scan (Prototype only)
                         </Button>
                       </div>
                     </DialogContent>
