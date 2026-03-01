@@ -1,13 +1,13 @@
+
 "use client"
 
 import { DashboardSidebar } from "@/components/dashboard/Sidebar"
 import { useStore } from "@/lib/store"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useRouter, usePathname } from "next/navigation"
+import { useEffect, useState, useMemo } from "react"
 import { Menu, Globe, Wifi, WifiOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { translations } from "@/lib/translations"
-import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { 
   DropdownMenu, 
@@ -26,6 +26,7 @@ export default function DashboardLayout({
 }) {
   const { currentUser, language, setLanguage, setCurrentUser } = useStore()
   const router = useRouter()
+  const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
   const [isOnline, setIsOnline] = useState(true)
 
@@ -49,20 +50,32 @@ export default function DashboardLayout({
     }
   }, [currentUser, router])
 
+  // Unique background for each page
+  const backgroundImage = useMemo(() => {
+    if (pathname.includes('/commissioner')) {
+      return PlaceHolderImages.find(img => img.id === 'madurai-temple-bg')?.imageUrl;
+    } else if (pathname.includes('/ward-admin') || pathname.includes('/zone-admin')) {
+      return PlaceHolderImages.find(img => img.id === 'madurai-temple-tower')?.imageUrl;
+    } else if (pathname.includes('/worker')) {
+      return PlaceHolderImages.find(img => img.id === 'madurai-city-clean')?.imageUrl;
+    } else if (pathname.includes('/citizen')) {
+      return PlaceHolderImages.find(img => img.id === 'madurai-teppakulam')?.imageUrl;
+    }
+    return PlaceHolderImages.find(img => img.id === 'madurai-temple-bg')?.imageUrl;
+  }, [pathname]);
+
   if (!mounted || !currentUser) return null
 
   const t = translations[language || 'en'];
-  const templeBg = PlaceHolderImages.find(img => img.id === 'madurai-temple-bg')?.imageUrl
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
-      {/* High-Visibility Background Layer */}
+      {/* High-Visibility Dynamic Background Layer */}
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-100 z-0 scale-100 transition-transform duration-[60s] ease-linear" 
-        style={{ backgroundImage: `url(${templeBg})` }}
-        data-ai-hint="madurai temple aerial"
+        className="fixed inset-0 bg-cover bg-center opacity-100 z-0 scale-100 transition-all duration-1000 ease-in-out" 
+        style={{ backgroundImage: `url(${backgroundImage})` }}
       />
-      <div className="fixed inset-0 bg-black/10 z-[1]" />
+      <div className="fixed inset-0 bg-black/20 z-[1] backdrop-blur-[1px]" />
       
       <div className="relative z-10 flex min-h-screen">
         {/* Sidebar with Glass Effect */}
@@ -120,7 +133,7 @@ export default function DashboardLayout({
           {/* Centered App Layout with Maximum Transparency */}
           <main className="flex-1 overflow-y-auto p-4 md:p-12 flex justify-center items-start">
             <div className="max-w-6xl w-full">
-              <div className="bg-white/70 dark:bg-zinc-950/40 backdrop-blur-3xl rounded-[4rem] shadow-[0_0_120px_rgba(0,0,0,0.4)] border border-white/10 p-6 md:p-10 min-h-[70vh] transition-all animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="bg-white/70 dark:bg-zinc-950/40 backdrop-blur-3xl rounded-[3rem] shadow-[0_0_120px_rgba(0,0,0,0.5)] border border-white/20 p-6 md:p-10 min-h-[75vh] transition-all animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {children}
               </div>
             </div>

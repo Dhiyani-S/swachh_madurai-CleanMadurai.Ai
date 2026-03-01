@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -35,21 +36,20 @@ export default function LandingPage() {
 
   if (!mounted) return null
 
-  const templeBg = PlaceHolderImages.find(img => img.id === 'madurai-temple-bg')?.imageUrl
+  const teppakulamBg = PlaceHolderImages.find(img => img.id === 'madurai-teppakulam')?.imageUrl
 
   if (!language) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-100 scale-100 transition-transform duration-[60s] ease-linear" 
-          style={{ backgroundImage: `url(${templeBg})` }}
-          data-ai-hint="madurai temple aerial"
+          style={{ backgroundImage: `url(${teppakulamBg})` }}
         />
-        <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
         
         <div className="max-w-md w-full space-y-8 animate-in fade-in zoom-in-95 duration-700 relative z-10">
           <div className="flex flex-col items-center gap-6 mb-12">
-            <div className="h-28 w-28 bg-primary rounded-[2.5rem] flex items-center justify-center shadow-[0_0_60px_rgba(255,165,0,0.4)] border border-white/20">
+            <div className="h-28 w-28 bg-primary rounded-[2.5rem] flex items-center justify-center shadow-[0_0_60px_rgba(255,165,0,0.6)] border border-white/20">
               <Recycle className="h-14 w-14 text-white animate-pulse" />
             </div>
             <div className="space-y-2">
@@ -58,7 +58,7 @@ export default function LandingPage() {
             </div>
           </div>
           
-          <Card className="border-white/20 shadow-2xl p-8 rounded-[3.5rem] bg-black/30 backdrop-blur-3xl border-2">
+          <Card className="border-white/20 shadow-2xl p-8 rounded-[3.5rem] bg-black/40 backdrop-blur-3xl border-2">
             <h2 className="text-2xl font-bold mb-8 text-white flex items-center justify-center gap-3 font-headline">
               <Globe className="h-6 w-6 text-primary" /> மொழியைத் தேர்ந்தெடுக்கவும்
             </h2>
@@ -105,7 +105,6 @@ export default function LandingPage() {
       toast({ title: "Registration Failed", description: "User ID already exists.", variant: "destructive" })
       return
     }
-    // Using regId as the name for simplicity since Full Name was removed
     const newUser = { id: regId, password: regPassword, name: regId, role: regRole, zoneId: regZone || undefined, rewardPoints: 0 };
     addUser(newUser)
     toast({ title: "Success", description: "Account created! You can now sign in." })
@@ -115,10 +114,9 @@ export default function LandingPage() {
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
       <div 
         className="fixed inset-0 bg-cover bg-center opacity-100 scale-100 transition-transform duration-[60s] ease-linear z-0" 
-        style={{ backgroundImage: `url(${templeBg})` }}
-        data-ai-hint="madurai temple aerial"
+        style={{ backgroundImage: `url(${teppakulamBg})` }}
       />
-      <div className="fixed inset-0 bg-black/20 z-[1]" />
+      <div className="fixed inset-0 bg-black/30 z-[1] backdrop-blur-[1px]" />
       
       <div className="absolute top-0 right-0 p-8 z-20">
         <Button variant="ghost" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} className="text-white hover:bg-white/10 gap-2 font-bold backdrop-blur-md bg-white/10 border border-white/20">
@@ -137,7 +135,7 @@ export default function LandingPage() {
           
           <div className="space-y-4">
             <h2 className="text-7xl font-headline font-bold leading-none text-white drop-shadow-2xl">{t.tagline}</h2>
-            <p className="text-2xl text-white/90 max-w-lg bg-black/20 backdrop-blur-3xl p-8 rounded-[3.5rem] border border-white/20 shadow-2xl">{t.taglineFull}</p>
+            <p className="text-2xl text-white/90 max-w-lg bg-black/20 backdrop-blur-3xl p-8 rounded-[3rem] border border-white/20 shadow-2xl">{t.taglineFull}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-6">
@@ -147,7 +145,7 @@ export default function LandingPage() {
               { label: "Zones Connected", value: "5/5", icon: MapPin },
               { label: "Efficiency Rate", value: "94%", icon: Trophy }
             ].map((stat, i) => (
-              <div key={i} className="p-6 bg-black/40 rounded-[2.5rem] border border-white/10 space-y-1 group hover:bg-black/60 transition-all backdrop-blur-md shadow-2xl">
+              <div key={i} className="p-6 bg-black/50 rounded-[2.5rem] border border-white/10 space-y-1 group hover:bg-black/70 transition-all backdrop-blur-md shadow-2xl">
                 <stat.icon className="h-6 w-6 text-primary mb-2" />
                 <p className="text-4xl font-headline font-bold text-white">{stat.value}</p>
                 <p className="text-xs text-primary font-bold uppercase tracking-wider">{stat.label}</p>
@@ -157,7 +155,7 @@ export default function LandingPage() {
         </div>
 
         <div className="w-full max-w-md mx-auto">
-          <Card className="border-white/10 shadow-[0_0_120px_rgba(0,0,0,0.6)] rounded-[4rem] bg-black/20 backdrop-blur-[60px] overflow-hidden border-2">
+          <Card className="border-white/10 shadow-[0_0_120px_rgba(0,0,0,0.7)] rounded-[4rem] bg-black/30 backdrop-blur-[60px] overflow-hidden border-2">
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-white/5 p-2 h-20 rounded-none border-b border-white/10">
                 <TabsTrigger value="signin" className="font-bold rounded-[2.5rem] text-white text-lg data-[state=active]:bg-primary transition-all">{t.signIn}</TabsTrigger>
@@ -200,8 +198,8 @@ export default function LandingPage() {
                   <form onSubmit={handleSignUp} className="space-y-6">
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label className="text-white/80 font-bold ml-1">Desired User ID</Label>
-                        <Input placeholder="Unique ID" className="h-16 bg-black/40 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md" required value={regId} onChange={e => setRegId(e.target.value)} />
+                        <Label className="text-white/80 font-bold ml-1">User ID</Label>
+                        <Input placeholder="Enter ID" className="h-16 bg-black/40 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md" required value={regId} onChange={e => setRegId(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white/80 font-bold ml-1">Password</Label>
