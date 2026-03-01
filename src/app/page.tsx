@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -24,7 +25,9 @@ export default function LandingPage() {
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (role === 'Worker' && !zone) {
+    const needsZone = role === 'Worker' || role === 'Zone Admin'
+
+    if (needsZone && !zone) {
       toast({
         title: "Zone Selection Required",
         description: "Please select your assigned zone to continue.",
@@ -36,10 +39,10 @@ export default function LandingPage() {
     // Simulated auth
     const user: User = {
       id: userId || "user-123",
-      name: userId || (role === 'Worker' ? "Team Leader" : "User"),
+      name: userId || (role === 'Worker' ? "Team Leader" : role === 'Zone Admin' ? "Zone Administrator" : "User"),
       role: role,
       rewardPoints: role === 'Worker' ? 450 : 0,
-      zoneId: role === 'Worker' ? zone : undefined,
+      zoneId: needsZone ? zone : undefined,
       teamNumber: role === 'Worker' ? "Team 04" : undefined,
       teamMembers: role === 'Worker' ? ["Karthik (Lead)", "Siva", "Meena", "Arjun"] : undefined
     }
@@ -109,7 +112,7 @@ export default function LandingPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  {role === 'Worker' && (
+                  {(role === 'Worker' || role === 'Zone Admin') && (
                     <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
                       <Label htmlFor="signin-zone">Assigned Zone</Label>
                       <Select value={zone} onValueChange={setZone}>
@@ -165,7 +168,7 @@ export default function LandingPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  {role === 'Worker' && (
+                  {(role === 'Worker' || role === 'Zone Admin') && (
                     <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
                       <Label htmlFor="signup-zone">Assigned Zone</Label>
                       <Select value={zone} onValueChange={setZone}>

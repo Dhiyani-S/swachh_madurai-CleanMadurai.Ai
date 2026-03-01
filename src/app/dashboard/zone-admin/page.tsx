@@ -34,11 +34,11 @@ const teamsMock = [
 ]
 
 export default function ZoneAdminDashboard() {
-  const { tasks, updateTask, attendance } = useStore()
+  const { tasks, updateTask, attendance, currentUser } = useStore()
   const { toast } = useToast()
 
   const handleAssignTask = (taskId: string) => {
-    // In a real app, you'd select a team. For this prototype, we assign to Team 04.
+    // Assign to a default team for prototype
     updateTask(taskId, { assignedTo: 'Team 04', status: 'Pending' })
     toast({
       title: "Task Assigned",
@@ -53,7 +53,7 @@ export default function ZoneAdminDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-headline font-bold text-primary">Zone Control</h1>
-          <p className="text-muted-foreground">Zone 3 - Madurai West Central</p>
+          <p className="text-muted-foreground">{currentUser?.zoneId || 'Zone 3 - Madurai West Central'}</p>
         </div>
         <Button className="gap-2 bg-primary font-bold">
           <UserPlus className="h-4 w-4" /> Add New Team
