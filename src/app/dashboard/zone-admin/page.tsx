@@ -16,7 +16,9 @@ import {
   Send,
   UserPlus,
   UserCheck,
-  ChevronDown
+  ChevronDown,
+  Clock,
+  Trash2
 } from "lucide-react"
 import { useStore } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
@@ -27,37 +29,79 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 
-const teamsMock = [
-  { id: 'Team 04', members: 4, leader: 'Karthik', status: 'Green', load: 30, rewards: 1200 },
-  { id: 'T08', members: 3, leader: 'Meena', status: 'Yellow', load: 75, rewards: 850 },
-  { id: 'T12', members: 5, leader: 'Ravi', status: 'Red', load: 95, rewards: 400 },
-]
-
 export default function ZoneAdminDashboard() {
-  const { tasks, updateTask, attendance, currentUser } = useStore()
+  const { tasks, updateTask, addTask, attendance, currentUser } = useStore()
   const { toast } = useToast()
 
+  const currentZone = currentUser?.zoneId || 'Zone 4 (Vaikunth Nagar)'
+  
+  // Filter tasks for this zone
+  const zoneTasks = tasks.filter(t => t.zoneId === currentZone)
+  const unassignedTasks = zoneTasks.filter(t => !t.assignedTo)
+  const activeTasksCount = zoneTasks.filter(t => t.status !== 'Completed').length
+  const pendingTasksCount = zoneTasks.filter(t => t.status === 'Pending').length
+  const progressTasksCount = zoneTasks.filter(t => t.status === 'In Progress' || t.status === 'Partially Completed').length
+
   const handleAssignTask = (taskId: string) => {
-    // Assign to a default team for prototype
+    // Assign to Team 04 as default for this prototype
     updateTask(taskId, { assignedTo: 'Team 04', status: 'Pending' })
     toast({
       title: "Task Assigned",
-      description: `Task has been pushed to Worker Team Team 04.`,
+      description: `Task has been pushed to Worker Team Team 04 in ${currentZone}.`,
+    })
+  }
+
+  const handleQuickDispatch = (location: string) => {
+    const newTask = {
+      id: `task-${Date.now()}`,
+      name: 'Emergency Cleanup Dispatch',
+      location: location,
+      status: 'Pending',
+      type: 'Citizen Public' as const,
+      assignedTo: 'Team 04',
+      wardId: 'ward-1',
+      zoneId: currentZone,
+      createdAt: new Date().toISOString(),
+    }
+    addTask(newTask)
+    toast({
+      title: "Quick Dispatch Active",
+      description: `Emergency team sent to ${location}.`,
+    })
+  }
+
+  const handleApproveReceipt = (id: string) => {
+    toast({
+      title: "Receipt Approved",
+      description: `Payment link generated and sent to citizen for Request #${id}.`,
     })
   }
 
   const today = new Date().toLocaleDateString()
 
+  const teams = [
+    { id: 'Team 04', leader: 'Karthik', status: 'Green', members: 4, load: 30 },
+    { id: 'T08', leader: 'Meena', status: 'Yellow', members: 3, load: 75 },
+    { id: 'T12', leader: 'Ravi', status: 'Red', members: 5, load: 95 },
+  ]
+
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-headline font-bold text-primary">Zone Control</h1>
-          <p className="text-muted-foreground">{currentUser?.zoneId || 'Zone 3 - Madurai West Central'}</p>
+          <p className="text-muted-foreground flex items-center gap-1">
+            <MapIcon className="h-3 w-3" /> {currentZone}
+          </p>
         </div>
-        <Button className="gap-2 bg-primary font-bold">
-          <UserPlus className="h-4 w-4" /> Add New Team
-        </Button>
+        <div className="flex gap-2">
+           <Button variant="outline" className="gap-2 bg-white">
+            <ClipboardList className="h-4 w-4" /> Zone Logs
+          </Button>
+          <Button className="gap-2 bg-primary font-bold shadow-lg shadow-primary/20">
+            <UserPlus className="h-4 w-4" /> Add New Team
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -77,10 +121,10 @@ export default function ZoneAdminDashboard() {
             <ClipboardList className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold font-headline">28 Tasks</div>
+            <div className="text-3xl font-bold font-headline">{activeTasksCount} Tasks</div>
             <div className="flex gap-2 mt-2">
-              <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">12 Pending</span>
-              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded">16 Progress</span>
+              <span className="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded">{pendingTasksCount} Pending</span>
+              <span className="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded">{progressTasksCount} In Progress</span>
             </div>
           </CardContent>
         </Card>
@@ -101,42 +145,53 @@ export default function ZoneAdminDashboard() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="font-headline text-xl">Task Assignment Queue</CardTitle>
-              <CardDescription>Incoming requests from sensors, citizens and ward admin</CardDescription>
+              <CardDescription>Incoming requests from sensors and citizens</CardDescription>
             </div>
-            <Button variant="outline" size="sm" className="font-bold text-xs h-8">History</Button>
+            <div className="flex items-center gap-2">
+               <div className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+               <span className="text-[10px] font-bold text-muted-foreground uppercase">Live Feed</span>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y">
-              {tasks.filter(t => !t.assignedTo).map((task) => (
-                <div key={task.id} className="p-4 hover:bg-secondary/20 transition-all flex items-center justify-between">
-                  <div className="flex gap-4">
-                    <div className={cn(
-                      "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
-                      task.type === 'Sensor' ? "bg-accent/10 text-primary" : "bg-primary/10 text-primary"
-                    )}>
-                      {task.type === 'Sensor' ? <MapIcon className="h-5 w-5" /> : <ClipboardList className="h-5 w-5" />}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm">{task.name}</h4>
-                      <p className="text-xs text-muted-foreground">{task.location}</p>
-                      <p className="text-[10px] font-bold uppercase text-primary mt-1">{task.type}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right hidden sm:block">
-                      <p className="text-[10px] text-muted-foreground uppercase font-bold">Created</p>
-                      <p className="text-xs font-medium">Recently</p>
-                    </div>
-                    <Button size="sm" className="font-bold gap-2" onClick={() => handleAssignTask(task.id)}>
-                      Assign <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
+              {unassignedTasks.length === 0 ? (
+                <div className="py-20 text-center space-y-2">
+                   <CheckCircle className="h-10 w-10 text-emerald-200 mx-auto" />
+                   <p className="text-muted-foreground text-sm font-medium">Assignment queue is currently empty</p>
                 </div>
-              ))}
+              ) : (
+                unassignedTasks.map((task) => (
+                  <div key={task.id} className="p-4 hover:bg-secondary/20 transition-all flex items-center justify-between animate-in fade-in slide-in-from-left-4">
+                    <div className="flex gap-4">
+                      <div className={cn(
+                        "h-10 w-10 rounded-full flex items-center justify-center shrink-0 shadow-sm",
+                        task.type === 'Sensor' ? "bg-amber-50 text-amber-600 border border-amber-100" : "bg-primary/5 text-primary border border-primary/10"
+                      )}>
+                        {task.type === 'Sensor' ? <AlertCircle className="h-5 w-5" /> : <Trash2 className="h-5 w-5" />}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-sm">{task.name}</h4>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5"><MapIcon className="h-3 w-3" /> {task.location}</p>
+                        <div className="flex gap-2 mt-2">
+                          <span className="text-[9px] font-bold uppercase text-primary bg-primary/5 px-1.5 py-0.5 rounded">{task.type}</span>
+                          <span className="text-[9px] font-medium text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-2.5 w-2.5" /> Just now
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Button size="sm" className="font-bold gap-2 px-4" onClick={() => handleAssignTask(task.id)}>
+                        Assign <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
           <CardFooter className="bg-secondary/20 p-4 justify-center">
-            <Button variant="ghost" className="text-primary font-bold text-sm">View more tasks</Button>
+            <Button variant="ghost" className="text-primary font-bold text-sm">View full task board</Button>
           </CardFooter>
         </Card>
 
@@ -146,7 +201,7 @@ export default function ZoneAdminDashboard() {
             <CardDescription>Daily attendance tracking ({today})</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {teamsMock.map((team) => {
+            {teams.map((team) => {
               const teamAttendance = attendance[team.id];
               const isToday = teamAttendance?.date === today;
               const presentCount = isToday ? teamAttendance.members.filter(m => m.status === 'Present').length : 0;
@@ -185,7 +240,7 @@ export default function ZoneAdminDashboard() {
                           View Detailed Attendance <ChevronDown className="h-3 w-3" />
                         </Button>
                       </CollapsibleTrigger>
-                      <CollapsibleContent className="pt-2 space-y-1 bg-secondary/10 rounded p-1">
+                      <CollapsibleContent className="pt-2 space-y-1 bg-secondary/5 rounded p-1">
                         {teamAttendance.members.map((member, idx) => (
                           <div key={idx} className="flex items-center justify-between text-[10px] px-1">
                             <span className="text-muted-foreground font-medium">{member.name}</span>
@@ -231,12 +286,19 @@ export default function ZoneAdminDashboard() {
           </CardHeader>
           <CardContent className="space-y-4">
              {[1, 2].map(i => (
-               <div key={i} className="bg-white/10 p-4 rounded-xl flex items-center justify-between">
+               <div key={i} className="bg-white/10 p-4 rounded-xl flex items-center justify-between border border-white/5">
                  <div>
                    <p className="font-bold text-sm">Request #P440{i}</p>
                    <p className="text-xs opacity-70">Anna Nagar East - Waste Collection</p>
                  </div>
-                 <Button variant="secondary" size="sm" className="font-bold text-xs h-8">Verify & Invoice</Button>
+                 <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="font-bold text-xs h-8 px-4"
+                    onClick={() => handleApproveReceipt(`P440${i}`)}
+                  >
+                    Verify & Invoice
+                  </Button>
                </div>
              ))}
           </CardContent>
@@ -250,12 +312,21 @@ export default function ZoneAdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-               <div className="p-3 border border-rose-100 rounded-xl bg-rose-50/30">
-                  <p className="text-sm font-bold text-rose-700">Overflowing Dustbin @ Kalavasal</p>
-                  <p className="text-xs text-muted-foreground mt-1">Reported by Citizen #9182 with photo proof.</p>
-                  <div className="mt-3 flex gap-2">
-                    <Button size="sm" className="bg-rose-600 text-white hover:bg-rose-700 font-bold text-[10px] h-7 px-3">Quick Dispatch</Button>
-                    <Button variant="outline" size="sm" className="text-[10px] h-7 px-3 font-bold">View Photo</Button>
+               <div className="p-4 border border-rose-100 rounded-xl bg-rose-50/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-bold text-rose-700">Overflowing Dustbin @ Kalavasal</p>
+                    <span className="text-[9px] font-bold bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded uppercase">Critical</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-4">Reported by Citizen #9182 with photo proof from Anna Nagar West.</p>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      className="bg-rose-600 text-white hover:bg-rose-700 font-bold text-[10px] h-8 px-4 flex-1"
+                      onClick={() => handleQuickDispatch('Kalavasal Junction')}
+                    >
+                      Quick Dispatch
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-[10px] h-8 px-4 font-bold flex-1 bg-white">View Proof</Button>
                   </div>
                </div>
             </div>
