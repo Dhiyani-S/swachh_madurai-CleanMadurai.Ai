@@ -36,14 +36,14 @@ import {
 } from "@/components/ui/dialog"
 
 export default function ZoneAdminDashboard() {
-  const { tasks, updateTask, teams, addTask, addTeam, updateTeam, currentUser, attendance } = useStore()
+  const { tasks, updateTask, users, addTask, addUser, updateUser, currentUser, attendance } = useStore()
   const { toast } = useToast()
 
   const currentZone = currentUser?.zoneId || 'Zone 1 (Central)'
   
   // Dynamic filtering based on current zone
   const zoneTasks = React.useMemo(() => tasks.filter(t => t.zoneId === currentZone), [tasks, currentZone])
-  const zoneTeams = React.useMemo(() => teams.filter(t => t.zoneId === currentZone), [teams, currentZone])
+  const zoneTeams = React.useMemo(() => users.filter(u => u.role === 'Worker' && u.zoneId === currentZone), [users, currentZone])
 
   const [isNewTeamModalOpen, setIsNewTeamModalOpen] = React.useState(false)
   const [isEditTeamInfoModalOpen, setIsEditTeamInfoModalOpen] = React.useState(false)
@@ -56,14 +56,15 @@ export default function ZoneAdminDashboard() {
   const [editingMemberContext, setEditingMemberContext] = React.useState<{ teamId: string, member: TeamMember } | null>(null)
   
   const [viewImage, setViewImage] = React.useState<string | null>(null)
-  const [today, setToday] = React.useState<string | null>(null)
+  const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
-    setToday(new Date().toLocaleDateString())
+    setMounted(true)
   }, [])
 
   // Auto-forwarding logic for unassigned tasks
   React.useEffect(() => {
+    if (!mounted) return
     const interval = setInterval(() => {
       const now = new Date().getTime()
       zoneTasks.forEach(task => {
@@ -81,7 +82,7 @@ export default function ZoneAdminDashboard() {
       })
     }, 15000)
     return () => clearInterval(interval)
-  }, [zoneTasks, updateTask, toast])
+  }, [zoneTasks, updateTask, toast, mounted])
 
   const handleAssignTask = (taskId: string, workerId: string) => {
     if (!workerId) return
@@ -119,11 +120,23 @@ export default function ZoneAdminDashboard() {
   const handleCreateTeam = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
+    const newId = fd.get('workerUserId') as string
+
+    if (users.find(u => u.id === newId)) {
+      toast({
+        variant: "destructive",
+        title: "Registration Error",
+        description: "This Worker User ID is already taken.",
+      })
+      return
+    }
+
     const newTeam: User = {
-      id: fd.get('workerUserId') as string,
+      id: newId,
+      password: 'password123', // Default for created teams
       name: fd.get('leaderName') as string,
       role: 'Worker',
-      teamNumber: `Team ${fd.get('workerUserId')}`,
+      teamNumber: `Team ${newId}`,
       zoneId: currentZone,
       rewardPoints: 0,
       members: [],
@@ -131,7 +144,7 @@ export default function ZoneAdminDashboard() {
       contactNumber: fd.get('contact') as string,
       address: fd.get('address') as string
     }
-    addTeam(newTeam)
+    addUser(newTeam)
     setIsNewTeamModalOpen(false)
     toast({ title: "Team Registered", description: `Team ${newTeam.id} added to ${currentZone}.` })
   }
@@ -140,7 +153,7 @@ export default function ZoneAdminDashboard() {
     e.preventDefault()
     if (!editingTeam) return
     const fd = new FormData(e.currentTarget)
-    updateTeam(editingTeam.id, {
+    updateUser(editingTeam.id, {
       name: fd.get('leaderName') as string,
       age: parseInt(fd.get('age') as string),
       contactNumber: fd.get('contact') as string,
@@ -162,12 +175,34 @@ export default function ZoneAdminDashboard() {
       address: fd.get('address') as string,
     }
     const updated = [...(selectedTeamForMember.members || []), newMember]
-    updateTeam(selectedTeamForMember.id, { members: updated })
+    updateUser(selectedTeamForMember.id, { members: updated })
     setIsAddMemberModalOpen(false)
     toast({ title: "Member Added", description: `${newMember.name} joined the team.` })
   }
 
-  if (!today) return null;
+  const handleEditMemberSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!editingMemberContext) return
+    const fd = new FormData(e.currentTarget)
+    const team = users.find(u => u.id === editingMemberContext.teamId)
+    if (!team || !team.members) return
+
+    const updatedMembers = team.members.map(m => 
+      m.id === editingMemberContext.member.id ? {
+        ...m,
+        name: fd.get('name') as string,
+        age: parseInt(fd.get('age') as string),
+        contactNumber: fd.get('contact') as string,
+        address: fd.get('address') as string,
+      } : m
+    )
+
+    updateUser(team.id, { members: updatedMembers })
+    setIsEditMemberModalOpen(false)
+    toast({ title: "Member Updated", description: "Member details have been saved." })
+  }
+
+  if (!mounted) return null;
 
   return (
     <div className="space-y-8">
@@ -314,6 +349,7 @@ export default function ZoneAdminDashboard() {
               const completed = teamTasks.filter(t => t.status === 'Completed').length
               const inProgress = teamTasks.filter(t => t.status !== 'Completed' && t.status !== 'Pending').length
               const teamAttendance = attendance[team.id]
+              const today = new Date().toLocaleDateString()
               const isMarked = teamAttendance?.date === today
 
               return (
@@ -463,7 +499,6 @@ export default function ZoneAdminDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit and Member Modals remain similar to previous implementation... */}
       <Dialog open={isEditTeamInfoModalOpen} onOpenChange={setIsEditTeamInfoModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>Edit Leader Details</DialogTitle></DialogHeader>
@@ -475,6 +510,36 @@ export default function ZoneAdminDashboard() {
             <div className="space-y-2"><Label>Phone Number</Label><Input name="contact" defaultValue={editingTeam?.contactNumber} required /></div>
             <div className="space-y-2"><Label>Address</Label><Input name="address" defaultValue={editingTeam?.address} required /></div>
             <Button type="submit" className="w-full font-bold h-11">Update Profile</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddMemberModalOpen} onOpenChange={setIsAddMemberModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Add Team Member</DialogTitle></DialogHeader>
+          <form onSubmit={handleAddMemberSubmit} className="space-y-4 pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>Name</Label><Input name="name" required /></div>
+              <div className="space-y-2"><Label>Age</Label><Input name="age" type="number" required /></div>
+            </div>
+            <div className="space-y-2"><Label>Phone Number</Label><Input name="contact" required /></div>
+            <div className="space-y-2"><Label>Address</Label><Input name="address" required /></div>
+            <Button type="submit" className="w-full font-bold h-11">Add Member</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isEditMemberModalOpen} onOpenChange={setIsEditMemberModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Edit Member Details</DialogTitle></DialogHeader>
+          <form onSubmit={handleEditMemberSubmit} className="space-y-4 pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>Name</Label><Input name="name" defaultValue={editingMemberContext?.member.name} required /></div>
+              <div className="space-y-2"><Label>Age</Label><Input name="age" type="number" defaultValue={editingMemberContext?.member.age} required /></div>
+            </div>
+            <div className="space-y-2"><Label>Phone Number</Label><Input name="contact" defaultValue={editingMemberContext?.member.contactNumber} required /></div>
+            <div className="space-y-2"><Label>Address</Label><Input name="address" defaultValue={editingMemberContext?.member.address} required /></div>
+            <Button type="submit" className="w-full font-bold h-11">Save Changes</Button>
           </form>
         </DialogContent>
       </Dialog>

@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast"
 export default function LandingPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { setCurrentUser } = useStore()
+  const { setCurrentUser, users, addUser } = useStore()
   const [role, setRole] = React.useState<UserRole>('Citizen')
   const [userId, setUserId] = React.useState('')
   const [password, setPassword] = React.useState('')
@@ -31,28 +31,18 @@ export default function LandingPage() {
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const needsZone = role === 'Worker' || role === 'Zone Admin'
+    const existingUser = users.find(u => u.id === userId && u.password === password && u.role === role)
 
-    if (needsZone && !zone) {
+    if (!existingUser) {
       toast({
-        title: "Zone Selection Required",
-        description: "Please select your assigned zone to continue.",
+        title: "Authentication Failed",
+        description: "Invalid User ID, password, or role selection. Please check your credentials.",
         variant: "destructive",
       })
       return
     }
 
-    // Simulated auth
-    const user: User = {
-      id: userId || "user-123",
-      name: userId || (role === 'Worker' ? "Team Leader" : role === 'Zone Admin' ? "Zone Administrator" : "User"),
-      role: role,
-      rewardPoints: role === 'Worker' ? 450 : 0,
-      zoneId: needsZone ? zone : undefined,
-      teamNumber: role === 'Worker' ? `Team ${userId || '04'}` : undefined,
-      teamMembers: role === 'Worker' ? ["Karthik (Lead)", "Siva", "Meena", "Arjun"] : undefined
-    }
-    setCurrentUser(user)
+    setCurrentUser(existingUser)
     
     // Role-based redirection
     const dashboardRoutes: Record<UserRole, string> = {
@@ -63,11 +53,57 @@ export default function LandingPage() {
       'Citizen': '/dashboard/citizen',
     }
     router.push(dashboardRoutes[role])
+    
+    toast({
+      title: "Welcome Back",
+      description: `Signed in as ${existingUser.name}`,
+    })
   }
 
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault()
-    handleSignIn(e) // Simplified for demo
+
+    // Check if user already exists
+    if (users.find(u => u.id === userId)) {
+      toast({
+        title: "Registration Failed",
+        description: "This User ID is already taken. Please choose another one.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const needsZone = role === 'Worker' || role === 'Zone Admin'
+    if (needsZone && !zone) {
+      toast({
+        title: "Zone Selection Required",
+        description: "Please select your assigned zone to complete registration.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const newUser: User = {
+      id: userId,
+      password: password,
+      name: userId, // Defaulting name to ID for initial setup
+      role: role,
+      rewardPoints: 0,
+      zoneId: needsZone ? zone : undefined,
+      teamNumber: role === 'Worker' ? `Team ${userId}` : undefined,
+      teamMembers: role === 'Worker' ? ["Member 1", "Member 2"] : undefined
+    }
+
+    addUser(newUser)
+    
+    toast({
+      title: "Registration Successful",
+      description: "Your account has been created. You can now sign in.",
+    })
+    
+    // Optionally switch to sign-in tab or auto-login
+    setUserId('')
+    setPassword('')
   }
 
   return (
@@ -118,23 +154,6 @@ export default function LandingPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  {(role === 'Worker' || role === 'Zone Admin') && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <Label htmlFor="signin-zone">Assigned Zone</Label>
-                      <Select value={zone} onValueChange={setZone}>
-                        <SelectTrigger id="signin-zone">
-                          <SelectValue placeholder="Which zone are you assigned to?" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Zone 1 (Central)">Zone 1 (Central)</SelectItem>
-                          <SelectItem value="Zone 2 (Anna Nagar)">Zone 2 (Anna Nagar)</SelectItem>
-                          <SelectItem value="Zone 3 (Madurai West)">Zone 3 (Madurai West)</SelectItem>
-                          <SelectItem value="Zone 4 (Vaikunth Nagar)">Zone 4 (Vaikunth Nagar)</SelectItem>
-                          <SelectItem value="Zone 5 (Goripalayam)">Zone 5 (Goripalayam)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" className="w-full h-12 text-lg font-bold bg-primary hover:bg-primary/90 transition-all">Sign In</Button>
@@ -152,8 +171,8 @@ export default function LandingPage() {
               <form onSubmit={handleSignUp}>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-id">Full Name</Label>
-                    <Input id="signup-id" placeholder="Enter your name" required value={userId} onChange={e => setUserId(e.target.value)} />
+                    <Label htmlFor="signup-id">User ID (Login Username)</Label>
+                    <Input id="signup-id" placeholder="Create a unique User ID" required value={userId} onChange={e => setUserId(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>

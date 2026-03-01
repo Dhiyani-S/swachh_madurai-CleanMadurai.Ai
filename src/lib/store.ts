@@ -12,6 +12,7 @@ export interface TeamMember {
 
 export interface User {
   id: string;
+  password?: string;
   name: string; // Leader Name or Citizen Name
   role: UserRole;
   wardId?: string;
@@ -43,15 +44,6 @@ export interface Task {
   citizenId?: string;
 }
 
-export interface SensorAlert {
-  id: string;
-  type: SensorSubType;
-  location: string;
-  wardId: string;
-  zoneId: string;
-  timestamp: string;
-}
-
 export interface MemberAttendance {
   name: string;
   status: 'Present' | 'Absent';
@@ -66,21 +58,21 @@ export interface TeamAttendance {
 interface AppState {
   currentUser: User | null;
   tasks: Task[];
-  teams: User[]; // List of worker teams in the zone
-  citizens: User[]; // Track citizens for rewards
+  users: User[]; // Centralized list for all registered accounts
   attendance: Record<string, TeamAttendance>;
   setCurrentUser: (user: User | null) => void;
+  addUser: (user: User) => void;
   addTask: (task: Task) => void;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
-  addTeam: (team: User) => void;
-  updateTeam: (workerId: string, updates: Partial<User>) => void;
+  updateUser: (userId: string, updates: Partial<User>) => void;
   setAttendance: (workerId: string, members: MemberAttendance[]) => void;
   addCitizenRewards: (citizenId: string, points: number) => void;
 }
 
-const initialTeams: User[] = [
+const initialUsers: User[] = [
   {
     id: 'worker-04',
+    password: 'password123',
     name: 'Karthik',
     role: 'Worker',
     teamNumber: 'Team worker-04',
@@ -93,6 +85,29 @@ const initialTeams: User[] = [
       { id: 'm1', name: 'Siva', age: 32, contactNumber: '9876543211', address: '45, East St, Madurai' },
       { id: 'm2', name: 'Meena', age: 26, contactNumber: '9876543212', address: '7, South St, Madurai' }
     ]
+  },
+  {
+    id: 'comm-1',
+    password: 'password123',
+    name: 'Dr. Madurai Commissioner',
+    role: 'Corporation Commissioner',
+    rewardPoints: 0
+  },
+  {
+    id: 'ward-admin-1',
+    password: 'password123',
+    name: 'Senthil Kumar',
+    role: 'Ward Admin',
+    wardId: 'ward-1',
+    rewardPoints: 0
+  },
+  {
+    id: 'zone-admin-1',
+    password: 'password123',
+    name: 'Dharshini',
+    role: 'Zone Admin',
+    zoneId: 'Zone 1 (Central)',
+    rewardPoints: 0
   }
 ];
 
@@ -108,20 +123,19 @@ export const useStore = create<AppState>((set) => ({
       subType: 'Dustbin',
       wardId: 'ward-1',
       zoneId: 'Zone 4 (Vaikunth Nagar)',
-      createdAt: '2024-01-01T00:00:00.000Z',
+      createdAt: new Date().toISOString(),
     }
   ],
-  teams: initialTeams,
-  citizens: [],
+  users: initialUsers,
   attendance: {},
   setCurrentUser: (user) => set({ currentUser: user }),
+  addUser: (user) => set((state) => ({ users: [...state.users, user] })),
   addTask: (task) => set((state) => ({ tasks: [task, ...state.tasks] })),
   updateTask: (taskId, updates) => set((state) => ({
     tasks: state.tasks.map((t) => t.id === taskId ? { ...t, ...updates } : t)
   })),
-  addTeam: (team) => set((state) => ({ teams: [...state.teams, team] })),
-  updateTeam: (workerId, updates) => set((state) => ({
-    teams: state.teams.map((t) => t.id === workerId ? { ...t, ...updates } : t)
+  updateUser: (userId, updates) => set((state) => ({
+    users: state.users.map((u) => u.id === userId ? { ...u, ...updates } : u)
   })),
   setAttendance: (workerId, members) => set((state) => ({
     attendance: {
@@ -134,13 +148,16 @@ export const useStore = create<AppState>((set) => ({
     }
   })),
   addCitizenRewards: (citizenId, points) => set((state) => {
-    const isCurrentUser = state.currentUser?.id === citizenId;
-    const updatedUser = isCurrentUser && state.currentUser 
+    const updatedUsers = state.users.map(u => 
+      u.id === citizenId ? { ...u, rewardPoints: (u.rewardPoints || 0) + points } : u
+    );
+    const currentUser = state.currentUser?.id === citizenId 
       ? { ...state.currentUser, rewardPoints: (state.currentUser.rewardPoints || 0) + points }
       : state.currentUser;
       
     return {
-      currentUser: updatedUser
+      users: updatedUsers,
+      currentUser: currentUser
     };
   }),
 }));
