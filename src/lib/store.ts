@@ -90,8 +90,8 @@ export const useStore = create<AppState>()(
       setLanguage: (lang) => set({ language: lang }),
       addUser: (user) => set((state) => ({ users: [...state.users, user] })),
       addTask: (task) => set((state) => ({ tasks: [task, ...state.tasks] })),
-      updateTask: (taskId, updates) => set((state) => ({
-        tasks: state.tasks.map((t) => {
+      updateTask: (taskId, updates) => set((state) => {
+        const updatedTasks = state.tasks.map((t) => {
           if (t.id === taskId) {
             const updatedTask = { ...t, ...updates };
             // If the task is being assigned, record the timestamp
@@ -102,11 +102,26 @@ export const useStore = create<AppState>()(
             if (updates.assignedTo === undefined && t.assignedTo) {
               updatedTask.assignedAt = undefined;
             }
+            // If task is being fully completed, add rewards to the worker
+            if (updates.status === 'Completed' && t.status !== 'Completed' && t.assignedTo) {
+              const workerId = t.assignedTo;
+              setTimeout(() => {
+                set((innerState) => ({
+                  users: innerState.users.map(u => 
+                    u.id === workerId ? { ...u, rewardPoints: (u.rewardPoints || 0) + 100 } : u
+                  ),
+                  currentUser: innerState.currentUser?.id === workerId 
+                    ? { ...innerState.currentUser, rewardPoints: (innerState.currentUser.rewardPoints || 0) + 100 }
+                    : innerState.currentUser
+                }));
+              }, 0);
+            }
             return updatedTask;
           }
           return t;
-        })
-      })),
+        });
+        return { tasks: updatedTasks };
+      }),
       updateUser: (userId, updates) => set((state) => ({
         users: state.users.map((u) => u.id === userId ? { ...u, ...updates } : u)
       })),
