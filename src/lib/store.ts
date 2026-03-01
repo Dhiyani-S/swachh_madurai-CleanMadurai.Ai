@@ -1,18 +1,25 @@
-
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import initialData from './initial-dataset.json';
 import { SensorReading, simulateSensorStep } from './ai-sensor-engine';
 
-export type UserRole = 'Corporation Commissioner' | 'Ward Admin' | 'Zone Admin' | 'Worker' | 'Citizen';
+export type UserRole = 'commissioner' | 'ward_admin' | 'zone_admin' | 'worker' | 'citizen';
 export type AppLanguage = 'en' | 'ta';
 
 export interface TeamMember {
-  id: string;
+  workerId: string;
   name: string;
   age: number;
-  contactNumber: string;
+  phone: string;
   address: string;
+}
+
+export interface Team {
+  id: string;
+  zone: string;
+  name: string;
+  members: TeamMember[];
+  supervisorId: string;
 }
 
 export interface User {
@@ -21,47 +28,51 @@ export interface User {
   name: string;
   role: UserRole;
   wardId?: string;
-  zoneId?: string;
-  teamNumber?: string;
+  zone?: string;
+  teamId?: string;
   rewardPoints: number;
-  members?: TeamMember[];
+  phone?: string;
+  email?: string;
   age?: number;
-  contactNumber?: string;
   address?: string;
-  teamMembers?: string[]; // Simplified names list
-  teamRoster?: TeamMember[]; // Detailed objects for members managed by Admin
+  createdByAdmin?: string;
+  tasksCompleted?: number;
+  correctDisposals?: number;
 }
 
-export type TaskType = 'Sensor' | 'Citizen Public' | 'Citizen Private';
-export type SensorSubType = 'Dustbin' | 'Drainage' | 'Water' | 'Toilet' | 'Napkin';
+export type TaskStatus = 'pending' | 'assigned' | 'in_progress' | 'partially_completed' | 'completed';
+export type TaskSource = 'sensor' | 'citizen_public' | 'citizen_private' | 'admin_manual';
 
 export interface Task {
   id: string;
-  name: string;
-  location: string;
-  status: 'Pending' | 'In Progress' | 'Partially Completed' | 'Completed';
-  type: TaskType;
-  subType?: SensorSubType;
-  assignedTo?: string;
+  work: string;
+  place: string;
+  status: TaskStatus;
+  type?: 'Sensor' | 'Citizen Public' | 'Citizen Private'; // For backward compatibility if needed
+  source: TaskSource;
+  zone: string;
+  teamId?: string;
+  assignedTo?: string; // workerId
   assignedAt?: string;
-  wardId: string;
-  zoneId: string;
   createdAt: string;
+  priority?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  pointsAwarded?: number;
+  disposalVerified?: boolean;
   imageProof?: string;
-  paymentStatus?: 'Unpaid' | 'Paid';
+  isPaid?: boolean;
   citizenId?: string;
-  aiPriority?: 'Critical' | 'High' | 'Medium' | 'Low';
 }
 
-export interface MemberAttendance {
+export interface AttendanceRecord {
+  workerId: string;
   name: string;
-  status: 'Present' | 'Absent';
+  status: 'Present' | 'Absent' | 'Medical Leave';
 }
 
-export interface TeamAttendance {
-  teamNumber: string;
+export interface DailyAttendance {
+  teamId: string;
   date: string;
-  members: MemberAttendance[];
+  records: AttendanceRecord[];
 }
 
 export interface Notification {
@@ -77,91 +88,59 @@ interface AppState {
   currentUser: User | null;
   tasks: Task[];
   users: User[];
-  attendance: Record<string, TeamAttendance>;
+  teams: Team[];
+  attendance: Record<string, DailyAttendance>; // key: teamId-date
   language: AppLanguage | null;
   notifications: Notification[];
-  sensors: SensorReading[];
+  sensors: Record<string, any>;
   isDemoRunning: boolean;
-  demoSpeed: number;
+  demoStep: number;
   
   setCurrentUser: (user: User | null) => void;
   setLanguage: (lang: AppLanguage) => void;
   addUser: (user: User) => void;
+  updateUser: (userId: string, updates: Partial<User>) => void;
   addTask: (task: Task) => void;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
-  updateUser: (userId: string, updates: Partial<User>) => void;
-  setAttendance: (workerId: string, members: MemberAttendance[]) => void;
-  addCitizenRewards: (citizenId: string, points: number) => void;
+  submitAttendance: (teamId: string, date: string, records: AttendanceRecord[]) => void;
   addNotification: (notif: Omit<Notification, 'id' | 'read' | 'time'>) => void;
   markNotificationRead: (id: string) => void;
-  setDemoRunning: (running: boolean, speed?: number) => void;
-  updateSensors: () => void;
-  triggerSensorAlert: (sensorId: string) => void;
+  setDemoState: (running: boolean, step?: number) => void;
+  updateSensors: (newSensors: any) => void;
   resetToDataset: () => void;
 }
-
-const INITIAL_SENSORS: SensorReading[] = [
-  { zoneId: 'ZA - Zone A (North)', sensorType: 'dustbin', currentLevel: 45, location: 'Arasaradi Junction', wardId: 'WA01', timestamp: Date.now(), predictedFillTime: 120, confidenceScore: 0.87, anomalyScore: 0.1, status: 'ok' },
-  { zoneId: 'ZA - Zone A (North)', sensorType: 'toilet_napkins', currentLevel: 22, location: 'North Stand Toilet', wardId: 'WA01', timestamp: Date.now(), predictedFillTime: 45, confidenceScore: 0.94, anomalyScore: 0.05, status: 'warning' },
-  { zoneId: 'ZE - Zone E (Central)', sensorType: 'dustbin', currentLevel: 88, location: 'Simmakkal Clock Tower', wardId: 'WE01', timestamp: Date.now(), predictedFillTime: 15, confidenceScore: 0.91, anomalyScore: 0.2, status: 'warning' },
-];
 
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
       currentUser: null,
-      tasks: (initialData.tasks as Task[]),
+      tasks: (initialData.tasks as any[]),
       users: (initialData.users as User[]),
+      teams: (initialData.teams as Team[]),
       attendance: {},
       language: null,
       notifications: [],
       isDemoRunning: false,
-      demoSpeed: 1,
-      sensors: INITIAL_SENSORS,
+      demoStep: 0,
+      sensors: initialData.sensors,
 
       setCurrentUser: (user) => set({ currentUser: user }),
       setLanguage: (lang) => set({ language: lang }),
       addUser: (user) => set((state) => ({ users: [...state.users, user] })),
-      addTask: (task) => set((state) => ({ tasks: [task, ...state.tasks] })),
-      updateTask: (taskId, updates) => set((state) => {
-        const updatedTasks = state.tasks.map((t) => {
-          if (t.id === taskId) {
-            const updatedTask = { ...t, ...updates };
-            if (updates.assignedTo && !t.assignedTo) {
-              updatedTask.assignedAt = new Date().toISOString();
-            }
-            if (updates.status === 'Completed' && t.status !== 'Completed' && t.assignedTo) {
-              const workerId = t.assignedTo;
-              setTimeout(() => {
-                set((innerState) => ({
-                  users: innerState.users.map(u => 
-                    u.id === workerId ? { ...u, rewardPoints: (u.rewardPoints || 0) + 100 } : u
-                  ),
-                  currentUser: innerState.currentUser?.id === workerId 
-                    ? { ...innerState.currentUser, rewardPoints: (innerState.currentUser.rewardPoints || 0) + 100 }
-                    : innerState.currentUser
-                }));
-              }, 0);
-            }
-            return updatedTask;
-          }
-          return t;
-        });
-        return { tasks: updatedTasks };
-      }),
       updateUser: (userId, updates) => set((state) => {
-        const updatedUsers = state.users.map((u) => u.id === userId ? { ...u, ...updates } : u);
+        const updatedUsers = state.users.map(u => u.id === userId ? { ...u, ...updates } : u);
         const currentUser = state.currentUser?.id === userId ? { ...state.currentUser, ...updates } : state.currentUser;
         return { users: updatedUsers, currentUser };
       }),
-      setAttendance: (workerId, members) => set((state) => ({
+      addTask: (task) => set((state) => ({ tasks: [task, ...state.tasks] })),
+      updateTask: (taskId, updates) => set((state) => {
+        const updatedTasks = state.tasks.map(t => t.id === taskId ? { ...t, ...updates } : t);
+        return { tasks: updatedTasks };
+      }),
+      submitAttendance: (teamId, date, records) => set((state) => ({
         attendance: {
           ...state.attendance,
-          [workerId]: {
-            teamNumber: workerId,
-            date: new Date().toLocaleDateString(),
-            members
-          }
+          [`${teamId}-${date}`]: { teamId, date, records }
         }
       })),
       addNotification: (notif) => set((state) => ({
@@ -170,66 +149,27 @@ export const useStore = create<AppState>()(
           id: `notif-${Date.now()}`,
           time: new Date().toISOString(),
           read: false
-        }, ...state.notifications].slice(0, 20)
+        }, ...state.notifications].slice(0, 50)
       })),
       markNotificationRead: (id) => set((state) => ({
         notifications: state.notifications.map(n => n.id === id ? { ...n, read: true } : n)
       })),
-      setDemoRunning: (running, speed = 1) => set({ isDemoRunning: running, demoSpeed: speed }),
-      updateSensors: () => set((state) => {
-        if (!state.isDemoRunning) return state;
-        const newSensors = state.sensors.map(s => simulateSensorStep(s, state.demoSpeed));
-        
-        newSensors.forEach(s => {
-          if (s.status === 'critical' && !state.tasks.find(t => t.location === s.location && t.status !== 'Completed')) {
-            const newTask: Task = {
-              id: `sensor-${Date.now()}-${Math.random()}`,
-              name: `Critical Alert: ${s.sensorType}`,
-              location: s.location,
-              status: 'Pending',
-              type: 'Sensor',
-              wardId: s.wardId,
-              zoneId: s.zoneId,
-              createdAt: new Date().toISOString(),
-              aiPriority: 'Critical'
-            };
-            get().addTask(newTask);
-          }
-        });
-
-        return { sensors: newSensors };
-      }),
-      triggerSensorAlert: (sensorId) => set((state) => {
-        const newSensors = state.sensors.map(s => 
-          (s.location === sensorId) ? { ...s, currentLevel: 98, status: 'critical' as const } : s
-        );
-        return { sensors: newSensors };
-      }),
-      addCitizenRewards: (citizenId, points) => set((state) => {
-        const updatedUsers = state.users.map(u => 
-          u.id === citizenId ? { ...u, rewardPoints: (u.rewardPoints || 0) + points } : u
-        );
-        const currentUser = state.currentUser?.id === citizenId 
-          ? { ...state.currentUser, rewardPoints: (state.currentUser.rewardPoints || 0) + (points || 0) }
-          : state.currentUser;
-        return {
-          users: updatedUsers,
-          currentUser: currentUser as User | null
-        };
-      }),
+      setDemoState: (running, step = 0) => set({ isDemoRunning: running, demoStep: step }),
+      updateSensors: (newSensors) => set({ sensors: newSensors }),
       resetToDataset: () => set({ 
-        tasks: (initialData.tasks as Task[]), 
+        tasks: (initialData.tasks as any[]), 
         users: (initialData.users as User[]),
+        teams: (initialData.teams as Team[]),
         attendance: {},
         currentUser: null,
         language: null,
         notifications: [],
-        sensors: INITIAL_SENSORS,
+        sensors: initialData.sensors,
         isDemoRunning: false
       })
     }),
     {
-      name: 'clean-madurai-storage-v4',
+      name: 'clean-madurai-v3-storage',
       storage: createJSONStorage(() => localStorage),
     }
   )

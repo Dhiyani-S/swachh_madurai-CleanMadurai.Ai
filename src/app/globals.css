@@ -4,67 +4,114 @@
 
 @layer base {
   :root {
-    --background: 220 33% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 38 92% 50%; /* Saffron Gold */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 38 92% 40%;
-    --accent-foreground: 210 40% 98%;
+    --background: 160 20% 4%;
+    --foreground: 150 20% 96%;
+    --card: 160 40% 6%;
+    --card-foreground: 150 20% 96%;
+    --popover: 160 40% 6%;
+    --popover-foreground: 150 20% 96%;
+    --primary: 156 100% 39%; /* #00C875 - Saffron Green */
+    --primary-foreground: 160 40% 4%;
+    --secondary: 160 20% 12%;
+    --secondary-foreground: 150 20% 96%;
+    --muted: 160 20% 15%;
+    --muted-foreground: 150 10% 70%;
+    --accent: 38 92% 50%; /* Traditional Saffron */
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 38 92% 50%;
+    --destructive-foreground: 150 20% 96%;
+    --border: 160 30% 15%;
+    --input: 160 30% 15%;
+    --ring: 156 100% 39%;
     --radius: 1.5rem;
   }
+}
 
-  .dark {
-    --background: 222 47% 4%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 38 92% 55%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 217 33% 12%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 38 92% 45%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 38 92% 50%;
-  }
+/* Global Madurai Background */
+.madurai-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url('https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&q=80&w=1920');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  z-index: -1;
+}
+
+.madurai-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 15, 10, 0.72);
+  z-index: 1;
+}
+
+/* Glassmorphism Styles */
+.glass-panel {
+  background: rgba(10, 26, 16, 0.75) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(0, 200, 117, 0.15) !important;
+  color: #E8F5EE !important;
+}
+
+.glass-sidebar {
+  background: rgba(5, 15, 10, 0.80) !important;
+  backdrop-filter: blur(16px) !important;
+  border-right: 1px solid rgba(0, 200, 117, 0.12) !important;
+}
+
+.glass-header {
+  background: rgba(5, 15, 10, 0.85) !important;
+  backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(0, 200, 117, 0.12) !important;
+}
+
+/* Animation Upgrades */
+@keyframes pointsFloat {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
+}
+.points-toast {
+  position: fixed;
+  color: #00C875;
+  font-weight: 800;
+  font-size: 1.5rem;
+  animation: pointsFloat 1.5s ease forwards;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+@keyframes alertPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.5); }
+  50% { box-shadow: 0 0 0 20px rgba(255, 107, 107, 0); }
+}
+.sensor-alert-card {
+  animation: alertPulse 1.5s infinite;
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.task-card-new {
+  animation: slideInRight 0.4s ease;
+}
+
+/* Override ShadCN Card */
+.card, [class*="card"] {
+  @apply glass-panel;
+}
+
+input, select, textarea {
+  background: rgba(5, 15, 10, 0.6) !important;
+  border: 1px solid rgba(0, 200, 117, 0.25) !important;
+  color: #E8F5EE !important;
+  backdrop-filter: blur(8px) !important;
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
   body {
     @apply bg-background text-foreground font-body antialiased;
   }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-headline tracking-tight;
-  }
-}
-
-.glass-panel {
-  @apply bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl;
-}
-
-.glass-card {
-  @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-xl;
 }

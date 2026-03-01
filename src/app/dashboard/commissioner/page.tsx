@@ -1,239 +1,258 @@
-
 "use client"
 
 import * as React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { StatusBadge } from "@/components/dashboard/StatusBadge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
   BarChart3, 
   Map as MapIcon, 
   AlertTriangle, 
   TrendingUp, 
-  FileText, 
   Zap,
   ChevronRight,
-  Send,
-  RefreshCw,
-  Database
+  PlayCircle,
+  Activity,
+  Trash2,
+  Users,
+  Award,
+  RefreshCw
 } from "lucide-react"
-import { getCommissionerPerformanceInsights, CommissionerPerformanceInsightsOutput } from "@/ai/flows/commissioner-performance-insights"
-import { useToast } from "@/hooks/use-toast"
 import { useStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
 
-const wardData = [
-  { name: 'Ward 1', performance: 'Green', tasks: 120, completed: 110, admin: 'Ravi Kumar' },
-  { name: 'Ward 2', performance: 'Green', tasks: 95, completed: 90, admin: 'Selvi M.' },
-  { name: 'Ward 3', performance: 'Yellow', tasks: 150, completed: 105, admin: 'Anbu T.' },
-  { name: 'Ward 4', performance: 'Red', tasks: 80, completed: 35, admin: 'Prakash S.' },
-  { name: 'Ward 5', performance: 'Green', tasks: 110, completed: 108, admin: 'Deepa R.' },
-]
-
 export default function CommissionerDashboard() {
-  const [aiInsights, setAiInsights] = React.useState<CommissionerPerformanceInsightsOutput | null>(null)
-  const [isLoadingAi, setIsLoadingAi] = React.useState(false)
-  const { toast } = useToast()
-  const { resetToDataset, tasks } = useStore()
+  const { tasks, sensors, isDemoRunning, demoStep, setDemoState, addNotification } = useStore()
   const [mounted, setMounted] = React.useState(false)
 
-  React.useEffect(() => {
-    setMounted(true)
-    fetchAiInsights()
-  }, [])
+  React.useEffect(() => { setMounted(true) }, [])
 
-  const fetchAiInsights = async () => {
-    setIsLoadingAi(true)
-    try {
-      const result = await getCommissionerPerformanceInsights({ period: 'this week' })
-      setAiInsights(result)
-    } catch (error) {
-      toast({ title: "AI Assistant Offline", description: "Could not fetch latest performance insights.", variant: "destructive" })
-    } finally {
-      setIsLoadingAi(false)
-    }
-  }
+  const handleStartDemo = () => {
+    setDemoState(true, 1)
+    addNotification({ title: 'DEMO STARTED', message: '60-second city automation sequence initiated.', type: 'info' })
+    
+    // Simple sequence for demo
+    const steps = [
+      "📡 ML Sensor Alert: Dustbin fill rate detected high at Mattuthavani.",
+      "🤖 AI Auto-Task Created: Dispose Waste at Mattuthavani.",
+      "👥 AI Resource Optimizer: Recommending Team T1 for dispatch.",
+      "✅ Task Assigned to Team T1 (WRK-ZA-001).",
+      "🏃 Worker WRK-ZA-001 accepted task. Response timer started.",
+      "🔍 QR Verification Successful at Disposal Point.",
+      "🌿 +20 Green Points awarded to Team T1."
+    ];
 
-  const handleResetData = () => {
-    resetToDataset()
-    toast({
-      title: "System Reset",
-      description: "App data has been refreshed to match the latest Excel dataset.",
-    })
-    // Refresh page to clear local state if necessary
-    window.location.reload()
+    let current = 0;
+    const interval = setInterval(() => {
+      current++;
+      setDemoState(true, current);
+      if (current >= steps.length) {
+        clearInterval(interval);
+        setTimeout(() => setDemoState(false, 0), 2000);
+      }
+    }, 5000);
   }
 
   if (!mounted) return null
 
-  const completedTasks = tasks.filter(t => t.status === 'Completed').length
-  const completionRate = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0
+  const completedCount = tasks.filter(t => t.status === 'completed').length
+  const totalCount = tasks.length || 1
+  const efficiency = Math.round((completedCount / totalCount) * 100)
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-10">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-headline font-bold text-primary">City Overview</h1>
-          <p className="text-muted-foreground">Corporation Commissioner Control Center</p>
+          <h1 className="text-4xl font-headline font-bold text-white tracking-tighter">City Overview</h1>
+          <p className="text-white/40 font-medium">Corporation Commissioner Intelligence Center</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2" onClick={handleResetData}>
-            <Database className="h-4 w-4" /> Reset System Data
-          </Button>
-          <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
-            <Zap className="h-4 w-4" /> Live Ops
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-none shadow-md">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Total Tasks</CardDescription>
-            <CardTitle className="text-3xl">{tasks.length}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Progress value={completionRate} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-2">{completionRate}% completion rate city-wide</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-md">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Sensor Alerts</CardDescription>
-            <CardTitle className="text-3xl text-rose-500">{tasks.filter(t => t.type === 'Sensor' && t.status !== 'Completed').length}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-1">
-              <div className="h-2 w-full bg-rose-500 rounded-full" />
-              <div className="h-2 w-full bg-rose-500/30 rounded-full" />
-              <div className="h-2 w-full bg-rose-500/10 rounded-full" />
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">Active maintenance required</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-md">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1"><BarChart3 className="h-3 w-3" /> Avg. Efficiency</CardDescription>
-            <CardTitle className="text-3xl">92%</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Progress value={92} className="h-2 bg-emerald-100" />
-            <p className="text-xs text-muted-foreground mt-2">+4% from last month</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-md">
-          <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1"><MapIcon className="h-3 w-3" /> Wards Covered</CardDescription>
-            <CardTitle className="text-3xl">100/100</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <StatusBadge status="Green" label="Healthy City" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 border-none shadow-md">
-          <CardHeader>
-            <CardTitle className="font-headline text-xl">Ward Performance Rankings</CardTitle>
-            <CardDescription>Visual health check of all corporation wards</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {wardData.map((ward) => (
-                <div key={ward.name} className="flex items-center justify-between p-4 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-all group">
-                  <div className="flex items-center gap-4">
-                    <StatusBadge status={ward.performance as any} />
-                    <div>
-                      <h4 className="font-bold">{ward.name}</h4>
-                      <p className="text-xs text-muted-foreground">Admin: {ward.admin}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-8">
-                    <div className="text-right hidden sm:block">
-                      <p className="text-xs text-muted-foreground">Completion</p>
-                      <p className="font-bold">{Math.round((ward.completed / ward.tasks) * 100)}%</p>
-                    </div>
-                    <Button variant="ghost" size="icon" className="group-hover:translate-x-1 transition-transform">
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-md bg-primary text-primary-foreground">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="font-headline text-xl flex items-center gap-2">
-                <Zap className="h-5 w-5 fill-current text-accent" /> AI Insights
-              </CardTitle>
-              {isLoadingAi && <RefreshCw className="h-4 w-4 animate-spin text-white/50" />}
-            </div>
-            <CardDescription className="text-primary-foreground/70">Performance advisor for the Commissioner</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {aiInsights ? (
-              <>
-                <div className="p-3 rounded-lg bg-white/10 text-sm">
-                  <p className="leading-relaxed">{aiInsights.overview}</p>
-                </div>
-                <div>
-                  <h5 className="text-xs font-bold uppercase tracking-wider mb-2 text-accent">Inefficiencies Detected</h5>
-                  <ul className="space-y-1">
-                    {aiInsights.inefficiencies.slice(0, 3).map((item, i) => (
-                      <li key={i} className="text-sm flex gap-2">
-                        <span className="text-rose-400">•</span> {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <Button variant="secondary" className="w-full font-bold group" onClick={fetchAiInsights}>
-                  Refresh Analysis <ChevronRight className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </>
-            ) : (
-              <div className="py-8 text-center text-primary-foreground/50">
-                <Zap className="h-12 w-12 mx-auto mb-2 opacity-20" />
-                <p>Analyzing city data...</p>
-              </div>
+        <div className="flex gap-3">
+          <Button 
+            className={cn(
+              "gap-2 font-bold h-12 px-6 rounded-2xl shadow-2xl transition-all",
+              isDemoRunning ? "bg-rose-500 animate-pulse" : "bg-primary hover:bg-primary/90 shadow-primary/30"
             )}
-          </CardContent>
-        </Card>
+            onClick={handleStartDemo}
+            disabled={isDemoRunning}
+          >
+            {isDemoRunning ? <Activity className="h-5 w-5 animate-spin" /> : <PlayCircle className="h-5 w-5" />}
+            {isDemoRunning ? "Demo Running..." : "Start Live Demo"}
+          </Button>
+          <Button variant="outline" className="gap-2 h-12 rounded-2xl border-white/10 bg-white/5 text-white">
+            <RefreshCw className="h-4 w-4" /> Reset System
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-8">
-        <Card className="border-none shadow-md">
-          <CardHeader>
-            <CardTitle className="font-headline text-xl flex items-center gap-2">
-              <Send className="h-5 w-5 text-primary" /> Send Warning Message
-            </CardTitle>
-            <CardDescription>Issue data-backed warnings to underperforming Ward Admins</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-2">
-              <label className="text-xs font-bold text-muted-foreground">Select Ward Admin</label>
-              <select className="w-full p-2 rounded-md bg-secondary/50 border-none text-sm outline-none">
-                <option>Prakash S. (Ward 4 - Red Rank)</option>
-                <option>Anbu T. (Ward 3 - Yellow Rank)</option>
-              </select>
-            </div>
-            <div className="grid gap-2">
-              <label className="text-xs font-bold text-muted-foreground">Performance Issue</label>
-              <textarea 
-                className="w-full p-3 rounded-md bg-secondary/50 border-none text-sm min-h-[100px] outline-none"
-                placeholder="Describe the issues found..."
-                defaultValue="Continuous drop in task completion rate in Zone 3 over the last 48 hours."
-              />
-            </div>
-            <Button className="w-full font-bold">Compose AI Warning</Button>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          { label: 'Total Tasks', val: tasks.length, icon: TrendingUp, color: 'text-primary' },
+          { label: 'Critical Alerts', val: 17, icon: AlertTriangle, color: 'text-rose-500' },
+          { label: 'Avg Efficiency', val: efficiency + '%', icon: BarChart3, color: 'text-amber-500' },
+          { label: 'Green Points', val: '2.8k', icon: Award, color: 'text-emerald-400' }
+        ].map((stat, i) => (
+          <Card key={i} className="glass-panel border-none shadow-2xl rounded-[2.5rem] overflow-hidden group">
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/40">
+                <stat.icon className={cn("h-3 w-3", stat.color)} /> {stat.label}
+              </CardDescription>
+              <CardTitle className="text-4xl font-headline font-bold text-white">{stat.val}</CardTitle>
+            </CardHeader>
+            <CardContent>
+               <Progress value={stat.label === 'Avg Efficiency' ? efficiency : 75} className="h-1.5 mt-2 bg-white/5" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <Tabs defaultValue="lab" className="lg:col-span-2 space-y-8">
+          <TabsList className="bg-white/5 p-1 h-16 rounded-[2rem] border border-white/10">
+            <TabsTrigger value="lab" className="rounded-3xl font-bold text-sm h-full data-[state=active]:bg-primary">
+              <Zap className="h-4 w-4 mr-2" /> Sensor Lab
+            </TabsTrigger>
+            <TabsTrigger value="rankings" className="rounded-3xl font-bold text-sm h-full data-[state=active]:bg-primary">
+              <Award className="h-4 w-4 mr-2" /> City Leaderboard
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="lab">
+            <Card className="rounded-[3rem] border-none shadow-2xl">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl font-headline font-bold text-white">Sensor Intelligence Dashboard</CardTitle>
+                  <CardDescription>Real-time ML fill predictions per zone</CardDescription>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" className="text-[10px] font-bold h-8 rounded-full">Rain Mode</Button>
+                  <Button size="sm" variant="outline" className="text-[10px] font-bold h-8 rounded-full">Market Day</Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {Object.entries(sensors).map(([zone, data]: [string, any]) => (
+                  <div key={zone} className="p-6 rounded-3xl bg-white/5 border border-white/10 group hover:bg-white/10 transition-all">
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className={cn(
+                          "h-4 w-4 rounded-full",
+                          data.dustbin > 90 ? "bg-rose-500 animate-pulse" : data.dustbin > 75 ? "bg-amber-500" : "bg-emerald-500"
+                        )} />
+                        <h4 className="font-bold text-lg">Zone {zone} - {zone === 'ZA' ? 'North' : zone === 'ZC' ? 'East' : 'City Center'}</h4>
+                      </div>
+                      <Badge className="bg-primary/10 text-primary border-primary/20">{data.dustbin}% Full</Badge>
+                    </div>
+                    <Progress value={data.dustbin} className="h-2 bg-white/5 mb-4" />
+                    <div className="flex justify-between items-center text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                       <span>ML Confidence: 94%</span>
+                       <span>Predicted Full: {Math.max(0, 100 - data.dustbin)} min</span>
+                       <Button size="sm" variant="ghost" className="h-7 text-primary hover:bg-primary/10">Trigger Alert</Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="rankings">
+            <Card className="rounded-[3rem] border-none shadow-2xl">
+               <CardContent className="py-10">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="text-[10px] font-bold text-white/40 uppercase tracking-widest text-left border-b border-white/10">
+                        <th className="pb-4">Rank</th>
+                        <th className="pb-4">Worker</th>
+                        <th className="pb-4">Zone</th>
+                        <th className="pb-4">Tasks</th>
+                        <th className="pb-4">Points</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {[
+                        { rank: '🥇 1', name: 'Rajan K.', zone: 'North', tasks: 142, pts: '2,480' },
+                        { rank: '🥈 2', name: 'Malar S.', zone: 'East', tasks: 128, pts: '2,190' },
+                        { rank: '🥉 3', name: 'Priya T.', zone: 'Central', tasks: 115, pts: '1,870' }
+                      ].map((r, i) => (
+                        <tr key={i} className="group hover:bg-white/5 transition-colors">
+                          <td className="py-5 font-bold">{r.rank}</td>
+                          <td className="py-5 font-bold">{r.name}</td>
+                          <td className="py-5 text-white/60">{r.zone}</td>
+                          <td className="py-5 font-bold">{r.tasks}</td>
+                          <td className="py-5 font-headline font-bold text-primary">{r.pts}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+               </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        <div className="space-y-10">
+          <Card className="glass-panel border-none shadow-2xl rounded-[3rem] overflow-hidden">
+            <CardHeader className="bg-primary text-black">
+              <CardTitle className="font-headline text-xl flex items-center gap-2">
+                <Zap className="h-5 w-5 fill-current" /> AI Advisor Insights
+              </CardTitle>
+              <CardDescription className="text-black/60 font-medium italic">Powered by Gemini 2.5 Flash</CardDescription>
+            </CardHeader>
+            <CardContent className="p-8 space-y-6">
+              {isDemoRunning ? (
+                <div className="flex flex-col gap-6">
+                   <div className="p-4 rounded-2xl bg-white/10 border border-white/20 animate-in slide-in-from-right duration-500">
+                     <p className="text-xs font-bold uppercase tracking-widest text-white/40 mb-2">Live Demo Step {demoStep}</p>
+                     <p className="text-sm font-medium leading-relaxed">
+                       {demoStep === 1 && "📡 ML Sensor Alert: Dustbin fill rate detected high at Mattuthavani."}
+                       {demoStep === 2 && "🤖 AI Auto-Task Created: Dispose Waste at Mattuthavani."}
+                       {demoStep === 3 && "👥 AI Resource Optimizer: Recommending Team T1 for dispatch."}
+                       {demoStep === 4 && "✅ Task Assigned to Team T1 (WRK-ZA-001)."}
+                       {demoStep === 5 && "🏃 Worker WRK-ZA-001 accepted task. Response timer started."}
+                       {demoStep === 6 && "🔍 QR Verification Successful at Disposal Point."}
+                       {demoStep === 7 && "🌿 +20 Green Points awarded to Team T1."}
+                     </p>
+                   </div>
+                   <div className="flex gap-2">
+                     <div className={cn("h-1.5 flex-1 rounded-full bg-white/10", demoStep >= 1 && "bg-primary")} />
+                     <div className={cn("h-1.5 flex-1 rounded-full bg-white/10", demoStep >= 2 && "bg-primary")} />
+                     <div className={cn("h-1.5 flex-1 rounded-full bg-white/10", demoStep >= 3 && "bg-primary")} />
+                     <div className={cn("h-1.5 flex-1 rounded-full bg-white/10", demoStep >= 4 && "bg-primary")} />
+                     <div className={cn("h-1.5 flex-1 rounded-full bg-white/10", demoStep >= 5 && "bg-primary")} />
+                     <div className={cn("h-1.5 flex-1 rounded-full bg-white/10", demoStep >= 6 && "bg-primary")} />
+                     <div className={cn("h-1.5 flex-1 rounded-full bg-white/10", demoStep >= 7 && "bg-primary")} />
+                   </div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm leading-relaxed text-white/80">
+                    "Zone C East continues to lead with 92% completion rate this week. Zone D shows a concerning 12% drop — recommend immediate reallocation."
+                  </p>
+                  <Button variant="outline" className="w-full h-11 rounded-2xl border-white/10 hover:bg-white/10">Full Prediction Report</Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="glass-panel border-none shadow-2xl rounded-[3rem]">
+             <CardHeader>
+                <CardTitle className="text-xl font-headline font-bold">Live Alert Feed</CardTitle>
+             </CardHeader>
+             <CardContent className="space-y-4">
+                {[
+                  { icon: AlertTriangle, color: 'text-rose-500', msg: 'ZE Dustbin CRITICAL 96%', time: '2m ago' },
+                  { icon: Zap, color: 'text-primary', msg: 'Anomaly: WC01 fill rate 3x normal', time: '8m ago' },
+                  { icon: Trash2, color: 'text-emerald-500', msg: 'WB04 Drainage resolved', time: '15m ago' }
+                ].map((alert, i) => (
+                  <div key={i} className="flex gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
+                    <alert.icon className={cn("h-5 w-5 shrink-0", alert.color)} />
+                    <div className="flex-1">
+                      <p className="text-xs font-bold">{alert.msg}</p>
+                      <p className="text-[10px] text-white/40 uppercase font-bold mt-1">{alert.time}</p>
+                    </div>
+                  </div>
+                ))}
+             </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

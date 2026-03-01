@@ -1,97 +1,70 @@
-
 {
   "users": [
     {
-      "id": "01",
+      "id": "commissioner1",
+      "name": "Dr. Senthil Kumar IAS",
+      "role": "commissioner",
       "password": "123",
-      "name": "Madurai Commissioner",
-      "role": "Corporation Commissioner",
+      "phone": "9876500001",
+      "email": "commissioner@madurai.gov.in",
       "rewardPoints": 0
     },
     {
-      "id": "02",
+      "id": "wardadmin1",
+      "name": "Rajaram Pillai",
+      "role": "ward_admin",
       "password": "123",
-      "name": "Arasaradi Ward Admin",
-      "role": "Ward Admin",
-      "wardId": "WA01",
+      "phone": "9876500002",
       "rewardPoints": 0
     },
     {
-      "id": "03",
+      "id": "zoneadmin-za",
+      "name": "Karthik M.",
+      "role": "zone_admin",
+      "zone": "ZA",
       "password": "123",
-      "name": "North Zone Admin",
-      "role": "Zone Admin",
-      "zoneId": "ZA - Zone A (North)",
+      "phone": "9876500003",
       "rewardPoints": 0
     },
     {
-      "id": "04",
-      "password": "123",
-      "name": "Field Team",
-      "role": "Worker",
-      "teamNumber": "Team ZA-01",
-      "zoneId": "ZA - Zone A (North)",
-      "wardId": "WA01",
-      "rewardPoints": 150,
-      "age": 30,
-      "contactNumber": "9000000001",
-      "address": "Arasaradi Ward Office",
-      "members": [
-        { "id": "m1", "name": "Muthu", "age": 28, "contactNumber": "9000000002", "address": "North Madurai" },
-        { "id": "m2", "name": "Pandi", "age": 32, "contactNumber": "9000000003", "address": "North Madurai" }
-      ],
-      "teamMembers": ["Muthu", "Pandi"],
-      "teamRoster": [
-        { "id": "m1", "name": "Muthu", "age": 28, "contactNumber": "9000000002", "address": "North Madurai" },
-        { "id": "m2", "name": "Pandi", "age": 32, "contactNumber": "9000000003", "address": "North Madurai" }
-      ]
-    },
-    {
-      "id": "05",
-      "password": "123",
-      "name": "Citizen Ramesh",
-      "role": "Citizen",
-      "rewardPoints": 50
-    },
-    {
-      "id": "comm-1",
-      "password": "password123",
-      "name": "Madurai Commissioner",
-      "role": "Corporation Commissioner",
-      "rewardPoints": 0
-    },
-    {
-      "id": "admin-za",
-      "password": "password123",
-      "name": "North Zone Admin",
-      "role": "Zone Admin",
-      "zoneId": "ZA - Zone A (North)",
-      "rewardPoints": 0
+      "id": "WRK-ZA-001",
+      "name": "Rajan K.",
+      "role": "worker",
+      "password": "work@1234",
+      "zone": "ZA",
+      "teamId": "T1",
+      "age": 32,
+      "phone": "9876543210",
+      "address": "45 Main Street, Arasaradi, Madurai",
+      "rewardPoints": 2480,
+      "tasksCompleted": 142,
+      "correctDisposals": 138,
+      "createdByAdmin": "zoneadmin-za"
     }
   ],
-  "tasks": [
+  "teams": [
     {
-      "id": "sensor-za-1",
-      "name": "Dustbin Overflow Predicted (ML)",
-      "location": "Arasaradi Main Junction",
-      "status": "Pending",
-      "type": "Sensor",
-      "subType": "Dustbin",
-      "wardId": "WA01",
-      "zoneId": "ZA - Zone A (North)",
-      "createdAt": "2024-05-21T08:00:00Z"
-    },
-    {
-      "id": "sensor-ze-1",
-      "name": "Drainage Leakage Alert",
-      "location": "Simmakkal Clock Tower",
-      "status": "In Progress",
-      "type": "Sensor",
-      "subType": "Drainage",
-      "wardId": "WE01",
-      "zoneId": "ZE - Zone E (Central)",
-      "assignedTo": "04",
-      "createdAt": "2024-05-21T07:30:00Z"
+      "id": "T1",
+      "zone": "ZA",
+      "name": "Team T1 — North Alpha",
+      "members": [
+        {"workerId": "WRK-ZA-001", "name": "Rajan K.", "age": 32, "phone": "9876543210", "address": "45 Main Street, Arasaradi"},
+        {"workerId": "WRK-ZA-002", "name": "Kumar S.", "age": 35, "phone": "9876543215", "address": "22 North Lane, Thirunagar"},
+        {"workerId": "WRK-ZA-003", "name": "Selvi P.", "age": 29, "phone": "9876543216", "address": "7 Park Road, KK Nagar"}
+      ],
+      "supervisorId": "zoneadmin-za"
     }
+  ],
+  "sensors": {
+    "ZA": {"dustbin": 78, "toilet_napkins": 45, "toilet_tissue": 60, "drainage": "ok", "water_tank": 82},
+    "ZB": {"dustbin": 61, "toilet_napkins": 70, "toilet_tissue": 55, "drainage": "ok", "water_tank": 74},
+    "ZC": {"dustbin": 88, "toilet_napkins": 22, "toilet_tissue": 35, "drainage": "ok", "water_tank": 91},
+    "ZD": {"dustbin": 45, "toilet_napkins": 80, "toilet_tissue": 65, "drainage": "LEAKAGE", "water_tank": 55},
+    "ZE": {"dustbin": 95, "toilet_napkins": 15, "toilet_tissue": 20, "drainage": "ok", "water_tank": 68}
+  },
+  "tasks": [
+    {"id": "T001", "work": "Dispose Waste: Mattuthavani Dustbin", "place": "WC01 Mattuthavani", "zone": "ZC", "status": "completed", "teamId": "T1", "source": "sensor", "pointsAwarded": 20, "disposalVerified": true, "createdAt": "2024-03-01T10:00:00Z"},
+    {"id": "T002", "work": "Toilet Napkin Restock", "place": "WE04 East Veli Street", "zone": "ZE", "status": "in_progress", "teamId": "T1", "source": "sensor", "createdAt": "2024-03-01T11:30:00Z"},
+    {"id": "T003", "work": "Drainage Leakage Repair", "place": "WD04 Samayanallur", "zone": "ZD", "status": "pending", "source": "sensor", "priority": "HIGH", "createdAt": "2024-03-01T12:00:00Z"}
   ]
 }

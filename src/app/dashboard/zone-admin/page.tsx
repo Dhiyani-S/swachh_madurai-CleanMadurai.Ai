@@ -1,227 +1,206 @@
-
 "use client"
 
 import * as React from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { StatusBadge } from "@/components/dashboard/StatusBadge"
-import { Users, ClipboardList, Map as MapIcon, Plus, AlertTriangle, UserPlus, BarChart3, Edit2, UserCircle, Zap, UserCheck, ImageIcon, Eye, Award } from "lucide-react"
-import { useStore, Task, User, TeamMember, SensorSubType } from "@/lib/store"
+import { Badge } from "@/components/ui/badge"
+import { 
+  Users, 
+  ClipboardList, 
+  Map as MapIcon, 
+  Plus, 
+  AlertTriangle, 
+  UserPlus, 
+  BarChart3, 
+  Zap, 
+  LayoutGrid, 
+  ArrowRight,
+  MoreVertical,
+  CheckCircle2,
+  Timer
+} from "lucide-react"
+import { useStore, User, Team, Task } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 
 export default function ZoneAdminDashboard() {
-  const { tasks, updateTask, users, addTask, addUser, updateUser, currentUser, attendance } = useStore()
+  const { tasks, users, teams, currentUser, addUser, updateTask, updateSensors, sensors } = useStore()
   const { toast } = useToast()
-  const currentZone = currentUser?.zoneId || 'ZA - Zone A (North)'
+  const currentZone = currentUser?.zone || 'ZA'
   
-  const zoneTasks = React.useMemo(() => tasks.filter(t => t.zoneId === currentZone), [tasks, currentZone])
-  const zoneTeams = React.useMemo(() => users.filter(u => u.role === 'Worker' && u.zoneId === currentZone), [users, currentZone])
-
+  const [isWorkerModalOpen, setIsWorkerModalOpen] = React.useState(false)
+  const [newWorker, setNewWorker] = React.useState({ name: '', age: '', phone: '', address: '', teamId: 'T1' })
   const [mounted, setMounted] = React.useState(false)
-  const [viewImage, setViewImage] = React.useState<string | null>(null)
 
   React.useEffect(() => { setMounted(true) }, [])
 
-  const handleAssignTask = (taskId: string, workerId: string) => {
-    if (!workerId) return
-    updateTask(taskId, { assignedTo: workerId, status: 'Pending' })
-    toast({ title: "Dispatched", description: `Task assigned to Team ${workerId}.` })
-  }
-
-  const handleSimulateSensor = (type: SensorSubType) => {
-    addTask({
-      id: `sensor-${Date.now()}`,
-      name: `Sensor Alert: ${type}`,
-      location: 'Ward Main Junction',
-      status: 'Pending',
-      type: 'Sensor',
-      subType: type,
-      wardId: 'WA-AUTO',
-      zoneId: currentZone,
-      createdAt: new Date().toISOString()
-    })
-    toast({ title: "Alert Logged", description: `${type} sensor triggered alert.` })
-  }
-
   if (!mounted) return null;
 
+  const handleCreateWorker = () => {
+    const nextId = `WRK-${currentZone}-${(users.filter(u => u.role === 'worker').length + 1).toString().padStart(3, '0')}`;
+    addUser({
+      id: nextId,
+      name: newWorker.name,
+      password: 'work@1234',
+      role: 'worker',
+      zone: currentZone,
+      teamId: newWorker.teamId,
+      phone: newWorker.phone,
+      age: parseInt(newWorker.age),
+      address: newWorker.address,
+      rewardPoints: 0,
+      createdByAdmin: currentUser?.id
+    });
+    toast({ title: "Worker Account Created", description: `Credentials: ${nextId} / work@1234` });
+    setIsWorkerModalOpen(false);
+  }
+
+  const zoneTasks = tasks.filter(t => t.zone === currentZone)
+  const zoneTeams = teams.filter(t => t.zone === currentZone)
+
   return (
-    <div className="space-y-8">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-10">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-headline font-bold text-primary">Zone Control Panel</h1>
-          <p className="text-muted-foreground flex items-center gap-1"><MapIcon className="h-3 w-3" /> {currentZone}</p>
+          <h1 className="text-4xl font-headline font-bold text-white tracking-tighter">Zone Control</h1>
+          <p className="text-white/40 font-medium flex items-center gap-2">
+            <MapIcon className="h-4 w-4" /> Zone {currentZone} - Active Management
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Dialog>
-            <DialogTrigger asChild><Button variant="outline" className="gap-2 border-primary text-primary"><Zap className="h-4 w-4" /> Simulate Sensors</Button></DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Trigger Virtual Sensors (ML Alerts)</DialogTitle></DialogHeader>
-              <div className="grid grid-cols-1 gap-2 pt-4">
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Dustbin')}>Dustbin Overflow Predictor</Button>
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Drainage')}>Drainage Leakage Detector</Button>
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Water')}>Water Stagnation Alert</Button>
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Toilet')}>Public Toilet Cleanliness Drop</Button>
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Napkin')}>Napkin Disposal Unit Full</Button>
+        <div className="flex gap-3">
+          <Dialog open={isWorkerModalOpen} onOpenChange={setIsWorkerModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2 bg-primary text-black font-bold h-12 rounded-2xl shadow-2xl shadow-primary/20">
+                <UserPlus className="h-5 w-5" /> Register New Worker
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="glass-panel border-white/10 text-white rounded-[3rem] backdrop-blur-3xl sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="font-headline text-3xl">Create Worker Account</DialogTitle>
+                <DialogDescription className="text-white/60">Worker login IDs are auto-generated based on zone code.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="grid gap-2">
+                  <Label className="ml-2 text-[10px] font-bold uppercase tracking-widest text-white/40">Full Name</Label>
+                  <Input value={newWorker.name} onChange={e => setNewWorker({...newWorker, name: e.target.value})} className="rounded-xl h-12" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label className="ml-2 text-[10px] font-bold uppercase tracking-widest text-white/40">Age</Label>
+                    <Input type="number" value={newWorker.age} onChange={e => setNewWorker({...newWorker, age: e.target.value})} className="rounded-xl h-12" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label className="ml-2 text-[10px] font-bold uppercase tracking-widest text-white/40">Team</Label>
+                    <select className="bg-zinc-900 border border-white/10 rounded-xl h-12 px-4" value={newWorker.teamId} onChange={e => setNewWorker({...newWorker, teamId: e.target.value})}>
+                      {zoneTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label className="ml-2 text-[10px] font-bold uppercase tracking-widest text-white/40">Phone</Label>
+                  <Input value={newWorker.phone} onChange={e => setNewWorker({...newWorker, phone: e.target.value})} className="rounded-xl h-12" />
+                </div>
               </div>
+              <DialogFooter>
+                <Button onClick={handleCreateWorker} className="w-full bg-primary h-14 rounded-2xl font-bold">Create Account</Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>
       </header>
 
-      <Tabs defaultValue="assignments" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-secondary/50 h-14 p-1 rounded-xl">
-          <TabsTrigger value="assignments" className="font-bold gap-2 text-md"><ClipboardList className="h-4 w-4" /> Live Task Board</TabsTrigger>
-          <TabsTrigger value="performance" className="font-bold gap-2 text-md"><BarChart3 className="h-4 w-4" /> Team Performance</TabsTrigger>
-          <TabsTrigger value="teams" className="font-bold gap-2 text-md"><Users className="h-4 w-4" /> Team Roster</TabsTrigger>
+      <Tabs defaultValue="kanban" className="w-full">
+        <TabsList className="bg-white/5 p-1 h-16 rounded-[2rem] border border-white/10 w-full grid grid-cols-3">
+          <TabsTrigger value="kanban" className="rounded-3xl font-bold h-full data-[state=active]:bg-primary">
+            <LayoutGrid className="h-4 w-4 mr-2" /> Kanban Board
+          </TabsTrigger>
+          <TabsTrigger value="teams" className="rounded-3xl font-bold h-full data-[state=active]:bg-primary">
+            <Users className="h-4 w-4 mr-2" /> Team Management
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="rounded-3xl font-bold h-full data-[state=active]:bg-primary">
+            <BarChart3 className="h-4 w-4 mr-2" /> Live Analytics
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="assignments" className="pt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-none shadow-xl">
-              <CardHeader className="bg-rose-50/50 rounded-t-xl">
-                <CardTitle className="text-lg flex items-center gap-2 text-rose-700"><AlertTriangle className="h-5 w-5 animate-pulse" /> Live Sensor Alerts</CardTitle>
-                <CardDescription>Priority issues detected by IoT & Deep Learning sensors</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {zoneTasks.filter(t => t.type === 'Sensor' && !t.assignedTo).map((task) => (
-                    <div key={task.id} className="p-4 flex items-center justify-between hover:bg-rose-50/30 transition-colors">
-                      <div className="flex-1">
-                        <h4 className="font-bold text-sm text-primary">{task.name}</h4>
-                        <p className="text-[11px] text-muted-foreground">{task.location}</p>
-                      </div>
-                      <select className="text-xs p-2 border rounded-lg bg-white" onChange={(e) => handleAssignTask(task.id, e.target.value)}>
-                        <option value="">Assign Team...</option>
-                        {zoneTeams.map(team => <option key={team.id} value={team.id}>{team.name}</option>)}
-                      </select>
-                    </div>
-                  ))}
-                  {zoneTasks.filter(t => t.type === 'Sensor' && !t.assignedTo).length === 0 && (
-                    <div className="p-12 text-center text-muted-foreground text-sm italic">All sensor alerts cleared.</div>
-                  )}
+        <TabsContent value="kanban" className="pt-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { label: '📡 Sensor Alerts', status: 'pending' as const, color: 'text-rose-500' },
+              { label: '📋 Assigned', status: 'assigned' as const, color: 'text-amber-500' },
+              { label: '🔄 In Progress', status: 'in_progress' as const, color: 'text-primary' },
+              { label: '✅ Completed', status: 'completed' as const, color: 'text-emerald-500' }
+            ].map((col) => (
+              <div key={col.status} className="space-y-6">
+                <div className="flex items-center justify-between px-4">
+                   <h3 className={cn("text-[10px] font-bold uppercase tracking-widest", col.color)}>{col.label}</h3>
+                   <Badge className="bg-white/5 text-white/40 border-none">{zoneTasks.filter(t => t.status === col.status).length}</Badge>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-xl">
-              <CardHeader className="bg-primary/5 rounded-t-xl">
-                <CardTitle className="text-lg flex items-center gap-2 text-primary"><UserCircle className="h-5 w-5" /> Citizen Service Requests</CardTitle>
-                <CardDescription>AI-verified public complaints and private requests</CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {zoneTasks.filter(t => t.type.startsWith('Citizen') && !t.assignedTo).map((task) => (
-                    <div key={task.id} className="p-4 flex flex-col gap-3 hover:bg-primary/5 transition-colors">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h4 className="font-bold text-sm">{task.name}</h4>
-                          <p className="text-[11px] text-muted-foreground">{task.location}</p>
-                          {task.imageProof && (
-                            <Button variant="ghost" size="sm" className="mt-2 h-7 text-[10px] gap-1 font-bold text-primary" onClick={() => setViewImage(task.imageProof!)}>
-                              <Eye className="h-3 w-3" /> View Proof Image
-                            </Button>
-                          )}
-                        </div>
-                        <StatusBadge status="Yellow" label={task.type === 'Citizen Public' ? 'Complaint' : 'Private'} />
-                      </div>
-                      <select className="text-xs p-2 border rounded-lg bg-white" onChange={(e) => handleAssignTask(task.id, e.target.value)}>
-                        <option value="">Select Team for Dispatch...</option>
-                        {zoneTeams.map(team => <option key={team.id} value={team.id}>{team.name}</option>)}
-                      </select>
-                    </div>
+                <div className="space-y-4">
+                  {zoneTasks.filter(t => t.status === col.status).map((task) => (
+                    <Card key={task.id} className="rounded-[2.5rem] border-none shadow-xl glass-panel group hover:translate-y-[-4px] transition-all">
+                      <CardHeader className="p-6 pb-2">
+                        <CardTitle className="text-sm font-bold text-white line-clamp-1">{task.work}</CardTitle>
+                        <CardDescription className="text-[10px] font-medium flex items-center gap-1">
+                          <MapIcon className="h-3 w-3" /> {task.place}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="px-6 py-4 space-y-3">
+                         <div className="flex justify-between items-center text-[8px] font-bold uppercase tracking-widest text-white/40">
+                           <span>{task.source}</span>
+                           <span>{task.id}</span>
+                         </div>
+                         {task.status === 'pending' && (
+                           <select className="w-full text-[10px] bg-black/40 border border-white/10 rounded-lg p-2 font-bold" onChange={(e) => updateTask(task.id, { assignedTo: e.target.value, status: 'assigned' })}>
+                             <option value="">Assign Team...</option>
+                             {users.filter(u => u.role === 'worker' && u.zone === currentZone).map(w => (
+                               <option key={w.id} value={w.id}>{w.name} ({w.teamId})</option>
+                             ))}
+                           </select>
+                         )}
+                      </CardContent>
+                    </Card>
                   ))}
-                  {zoneTasks.filter(t => t.type.startsWith('Citizen') && !t.assignedTo).length === 0 && (
-                    <div className="p-12 text-center text-muted-foreground text-sm italic">No pending citizen requests.</div>
-                  )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            ))}
           </div>
         </TabsContent>
 
-        <TabsContent value="performance" className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-             {zoneTeams.map(team => (
-               <Card key={team.id} className="border-none shadow-md">
-                 <CardHeader className="pb-2">
-                   <div className="flex justify-between items-start">
-                     <CardTitle className="text-md font-headline">{team.name}</CardTitle>
-                     <StatusBadge status={team.rewardPoints > 100 ? 'Green' : 'Yellow'} />
-                   </div>
-                   <CardDescription className="text-xs">{team.teamNumber}</CardDescription>
-                 </CardHeader>
-                 <CardContent className="space-y-4">
-                   <div className="flex items-center justify-between text-xs font-bold">
-                     <span>Today's Completion</span>
-                     <span>{zoneTasks.filter(t => t.assignedTo === team.id && t.status === 'Completed').length} Tasks</span>
-                   </div>
-                   <Progress value={75} className="h-1.5" />
-                   <div className="flex items-center gap-2">
-                     <Award className="h-4 w-4 text-amber-500" />
-                     <span className="text-sm font-bold text-primary">{team.rewardPoints} Efficiency Points</span>
-                   </div>
-                 </CardContent>
-               </Card>
-             ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="teams" className="pt-6">
-          <Card className="border-none shadow-xl">
-             <CardHeader>
-               <CardTitle className="text-lg">Daily Attendance & Team Status</CardTitle>
-               <CardDescription>Real-time field presence of your cleaning squads</CardDescription>
-             </CardHeader>
-             <CardContent>
-                <div className="divide-y">
-                   {zoneTeams.map(team => {
-                     const teamAttend = attendance[team.id];
-                     const isPresent = teamAttend && teamAttend.date === new Date().toLocaleDateString();
-                     return (
-                       <div key={team.id} className="py-4 flex items-center justify-between">
-                         <div className="flex items-center gap-4">
-                           <div className={cn("h-3 w-3 rounded-full", isPresent ? "bg-emerald-500 animate-pulse" : "bg-slate-300")} />
-                           <div>
-                             <p className="font-bold text-sm">{team.name}</p>
-                             <p className="text-[10px] text-muted-foreground">{team.teamNumber}</p>
-                           </div>
+        <TabsContent value="teams" className="pt-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {zoneTeams.map((team) => (
+              <Card key={team.id} className="rounded-[3rem] border-none shadow-2xl glass-panel">
+                <CardHeader className="p-8">
+                  <CardTitle className="text-2xl font-headline font-bold">{team.name}</CardTitle>
+                  <CardDescription className="uppercase tracking-widest text-[10px] font-bold text-primary">Team {team.id}</CardDescription>
+                </CardHeader>
+                <CardContent className="p-8 pt-0 space-y-6">
+                   <div className="space-y-3">
+                     <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">Member List</p>
+                     {team.members.map((m, i) => (
+                       <div key={i} className="flex justify-between items-center p-3 rounded-2xl bg-white/5 border border-white/10">
+                         <div className="flex flex-col">
+                            <span className="text-xs font-bold">{m.name}</span>
+                            <span className="text-[8px] text-white/40">{m.workerId}</span>
                          </div>
-                         <div className="flex items-center gap-6">
-                            {isPresent ? (
-                              <div className="flex gap-1">
-                                {teamAttend.members.map((m, i) => (
-                                  <div key={i} className={cn("px-2 py-0.5 rounded text-[8px] font-bold uppercase", m.status === 'Present' ? "bg-emerald-50 text-emerald-700 border" : "bg-rose-50 text-rose-700 opacity-50")}>
-                                    {m.name.charAt(0)}
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <span className="text-[10px] font-bold text-muted-foreground uppercase">Not Started</span>
-                            )}
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><Edit2 className="h-3 w-3" /></Button>
-                         </div>
+                         <ArrowRight className="h-3 w-3 text-white/20" />
                        </div>
-                     )
-                   })}
-                </div>
-             </CardContent>
-          </Card>
+                     ))}
+                   </div>
+                   <div className="flex gap-2">
+                     <Button className="flex-1 rounded-xl h-10 text-[10px] font-bold" variant="outline">Edit Team</Button>
+                     <Button className="flex-1 rounded-xl h-10 text-[10px] font-bold bg-primary text-black">View Reports</Button>
+                   </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
       </Tabs>
-
-      <Dialog open={!!viewImage} onOpenChange={() => setViewImage(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>AI Verified Proof</DialogTitle></DialogHeader>
-          <img src={viewImage!} className="w-full h-auto rounded-lg shadow-inner" />
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
