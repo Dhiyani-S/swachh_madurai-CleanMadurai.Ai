@@ -38,15 +38,15 @@ export default function LandingPage() {
 
   if (!mounted) return null
 
-  const teppakulamBg = PlaceHolderImages.find(img => img.id === 'madurai-teppakulam')?.imageUrl
+  const towerBg = PlaceHolderImages.find(img => img.id === 'madurai-temple-tower')?.imageUrl
 
   if (!language) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-90 scale-105" 
-          style={{ backgroundImage: `url(${teppakulamBg})` }}
-          data-ai-hint="madurai teppakulam"
+          style={{ backgroundImage: `url(${towerBg})` }}
+          data-ai-hint="madurai gopuram"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10" />
         
@@ -125,11 +125,11 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-90 scale-105" 
-        style={{ backgroundImage: `url(${teppakulamBg})` }}
-        data-ai-hint="madurai teppakulam"
+        className="fixed inset-0 bg-cover bg-center opacity-85 scale-100 transition-transform duration-[20s] ease-linear" 
+        style={{ backgroundImage: `url(${towerBg})` }}
+        data-ai-hint="madurai gopuram"
       />
-      <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/20 to-primary/20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/40 to-primary/20" />
       
       <div className="absolute top-0 right-0 p-8 z-20">
         <Button variant="ghost" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} className="text-white hover:bg-white/10 gap-2 font-bold backdrop-blur-md bg-white/5 border border-white/10">
@@ -148,7 +148,7 @@ export default function LandingPage() {
           
           <div className="space-y-4">
             <h2 className="text-7xl font-headline font-bold leading-none text-white drop-shadow-2xl">{t.tagline}</h2>
-            <p className="text-2xl text-white/70 max-w-lg bg-black/30 backdrop-blur-sm p-4 rounded-2xl border border-white/10">{t.taglineFull}</p>
+            <p className="text-2xl text-white/80 max-w-lg bg-black/40 backdrop-blur-md p-6 rounded-[2rem] border border-white/20 shadow-2xl">{t.taglineFull}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-6">
@@ -168,7 +168,7 @@ export default function LandingPage() {
         </div>
 
         <div className="w-full max-w-md mx-auto">
-          <Card className="border-white/20 shadow-[0_0_80px_rgba(0,0,0,0.5)] rounded-[3.5rem] bg-black/60 backdrop-blur-3xl overflow-hidden border-2">
+          <Card className="border-white/20 shadow-[0_0_80px_rgba(0,0,0,0.6)] rounded-[3.5rem] bg-black/50 backdrop-blur-3xl overflow-hidden border-2">
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-white/5 p-2 h-20 rounded-none border-b border-white/10">
                 <TabsTrigger value="signin" className="font-bold rounded-[2rem] text-white text-lg data-[state=active]:bg-primary">{t.signIn}</TabsTrigger>

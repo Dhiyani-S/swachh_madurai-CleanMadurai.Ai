@@ -89,9 +89,9 @@ export default function DashboardLayout({
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden selection:bg-primary selection:text-white">
-      {/* Fixed Background Layer with High Opacity for Aerial Impact */}
+      {/* Fixed Background Layer with High Visibility */}
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-70 z-0 transition-opacity duration-1000" 
+        className="fixed inset-0 bg-cover bg-center opacity-80 z-0" 
         style={{ backgroundImage: `url(${maduraiBg})` }}
         data-ai-hint="madurai temple aerial"
       />
@@ -101,7 +101,7 @@ export default function DashboardLayout({
         <DashboardSidebar />
         
         <div className="flex-1 md:ml-64 flex flex-col">
-          <header className="h-16 bg-white/5 backdrop-blur-xl border-b border-white/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
+          <header className="h-16 bg-black/40 backdrop-blur-2xl border-b border-white/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
             <div className="flex items-center gap-4 flex-1">
               <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/10">
                 <Menu className="h-6 w-6" />
@@ -147,9 +147,9 @@ export default function DashboardLayout({
           </header>
 
           <main className="flex-1 p-4 md:p-12 overflow-y-auto">
-            {/* Centered Content Wrapper with Glassmorphism */}
+            {/* Centered Content Wrapper with High-Definition Glassmorphism */}
             <div className="max-w-6xl mx-auto w-full">
-              <div className="bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md rounded-[2.5rem] shadow-2xl p-6 md:p-10 border border-white/20 min-h-[calc(100vh-10rem)]">
+              <div className="bg-white/95 dark:bg-zinc-950/90 backdrop-blur-3xl rounded-[3rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] p-8 md:p-12 border border-white/20 min-h-[calc(100vh-10rem)] transition-all">
                 {children}
               </div>
             </div>

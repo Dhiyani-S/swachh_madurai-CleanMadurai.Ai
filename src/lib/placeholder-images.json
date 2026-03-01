@@ -3,32 +3,32 @@
     {
       "id": "madurai-temple-bg",
       "description": "Aerial view of Meenakshi Amman Temple Madurai towers",
-      "imageUrl": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxNYWR1cmFpJTIwVGVtcGxlfGVufDB8fHx8MTc3MjM0Mzk5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&q=80&w=1920",
       "imageHint": "madurai temple aerial"
     },
     {
       "id": "madurai-teppakulam",
       "description": "Vandiyur Mariamman Teppakulam temple in the center of the lake",
-      "imageUrl": "https://images.unsplash.com/photo-1621259533256-65104445353e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1621259533256-65104445353e?auto=format&fit=crop&q=80&w=1920",
       "imageHint": "madurai teppakulam"
+    },
+    {
+      "id": "madurai-temple-tower",
+      "description": "Magnificent close-up of the Madurai temple tower gopuram",
+      "imageUrl": "https://images.unsplash.com/photo-1616422319203-4fc99059f77a?auto=format&fit=crop&q=80&w=1920",
+      "imageHint": "madurai gopuram"
     },
     {
       "id": "madurai-city-clean",
       "description": "Clean street in Madurai city",
-      "imageUrl": "https://images.unsplash.com/photo-1548013146-72479768bbaa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxNYWR1cmFpfGVufDB8fHx8MTc3MjM0Mzk5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1548013146-72479768bbaa?auto=format&fit=crop&q=80&w=1080",
       "imageHint": "madurai street"
     },
     {
       "id": "hero-cleaning",
       "description": "City workers cleaning a street in Madurai",
-      "imageUrl": "https://images.unsplash.com/photo-1615770877212-d0aaba1b1962?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjaXR5JTIwY2xlYW5pbmd8ZW58MHx8fHwxNzcyMzMyOTk5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1615770877212-d0aaba1b1962?auto=format&fit=crop&q=80&w=1080",
       "imageHint": "city cleaning"
-    },
-    {
-      "id": "waste-disposal",
-      "description": "Waste disposal processing unit",
-      "imageUrl": "https://images.unsplash.com/photo-1635605007233-f89705544846?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxyZWN5Y2xpbmclMjBwbGFudHxlbnwwfHx8fDE3NzIzMzI5OTl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "recycling plant"
     }
   ]
 }
