@@ -28,7 +28,8 @@ export interface User {
   age?: number;
   contactNumber?: string;
   address?: string;
-  teamMembers?: string[];
+  teamMembers?: string[]; // Simplified names list if needed
+  teamRoster?: TeamMember[]; // Detailed objects for members
 }
 
 export type TaskType = 'Sensor' | 'Citizen Public' | 'Citizen Private';
@@ -151,9 +152,11 @@ export const useStore = create<AppState>()(
         });
         return { tasks: updatedTasks };
       }),
-      updateUser: (userId, updates) => set((state) => ({
-        users: state.users.map((u) => u.id === userId ? { ...u, ...updates } : u)
-      })),
+      updateUser: (userId, updates) => set((state) => {
+        const updatedUsers = state.users.map((u) => u.id === userId ? { ...u, ...updates } : u);
+        const currentUser = state.currentUser?.id === userId ? { ...state.currentUser, ...updates } : state.currentUser;
+        return { users: updatedUsers, currentUser };
+      }),
       setAttendance: (workerId, members) => set((state) => ({
         attendance: {
           ...state.attendance,
@@ -235,7 +238,7 @@ export const useStore = create<AppState>()(
       })
     }),
     {
-      name: 'clean-madurai-storage-v2',
+      name: 'clean-madurai-storage-v3',
       storage: createJSONStorage(() => localStorage),
     }
   )

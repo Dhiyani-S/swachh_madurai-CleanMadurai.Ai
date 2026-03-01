@@ -14,7 +14,7 @@ import {
   DialogTrigger,
   DialogFooter as DialogFooterUI
 } from "@/components/ui/dialog"
-import { useStore, MemberAttendance } from "@/lib/store"
+import { useStore, MemberAttendance, TeamMember } from "@/lib/store"
 import { 
   Award, 
   MapPin, 
@@ -28,7 +28,9 @@ import {
   AlertCircle,
   Info,
   UserCheck,
-  UserX
+  UserX,
+  Phone,
+  User
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
@@ -37,7 +39,7 @@ import { Label } from "@/components/ui/label"
 import { translations } from "@/lib/translations"
 
 export default function WorkerDashboard() {
-  const { currentUser, tasks, updateTask, attendance, setAttendance, language } = useStore()
+  const { currentUser, tasks, updateTask, attendance, setAttendance, language, users } = useStore()
   const { toast } = useToast()
   const t = translations[language || 'en'];
   
@@ -87,8 +89,8 @@ export default function WorkerDashboard() {
   }, [mounted, assignedTasks]);
 
   React.useEffect(() => {
-    if (mounted && !hasMarkedAttendance && currentUser?.teamMembers) {
-      setAttendanceState(currentUser.teamMembers.map(m => ({ name: m, status: 'Present' })))
+    if (mounted && !hasMarkedAttendance && currentUser?.teamRoster && currentUser.teamRoster.length > 0) {
+      setAttendanceState(currentUser.teamRoster.map(m => ({ name: m.name, status: 'Present' })))
       setIsAttendanceModalOpen(true)
     }
   }, [mounted, hasMarkedAttendance, currentUser])
@@ -141,21 +143,21 @@ export default function WorkerDashboard() {
   if (!mounted) return null
 
   return (
-    <div className="space-y-8 max-w-2xl mx-auto">
+    <div className="space-y-8 max-w-4xl mx-auto">
       {/* Attendance Check Modal */}
       <Dialog open={isAttendanceModalOpen} onOpenChange={setIsAttendanceModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-zinc-900 border-white/10 text-white rounded-[2.5rem]">
           <DialogHeader>
-            <DialogTitle className="font-headline flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-primary" /> {t.attendanceCheck}
+            <DialogTitle className="font-headline flex items-center gap-2 text-2xl">
+              <UserCheck className="h-6 w-6 text-primary" /> {t.attendanceCheck}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-white/60">
               {t.attendanceDesc} ({today}).
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-4">
             {attendanceState.map((member, idx) => (
-              <div key={member.name} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+              <div key={member.name} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
                 <span className="font-medium text-sm">{member.name}</span>
                 <RadioGroup 
                   defaultValue="Present" 
@@ -166,236 +168,247 @@ export default function WorkerDashboard() {
                     setAttendanceState(newAttendance)
                   }}
                 >
-                  <div className="flex items-center space-x-1">
-                    <RadioGroupItem value="Present" id={`p-${idx}`} />
-                    <Label htmlFor={`p-${idx}`} className="text-xs cursor-pointer">{t.present}</Label>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Present" id={`p-${idx}`} className="border-emerald-500 text-emerald-500" />
+                    <Label htmlFor={`p-${idx}`} className="text-xs cursor-pointer text-emerald-500">{t.present}</Label>
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <RadioGroupItem value="Absent" id={`a-${idx}`} />
-                    <Label htmlFor={`a-${idx}`} className="text-xs cursor-pointer text-destructive">{t.absent}</Label>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Absent" id={`a-${idx}`} className="border-rose-500 text-rose-500" />
+                    <Label htmlFor={`a-${idx}`} className="text-xs cursor-pointer text-rose-500">{t.absent}</Label>
                   </div>
                 </RadioGroup>
               </div>
             ))}
+            {attendanceState.length === 0 && (
+              <p className="text-center text-white/40 italic py-8">Your Zone Admin has not added any members to your roster yet.</p>
+            )}
           </div>
           <DialogFooterUI>
-            <Button className="w-full font-bold" onClick={handleAttendanceSubmit}>
+            <Button className="w-full font-bold h-12 shadow-lg shadow-primary/30" onClick={handleAttendanceSubmit} disabled={attendanceState.length === 0}>
               {t.submitAttendance}
             </Button>
           </DialogFooterUI>
         </DialogContent>
       </Dialog>
 
-      <div className="space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="h-16 w-16 rounded-full bg-accent flex items-center justify-center text-accent-foreground font-headline text-2xl font-bold">
-              {currentUser?.teamNumber?.split(' ')[1]?.charAt(0) || currentUser?.id?.charAt(0) || '0'}
-            </div>
-            <div>
-              <h1 className="text-2xl font-headline font-bold">{currentUser?.name}</h1>
-              <div className="flex flex-col gap-1">
-                <p className="text-muted-foreground text-sm flex items-center gap-1">
-                  <Users className="h-3 w-3" /> {currentUser?.teamNumber || `Worker ${currentUser?.id}`} • {currentUser?.zoneId || 'Zone 4'}
-                </p>
-                {hasMarkedAttendance && (
-                  <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-md w-fit">
-                    <CheckCircle className="h-3 w-3" />
-                    <span className="text-[10px] font-bold uppercase tracking-tight">{t.attendanceMarkedToday}</span>
-                  </div>
-                )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-6">
+              <div className="h-20 w-20 rounded-[2rem] bg-primary flex items-center justify-center text-white font-headline text-3xl font-bold shadow-xl shadow-primary/40">
+                {currentUser?.teamNumber?.split('-')[1]?.charAt(0) || currentUser?.id?.charAt(0) || '0'}
+              </div>
+              <div>
+                <h1 className="text-3xl font-headline font-bold text-white">{currentUser?.teamNumber}</h1>
+                <div className="flex flex-col gap-2 mt-1">
+                  <p className="text-white/60 text-sm flex items-center gap-1">
+                    <Users className="h-4 w-4 text-primary" /> {currentUser?.name} • {currentUser?.zoneId || 'Zone Area'}
+                  </p>
+                  {hasMarkedAttendance && (
+                    <div className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/20 w-fit">
+                      <CheckCircle className="h-3 w-3" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest">{t.attendanceMarkedToday}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-          
-          <Dialog>
-            <DialogTrigger asChild>
-              <Card className="bg-secondary/50 border-none cursor-pointer hover:bg-secondary/70 transition-colors">
-                <CardContent className="p-3 text-center">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{t.rewardPointsUpper}</p>
-                  <p className="text-xl font-headline font-bold text-primary flex items-center justify-center gap-1">
-                    <Award className="h-5 w-5 text-amber-500" /> {currentUser?.rewardPoints || 0}
-                  </p>
-                </CardContent>
-              </Card>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle className="font-headline flex items-center gap-2">
-                  <Award className="h-5 w-5 text-amber-500" /> {t.rewardBreakdown}
-                </DialogTitle>
-                <DialogDescription>
-                  {t.pointsEarnedInfo}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
-                  <span className="text-sm font-medium">{t.completed}</span>
-                  <span className="font-bold text-emerald-600">+100 pts</span>
-                </div>
-                <div className="pt-2 border-t flex justify-between items-center px-1">
-                  <span className="font-bold">{t.totalPoints}</span>
-                  <span className="text-xl font-headline font-bold text-primary">{currentUser?.rewardPoints || 0} pts</span>
-                </div>
+
+          <div className="space-y-4">
+            <h3 className="font-headline font-bold text-xl flex items-center gap-2 text-white">
+              <Clock className="h-6 w-6 text-primary" /> {t.activeTasks}
+            </h3>
+            {assignedTasks.length === 0 ? (
+              <div className="text-center py-20 bg-white/5 backdrop-blur-3xl rounded-[3rem] border-2 border-dashed border-white/10">
+                <CheckCircle className="h-16 w-16 mx-auto text-white/10 mb-4" />
+                <p className="text-white/40 font-headline font-bold">{t.allCaughtUp}</p>
               </div>
-            </DialogContent>
-          </Dialog>
+            ) : (
+              assignedTasks.map((task) => (
+                <Card key={task.id} className={cn(
+                  "border-none shadow-2xl overflow-hidden transition-all bg-white/10 backdrop-blur-3xl rounded-[2.5rem]",
+                  task.status === 'In Progress' ? "ring-2 ring-primary" : "",
+                  task.status === 'Partially Completed' ? "ring-2 ring-amber-500" : ""
+                )}>
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="font-headline text-2xl text-white">{task.name}</CardTitle>
+                        <CardDescription className="flex items-center gap-2 mt-1 text-white/60">
+                          <MapPin className="h-4 w-4 text-primary" /> {task.location}
+                        </CardDescription>
+                      </div>
+                      <div className={cn(
+                        "px-3 py-1 rounded-full text-[10px] font-bold uppercase border",
+                        task.status === 'Pending' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : 
+                        task.status === 'In Progress' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : 
+                        "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                      )}>
+                        {task.status === 'Pending' ? t.pending : 
+                         task.status === 'In Progress' ? t.inProgress : 
+                         task.status === 'Completed' ? t.completed : task.status}
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {task.status === 'Pending' && (
+                      <div className="flex items-center justify-between text-xs text-rose-500 bg-rose-500/5 p-3 rounded-2xl border border-rose-500/10 font-bold">
+                        <div className="flex items-center gap-2">
+                          <Timer className="h-5 w-5 animate-pulse" /> {t.mustRespondWithin}
+                        </div>
+                        <span className="font-mono text-lg">{timeLefts[task.id] || '--:--'}</span>
+                      </div>
+                    )}
+                    {task.status === 'Partially Completed' && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3 text-sm font-bold text-amber-500 bg-amber-500/5 p-4 rounded-2xl border border-amber-500/10">
+                          <AlertCircle className="h-5 w-5" />
+                          {t.pendingDisposalVerification}
+                        </div>
+                        <p className="text-xs text-white/40 px-1">
+                          {language === 'ta' ? "பணியை இறுதி செய்ய கழிவு மேலாண்மை தளத்தில் QR-ஐ ஸ்கேன் செய்யவும்." : "Your team QR is now active for this task. Proceed to a nearby disposal terminal to finalize."}
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter className="gap-4 bg-black/20 p-6">
+                    {task.status === 'Pending' && (
+                      <>
+                        <Button onClick={() => handleTaskAction(task.id, 'Accept')} className="flex-1 bg-primary font-bold h-12 rounded-2xl shadow-lg shadow-primary/20">
+                          <CheckCircle2 className="h-5 w-5 mr-2" /> {t.accept}
+                        </Button>
+                        <Button onClick={() => handleTaskAction(task.id, 'Reject')} variant="outline" className="flex-1 text-rose-500 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 font-bold h-12 rounded-2xl">
+                          <XCircle className="h-5 w-5 mr-2" /> {t.reject}
+                        </Button>
+                      </>
+                    )}
+                    {task.status === 'In Progress' && (
+                      <Button onClick={() => handleMarkAsFinished(task.id)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-12 rounded-2xl">
+                        <CheckCircle2 className="h-5 w-5 mr-2" /> {t.markWorkFinished}
+                      </Button>
+                    )}
+                    {task.status === 'Partially Completed' && (
+                      <Dialog open={isQRModalOpen && selectedTaskId === task.id} onOpenChange={(open) => {
+                        setIsQRModalOpen(open);
+                        if (open) setSelectedTaskId(task.id);
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-2xl shadow-lg shadow-primary/20">
+                            <QrCode className="h-5 w-5 mr-2" /> {t.showVerificationQr}
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md bg-zinc-950/90 border-white/10 text-white rounded-[3rem] backdrop-blur-3xl">
+                          <DialogHeader>
+                            <DialogTitle className="font-headline text-2xl flex items-center gap-2">
+                              <QrCode className="h-6 w-6 text-primary" /> {t.verificationQrTitle}
+                            </DialogTitle>
+                            <DialogDescription className="text-white/60">
+                              {t.verificationQrDesc}
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="flex flex-col items-center justify-center gap-8 py-10">
+                            <div className="p-8 bg-white rounded-[2.5rem] shadow-2xl">
+                              <div className="w-56 h-56 bg-slate-50 flex items-center justify-center border-4 border-slate-100 rounded-2xl">
+                                 <QrCode className="h-32 w-32 text-primary opacity-50" />
+                              </div>
+                            </div>
+                            <Button 
+                              onClick={() => simulateExternalScan(task.id)} 
+                              variant="outline"
+                              className="w-full h-12 font-bold border-white/10 hover:bg-white/5"
+                            >
+                              {t.simulateScan}
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    )}
+                  </CardFooter>
+                </Card>
+              ))
+            )}
+          </div>
         </div>
 
-        <Card className="border-none bg-secondary/20 shadow-sm">
-          <CardHeader className="py-4 flex flex-row items-center justify-between border-b bg-secondary/10">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <Users className="h-4 w-4 text-primary" /> {t.teamMembersAttendance}
-            </CardTitle>
-            {hasMarkedAttendance ? (
-               <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded border border-emerald-100 uppercase">
-                 {t.updatedToday}
-               </span>
-            ) : (
-              <Button variant="outline" size="sm" onClick={() => setIsAttendanceModalOpen(true)} className="h-7 text-[10px] font-bold bg-white">
-                {t.submitNow}
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-8">
+          <Card className="border-none bg-white/10 backdrop-blur-3xl shadow-2xl rounded-[3rem] overflow-hidden">
+            <CardHeader className="py-6 flex flex-row items-center justify-between border-b border-white/10 bg-white/5">
+              <CardTitle className="text-lg font-headline font-bold text-white flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" /> Team Roster & Attendance
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-4">
               {hasMarkedAttendance ? (
-                currentTeamAttendance.members.map((member, i) => (
-                  <div key={i} className={cn(
-                    "px-3 py-2 rounded-xl text-xs font-bold border shadow-sm flex items-center justify-between",
-                    member.status === 'Present' ? "bg-white text-emerald-700 border-emerald-100" : "bg-white text-rose-700 border-rose-100 opacity-60"
-                  )}>
-                    <div className="flex items-center gap-2">
-                      {member.status === 'Present' ? <UserCheck className="h-3.5 w-3.5" /> : <UserX className="h-3.5 w-3.5" />}
-                      {member.name}
-                    </div>
-                    <span className="text-[9px] uppercase tracking-wider">{member.status === 'Present' ? t.present : t.absent}</span>
-                  </div>
-                ))
-              ) : currentUser?.teamMembers?.map((member, i) => (
-                <div key={i} className="px-3 py-2 bg-white rounded-xl text-xs font-bold border shadow-sm opacity-50 flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-slate-300 animate-pulse" />
-                  {member} ({t.pending})
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="space-y-4">
-        <h3 className="font-headline font-bold text-lg flex items-center gap-2">
-          <Clock className="h-5 w-5 text-primary" /> {t.activeTasks}
-        </h3>
-        {assignedTasks.length === 0 ? (
-          <div className="text-center py-12 bg-secondary/20 rounded-xl border border-dashed">
-            <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground/30 mb-2" />
-            <p className="text-muted-foreground font-medium">{t.allCaughtUp}</p>
-          </div>
-        ) : (
-          assignedTasks.map((task) => (
-            <Card key={task.id} className={cn(
-              "border-none shadow-md overflow-hidden transition-all",
-              task.status === 'In Progress' ? "ring-2 ring-primary" : "",
-              task.status === 'Partially Completed' ? "ring-2 ring-amber-500" : ""
-            )}>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="font-headline">{task.name}</CardTitle>
-                    <CardDescription className="flex items-center gap-1 mt-1">
-                      <MapPin className="h-3 w-3" /> {task.location}
-                    </CardDescription>
-                  </div>
-                  <div className={cn(
-                    "px-2 py-1 rounded-md text-[10px] font-bold uppercase",
-                    task.status === 'Pending' ? "bg-amber-100 text-amber-700" : 
-                    task.status === 'In Progress' ? "bg-blue-100 text-blue-700" : 
-                    "bg-amber-100 text-amber-700 border border-amber-300"
-                  )}>
-                    {task.status === 'Pending' ? t.pending : 
-                     task.status === 'In Progress' ? t.inProgress : 
-                     task.status === 'Completed' ? t.completed : task.status}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {task.status === 'Pending' && (
-                  <div className="flex items-center justify-between text-xs text-rose-600 bg-rose-50 p-2 rounded-lg border border-rose-100 font-bold">
-                    <div className="flex items-center gap-2">
-                      <Timer className="h-4 w-4 animate-pulse" /> {t.mustRespondWithin}
-                    </div>
-                    <span className="font-mono text-sm">{timeLefts[task.id] || '--:--'}</span>
-                  </div>
-                )}
-                {task.status === 'Partially Completed' && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-sm font-medium text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200">
-                      <AlertCircle className="h-4 w-4" />
-                      {t.pendingDisposalVerification}
-                    </div>
-                    <p className="text-xs text-muted-foreground px-1">
-                      {language === 'ta' ? "பணியை இறுதி செய்ய கழிவு மேலாண்மை தளத்தில் QR-ஐ ஸ்கேன் செய்யவும்." : "Your team QR is now active for this task. Proceed to a nearby disposal terminal to finalize."}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter className="gap-2 bg-secondary/20 p-4">
-                {task.status === 'Pending' && (
-                  <>
-                    <Button onClick={() => handleTaskAction(task.id, 'Accept')} className="flex-1 bg-primary font-bold gap-2">
-                      <CheckCircle2 className="h-4 w-4" /> {t.accept}
-                    </Button>
-                    <Button onClick={() => handleTaskAction(task.id, 'Reject')} variant="outline" className="flex-1 text-destructive font-bold gap-2">
-                      <XCircle className="h-4 w-4" /> {t.reject}
-                    </Button>
-                  </>
-                )}
-                {task.status === 'In Progress' && (
-                  <Button onClick={() => handleMarkAsFinished(task.id)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-2">
-                    <CheckCircle2 className="h-4 w-4" /> {t.markWorkFinished}
-                  </Button>
-                )}
-                {task.status === 'Partially Completed' && (
-                  <Dialog open={isQRModalOpen && selectedTaskId === task.id} onOpenChange={(open) => {
-                    setIsQRModalOpen(open);
-                    if (open) setSelectedTaskId(task.id);
-                  }}>
-                    <DialogTrigger asChild>
-                      <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold gap-2">
-                        <QrCode className="h-4 w-4" /> {t.showVerificationQr}
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle className="font-headline flex items-center gap-2">
-                          <QrCode className="h-5 w-5 text-primary" /> {t.verificationQrTitle}
-                        </DialogTitle>
-                        <DialogDescription>
-                          {t.verificationQrDesc}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="flex flex-col items-center justify-center gap-6 py-8">
-                        <div className="p-4 bg-white rounded-2xl border shadow-inner">
-                          <div className="w-48 h-48 bg-slate-100 flex items-center justify-center border-4 border-slate-200">
-                             <QrCode className="h-24 w-24 text-primary opacity-50" />
-                          </div>
-                        </div>
-                        <Button 
-                          onClick={() => simulateExternalScan(task.id)} 
-                          variant="outline"
-                          className="w-full h-10 text-xs font-bold"
-                        >
-                          {t.simulateScan}
-                        </Button>
+                <div className="space-y-3">
+                  {currentTeamAttendance.members.map((member, i) => (
+                    <div key={i} className={cn(
+                      "p-4 rounded-[1.5rem] text-sm font-bold border flex items-center justify-between transition-all",
+                      member.status === 'Present' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-rose-500/10 text-rose-500 border-rose-500/20 opacity-60"
+                    )}>
+                      <div className="flex items-center gap-3">
+                        {member.status === 'Present' ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
+                        <span className="font-headline">{member.name}</span>
                       </div>
-                    </DialogContent>
-                  </Dialog>
-                )}
-              </CardFooter>
-            </Card>
-          ))
-        )}
+                      <span className="text-[10px] uppercase tracking-widest font-bold">{member.status === 'Present' ? t.present : t.absent}</span>
+                    </div>
+                  ))}
+                  <div className="pt-4 border-t border-white/10">
+                     <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest text-center">Status: {t.attendanceMarkedToday}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="p-8 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/20">
+                    <AlertCircle className="h-10 w-10 mx-auto text-primary mb-3" />
+                    <p className="text-sm font-medium text-white/80">{t.attendanceDesc}</p>
+                    <Button 
+                      className="mt-6 w-full font-bold h-11 shadow-lg shadow-primary/20" 
+                      onClick={() => setIsAttendanceModalOpen(true)}
+                      disabled={!currentUser?.teamRoster || currentUser.teamRoster.length === 0}
+                    >
+                      {t.submitNow}
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-2">Team Members List</p>
+                    {currentUser?.teamRoster?.map((member, i) => (
+                      <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-between">
+                         <div className="flex items-center gap-3">
+                            <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                            <span className="text-sm text-white/80 font-medium">{member.name}</span>
+                         </div>
+                         <span className="text-[9px] text-white/40 font-bold uppercase">{member.age} Yrs</span>
+                      </div>
+                    )) || <p className="text-center text-xs text-white/20">No members registered.</p>}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-none bg-primary shadow-2xl shadow-primary/30 rounded-[3rem] text-white">
+            <CardHeader>
+              <CardTitle className="text-xl font-headline font-bold flex items-center gap-2">
+                <Award className="h-6 w-6 text-white" /> Performance Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+               <div className="p-6 bg-white/10 backdrop-blur-md rounded-[2rem] text-center border border-white/20">
+                  <p className="text-xs font-bold uppercase tracking-widest mb-1 text-white/80">Available Points</p>
+                  <p className="text-5xl font-headline font-bold">{currentUser?.rewardPoints || 0}</p>
+               </div>
+               <div className="space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold px-2">
+                     <span className="uppercase text-white/80">Goal Progress</span>
+                     <span>85%</span>
+                  </div>
+                  <Progress value={85} className="h-2 bg-white/20" />
+               </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
