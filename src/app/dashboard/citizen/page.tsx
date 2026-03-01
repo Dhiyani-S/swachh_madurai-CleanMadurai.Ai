@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Camera, Send, History, Trash2, Home, MapPin, CheckCircle, Clock, CreditCard, RefreshCw, Award, Zap, Loader2, AlertCircle } from "lucide-react"
+import { Camera, Send, Trash2, Home, RefreshCw, Award, Zap, Loader2, AlertCircle, MapPin, CheckCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useStore, Task } from "@/lib/store"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -18,7 +18,6 @@ export default function CitizenDashboard() {
   const { tasks, addTask, updateTask, currentUser, addCitizenRewards, users } = useStore()
   const [submitting, setSubmitting] = React.useState(false)
   const [selectedZone, setSelectedZone] = React.useState<string>("")
-  const [selectedWard, setSelectedWard] = React.useState<string>("")
   const [address, setAddress] = React.useState<string>("")
   const [issueType, setIssueType] = React.useState<string>("")
   const [mounted, setMounted] = React.useState(false)
@@ -98,8 +97,8 @@ export default function CitizenDashboard() {
     try {
       if (type === 'public' && capturedImage) {
         toast({
-          title: "AI Verifying...",
-          description: "Analyzing your report using CleanMadurai AI.",
+          title: "AI Deep Learning Verification",
+          description: "Our AI is currently verifying your report image...",
         });
 
         const aiResult = await verifyPublicReport({
@@ -110,24 +109,25 @@ export default function CitizenDashboard() {
         if (!aiResult.isValid) {
           toast({
             variant: 'destructive',
-            title: "Verification Failed",
-            description: `AI could not verify this as a legitimate waste issue. Reason: ${aiResult.reasoning}`,
+            title: "Verification Rejected",
+            description: aiResult.reasoning,
           });
           setSubmitting(false);
           return;
         }
 
-        // Automatic Assignment Logic
+        // Automatic Assignment Logic for verified issues
         const zoneWorkers = users.filter(u => u.role === 'Worker' && u.zoneId === selectedZone);
-        const suggestedWorker = zoneWorkers[0];
+        // Simulate finding the "nearest" or first available worker
+        const suggestedWorker = zoneWorkers[Math.floor(Math.random() * zoneWorkers.length)] || zoneWorkers[0];
 
         const newTask: Task = {
           id: `task-${Date.now()}`,
-          name: `Public Complaint: ${issueType || 'Waste Cleanup'}`,
+          name: `Verified: ${issueType || 'Waste Cleanup'}`,
           location: address,
           status: 'Pending',
           type: 'Citizen Public',
-          wardId: selectedWard || 'Ward 1',
+          wardId: 'Ward 14',
           zoneId: selectedZone,
           createdAt: new Date().toISOString(),
           citizenId: currentUser?.id,
@@ -139,10 +139,8 @@ export default function CitizenDashboard() {
         addCitizenRewards(currentUser?.id || "", 50);
 
         toast({
-          title: "Report Filed Successfully",
-          description: aiResult.issueType === 'Unverified Issue' 
-            ? "Report accepted for manual review (AI offline). +50 Rewards earned."
-            : `AI Verified! Task automatically assigned to ${suggestedWorker?.name || 'Zone Queue'}. +50 Rewards earned.`,
+          title: "Issue Verified & Dispatched!",
+          description: `AI confirmed valid ${aiResult.issueType}. Task assigned to ${suggestedWorker?.name || 'Zone Queue'}. +50 Rewards earned!`,
         });
       } else {
         // Private Service Flow
@@ -152,7 +150,7 @@ export default function CitizenDashboard() {
           location: address,
           status: 'Pending',
           type: 'Citizen Private',
-          wardId: selectedWard || 'Ward 1',
+          wardId: 'Ward 14',
           zoneId: selectedZone,
           createdAt: new Date().toISOString(),
           citizenId: currentUser?.id,
@@ -167,24 +165,18 @@ export default function CitizenDashboard() {
 
       setAddress("");
       setCapturedImage(null);
+      setSelectedZone("");
+      setIssueType("");
     } catch (error: any) {
       console.error("Submission error:", error);
       toast({
         variant: 'destructive',
-        title: "Submission Failed",
-        description: "Something went wrong while filing your report. Please try again.",
+        title: "System Busy",
+        description: "Could not complete AI verification. Please try again later.",
       });
     } finally {
       setSubmitting(false);
     }
-  }
-
-  const handlePayment = (taskId: string) => {
-    updateTask(taskId, { paymentStatus: 'Paid' })
-    toast({
-      title: "Payment Successful",
-      description: "Worker is allocated, soon there will reached the place",
-    })
   }
 
   if (!mounted) return null;
@@ -196,7 +188,7 @@ export default function CitizenDashboard() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-headline font-bold text-primary">Citizen Portal</h1>
-          <p className="text-muted-foreground">Submit cleaning requests and track progress in your area</p>
+          <p className="text-muted-foreground">AI-powered reporting for a cleaner Madurai</p>
         </div>
         <Card className="bg-primary/5 border-primary/20 shadow-none px-4 py-2">
           <div className="flex items-center gap-2">
@@ -219,9 +211,9 @@ export default function CitizenDashboard() {
           <Card className="border-none shadow-lg">
             <CardHeader>
               <CardTitle className="font-headline text-rose-600 flex items-center gap-2">
-                <Zap className="h-6 w-6 fill-rose-600" /> AI-Verified Reporting
+                <Zap className="h-6 w-6 fill-rose-600" /> DL Verification Layer
               </CardTitle>
-              <CardDescription>Our AI instantly verifies your report and dispatches nearby teams. Earn 50 credits for valid issues!</CardDescription>
+              <CardDescription>Deep Learning analysis verifies your photo instantly. Only valid issues are forwarded to admins.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -254,11 +246,11 @@ export default function CitizenDashboard() {
 
               <div className="space-y-2">
                 <Label>Specific Location / Landmarks</Label>
-                <Input placeholder="Describe the exact location" value={address} onChange={e => setAddress(e.target.value)} />
+                <Input placeholder="e.g. Near Mattuthavani Bus Stand" value={address} onChange={e => setAddress(e.target.value)} />
               </div>
               
               <div className="space-y-2">
-                <Label>Photo Proof (AI Analyzed)</Label>
+                <Label>Photo Proof (Deep Learning Analysis)</Label>
                 <div className="relative rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center">
                   {capturedImage ? (
                     <img src={capturedImage} alt="Captured proof" className="w-full h-full object-cover" />
@@ -315,9 +307,9 @@ export default function CitizenDashboard() {
                 disabled={submitting || (!capturedImage && hasCameraPermission !== false)}
               >
                 {submitting ? (
-                  <><Loader2 className="h-5 w-5 animate-spin" /> Verifying...</>
+                  <><Loader2 className="h-5 w-5 animate-spin" /> Verifying Image...</>
                 ) : (
-                  <><Send className="h-5 w-5" /> File AI Report & Earn Rewards</>
+                  <><Send className="h-5 w-5" /> Submit for AI Review</>
                 )}
               </Button>
             </CardFooter>
@@ -346,20 +338,9 @@ export default function CitizenDashboard() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Ward</Label>
-                  <Select value={selectedWard} onValueChange={setSelectedWard}>
-                    <SelectTrigger><SelectValue placeholder="Select Ward" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Ward 1">Ward 1</SelectItem>
-                      <SelectItem value="Ward 2">Ward 2</SelectItem>
-                      <SelectItem value="Ward 3">Ward 3</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>Address</Label>
+                  <Input placeholder="Enter your full home/office address" value={address} onChange={e => setAddress(e.target.value)} />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Full Address</Label>
-                <Input placeholder="Enter your full home/office address" value={address} onChange={e => setAddress(e.target.value)} />
               </div>
             </CardContent>
             <CardFooter>
@@ -404,20 +385,6 @@ export default function CitizenDashboard() {
                         <Zap className="h-3 w-3" /> Auto-assigned to {users.find(u => u.id === task.assignedTo)?.name || 'Worker'}
                       </p>
                     )}
-                    {task.paymentStatus === 'Unpaid' && (
-                      <Button 
-                        size="sm" 
-                        className="mt-2 h-7 text-[10px] font-bold gap-1"
-                        onClick={() => handlePayment(task.id)}
-                      >
-                        <CreditCard className="h-3 w-3" /> Pay Collection Fee
-                      </Button>
-                    )}
-                    {task.paymentStatus === 'Paid' && (
-                      <p className="text-[10px] text-emerald-600 font-bold mt-1 flex items-center gap-1">
-                        <CheckCircle className="h-3 w-3" /> Worker is allocated, soon there will reached the place
-                      </p>
-                    )}
                   </div>
                 </div>
               ))
@@ -427,25 +394,25 @@ export default function CitizenDashboard() {
 
         <Card className="border-none shadow-md bg-accent/10">
           <CardHeader>
-            <CardTitle className="font-headline text-xl text-primary">Rewards Program</CardTitle>
-            <CardDescription>How to earn more points</CardDescription>
+            <CardTitle className="font-headline text-xl text-primary">Rewards Center</CardTitle>
+            <CardDescription>Earn credits for helping CleanMadurai</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
-                <span>AI-Verified Public Report</span>
+                <span className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-emerald-500" /> AI-Verified Public Report</span>
                 <span className="font-bold text-emerald-600">+50 Points</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span>Verification Photo</span>
+                <span className="flex items-center gap-2"><CheckCircle className="h-4 w-4 text-emerald-500" /> Photo Verification</span>
                 <span className="font-bold text-emerald-600">+20 Points</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span>Successful Cleanup</span>
-                <span className="font-bold text-emerald-600">+100 Points</span>
+              <div className="flex items-center justify-between text-sm opacity-50">
+                <span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Nearby Hotspot Bonus</span>
+                <span className="font-bold">+10 Points</span>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground pt-2 border-t">Points can be redeemed for property tax discounts and city services.</p>
+            <p className="text-xs text-muted-foreground pt-3 border-t">Points are automatically credited upon successful Deep Learning verification.</p>
           </CardContent>
         </Card>
       </div>

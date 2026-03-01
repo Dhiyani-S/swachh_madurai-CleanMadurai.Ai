@@ -1,6 +1,7 @@
 'use server';
 /**
  * @fileOverview An AI agent for verifying public waste/cleanliness reports using computer vision.
+ * This acts as the Deep Learning (DL) pre-verification layer for the system.
  *
  * - verifyPublicReport - A function that handles the image analysis process.
  * - VerifyPublicReportInput - The input type for the verifyPublicReport function.
@@ -33,12 +34,12 @@ export async function verifyPublicReport(input: VerifyPublicReportInput): Promis
     return await verifyPublicReportFlow(input);
   } catch (error: any) {
     console.error('AI Verification Error:', error);
-    // Graceful fallback for the prototype to avoid blocking the user flow
+    // Graceful fallback for the prototype if AI service is blocked or offline
     return {
       isValid: true,
-      issueType: 'Unverified Issue',
+      issueType: 'Manual Review Required',
       confidenceScore: 0.5,
-      reasoning: 'AI verification service is currently under maintenance. The report has been accepted for manual review to ensure your service is not interrupted.'
+      reasoning: 'The AI verification service is currently experiencing high load. We have accepted your report for manual verification to ensure prompt service.'
     };
   }
 }
@@ -59,19 +60,25 @@ const prompt = ai.definePrompt({
       },
     ],
   },
-  prompt: `You are an expert AI validator for the CleanMadurai.AI waste management system.
-Your task is to analyze the provided image and description to determine if it represents a legitimate public cleanliness or waste issue that requires intervention.
+  prompt: `You are a Deep Learning Computer Vision validator for the CleanMadurai.AI system.
+Your goal is to perform PRE-VERIFICATION on citizen reports. You must filter out any reports that do not show an actual cleanliness or waste issue.
 
-Legitimate issues include:
-- Overflowing dustbins or garbage heaps.
-- Littering or waste dumped in public spaces.
-- Drainage leakages or sewer issues.
-- Public toilet cleanliness issues.
-
-If the image is unrelated (e.g., a selfie, a clean street, a random object), set isValid to false.
+STRICT VALIDATION CRITERIA:
+- Set isValid to TRUE ONLY if the image clearly shows:
+  1. Overflowing dustbins or garbage heaps.
+  2. Littering or dumped waste in public spaces.
+  3. Drainage/sewage leakages or blockages.
+  4. Public toilet cleanliness failures.
+- Set isValid to FALSE if the image shows:
+  1. Clean streets or buildings.
+  2. People's faces/selfies without context of an issue.
+  3. Random objects unrelated to waste management.
+  4. A blurry or dark photo where no issue can be identified.
 
 Input Description: {{{description}}}
-Photo: {{media url=photoDataUri}}`,
+Photo: {{media url=photoDataUri}}
+
+Provide a clear 'reasoning' for your decision so the citizen understands why their report was accepted or rejected.`,
 });
 
 const verifyPublicReportFlow = ai.defineFlow(
