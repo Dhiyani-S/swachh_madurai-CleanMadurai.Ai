@@ -9,10 +9,11 @@ import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { StatusBadge } from "@/components/dashboard/StatusBadge"
-import { Users, ClipboardList, Map as MapIcon, Plus, AlertTriangle, UserPlus, BarChart3, Edit2, UserCircle, Zap, UserCheck, ImageIcon, Eye } from "lucide-react"
+import { Users, ClipboardList, Map as MapIcon, Plus, AlertTriangle, UserPlus, BarChart3, Edit2, UserCircle, Zap, UserCheck, ImageIcon, Eye, Award } from "lucide-react"
 import { useStore, Task, User, TeamMember, SensorSubType } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { cn } from "@/lib/utils"
 
 export default function ZoneAdminDashboard() {
   const { tasks, updateTask, users, addTask, addUser, updateUser, currentUser, attendance } = useStore()
