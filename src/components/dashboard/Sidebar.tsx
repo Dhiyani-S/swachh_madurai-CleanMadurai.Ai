@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -8,47 +9,46 @@ import {
   Recycle, 
   LayoutDashboard, 
   ClipboardList, 
-  Bell, 
-  BarChart3, 
   Users, 
   Settings, 
   LogOut,
-  Map,
-  MessageSquareWarning,
   Award,
   Zap
 } from "lucide-react"
 import { useStore } from "@/lib/store"
+import { translations } from "@/lib/translations"
 
 export function DashboardSidebar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { currentUser, setCurrentUser } = useStore()
+  const { currentUser, setCurrentUser, language } = useStore()
 
   const handleLogout = () => {
     setCurrentUser(null)
     router.push('/')
   }
 
+  const t = translations[language || 'en'];
+
   const roleRoutes = {
     'Corporation Commissioner': [
-      { name: 'Overview', icon: LayoutDashboard, href: '/dashboard/commissioner' },
-      { name: 'Reports', icon: ClipboardList, href: '/dashboard/commissioner/reports' },
+      { name: t.performance, icon: LayoutDashboard, href: '/dashboard/commissioner' },
+      { name: 'Analytics', icon: ClipboardList, href: '/dashboard/commissioner/reports' },
     ],
     'Ward Admin': [
-      { name: 'Ward Dashboard', icon: LayoutDashboard, href: '/dashboard/ward-admin' },
+      { name: t.wardAdmin, icon: LayoutDashboard, href: '/dashboard/ward-admin' },
       { name: 'Tasks', icon: ClipboardList, href: '/dashboard/ward-admin/tasks' },
     ],
     'Zone Admin': [
-      { name: 'Zone Dashboard', icon: LayoutDashboard, href: '/dashboard/zone-admin' },
+      { name: t.zoneAdmin, icon: LayoutDashboard, href: '/dashboard/zone-admin' },
       { name: 'Team Mgmt', icon: Users, href: '/dashboard/zone-admin/teams' },
     ],
     'Worker': [
-      { name: 'Task Board', icon: ClipboardList, href: '/dashboard/worker' },
-      { name: 'My Rewards', icon: Award, href: '/dashboard/worker/rewards' },
+      { name: t.activeTasks, icon: ClipboardList, href: '/dashboard/worker' },
+      { name: t.rewards, icon: Award, href: '/dashboard/worker/rewards' },
     ],
     'Citizen': [
-      { name: 'My Portal', icon: LayoutDashboard, href: '/dashboard/citizen' },
+      { name: t.citizenPortal, icon: LayoutDashboard, href: '/dashboard/citizen' },
       { name: 'History', icon: ClipboardList, href: '/dashboard/citizen/history' },
     ],
   }
@@ -91,7 +91,7 @@ export function DashboardSidebar() {
                 pathname === '/dashboard/settings' ? "bg-primary text-white" : "text-muted-foreground"
               )}>
                 <Settings className="h-4 w-4" />
-                Settings
+                {t.settings}
               </span>
             </Link>
             <button 
@@ -99,7 +99,7 @@ export function DashboardSidebar() {
               className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50"
             >
               <LogOut className="h-4 w-4" />
-              Logout
+              {t.logout}
             </button>
           </div>
         </div>

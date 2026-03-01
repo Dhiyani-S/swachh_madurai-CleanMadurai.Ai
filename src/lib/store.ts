@@ -4,6 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import initialData from './initial-dataset.json';
 
 export type UserRole = 'Corporation Commissioner' | 'Ward Admin' | 'Zone Admin' | 'Worker' | 'Citizen';
+export type AppLanguage = 'en' | 'ta';
 
 export interface TeamMember {
   id: string;
@@ -64,7 +65,9 @@ interface AppState {
   tasks: Task[];
   users: User[]; // Centralized list for all registered accounts
   attendance: Record<string, TeamAttendance>;
+  language: AppLanguage | null;
   setCurrentUser: (user: User | null) => void;
+  setLanguage: (lang: AppLanguage) => void;
   addUser: (user: User) => void;
   addTask: (task: Task) => void;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
@@ -81,7 +84,9 @@ export const useStore = create<AppState>()(
       tasks: (initialData.tasks as Task[]),
       users: (initialData.users as User[]),
       attendance: {},
+      language: null,
       setCurrentUser: (user) => set({ currentUser: user }),
+      setLanguage: (lang) => set({ language: lang }),
       addUser: (user) => set((state) => ({ users: [...state.users, user] })),
       addTask: (task) => set((state) => ({ tasks: [task, ...state.tasks] })),
       updateTask: (taskId, updates) => set((state) => ({
@@ -117,11 +122,12 @@ export const useStore = create<AppState>()(
         tasks: (initialData.tasks as Task[]), 
         users: (initialData.users as User[]),
         attendance: {},
-        currentUser: null
+        currentUser: null,
+        language: null
       })
     }),
     {
-      name: 'clean-madurai-storage',
+      name: 'clean-madurai-storage-v2',
       storage: createJSONStorage(() => localStorage),
     }
   )

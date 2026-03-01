@@ -1,10 +1,11 @@
+
 "use client"
 
 import { DashboardSidebar } from "@/components/dashboard/Sidebar"
 import { useStore } from "@/lib/store"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-import { Bell, Search, Menu } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Bell, Search, Menu, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { 
@@ -15,24 +16,28 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
+import { translations } from "@/lib/translations"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { currentUser } = useStore()
+  const { currentUser, language, setLanguage } = useStore()
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     if (!currentUser) {
       router.push('/')
     }
   }, [currentUser, router])
 
-  if (!currentUser) return null
+  if (!mounted || !currentUser) return null
 
   const isWorker = currentUser.role === 'Worker'
+  const t = translations[language || 'en'];
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -46,15 +51,26 @@ export default function DashboardLayout({
             {!isWorker && (
               <div className="relative w-full max-w-md hidden sm:block">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search tasks, zones, wards..." className="pl-9 bg-secondary/30 border-none h-10" />
+                <Input placeholder="Search..." className="pl-9 bg-secondary/30 border-none h-10" />
               </div>
             )}
           </div>
           <div className="flex items-center gap-2 md:gap-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2 font-bold text-xs"
+              onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}
+            >
+              <Globe className="h-4 w-4" />
+              <span className="hidden sm:inline">{language === 'en' ? 'தமிழ்' : 'English'}</span>
+            </Button>
+            
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
               <span className="absolute top-2 right-2 h-2 w-2 bg-destructive rounded-full border-2 border-card" />
             </Button>
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="gap-2 px-2 hover:bg-secondary">
@@ -65,12 +81,9 @@ export default function DashboardLayout({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>{t.settings}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-                <DropdownMenuItem>Performance History</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-destructive">Log out</DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive" onClick={() => router.push('/')}>{t.logout}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
