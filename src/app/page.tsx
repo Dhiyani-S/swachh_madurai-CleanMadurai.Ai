@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -32,7 +33,6 @@ export default function LandingPage() {
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // STRICT AUTHENTICATION: Check if User ID, Password, and Role all match
     const existingUser = users.find(u => 
       u.id === userId.trim() && 
       u.password === password && 
@@ -205,11 +205,11 @@ export default function LandingPage() {
                           <SelectValue placeholder="Select your Zone" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Zone 1 (Central)">Zone 1 (Central)</SelectItem>
-                          <SelectItem value="Zone 2 (Anna Nagar)">Zone 2 (Anna Nagar)</SelectItem>
-                          <SelectItem value="Zone 3 (Madurai West)">Zone 3 (Madurai West)</SelectItem>
-                          <SelectItem value="Zone 4 (Vaikunth Nagar)">Zone 4 (Vaikunth Nagar)</SelectItem>
-                          <SelectItem value="Zone 5 (Goripalayam)">Zone 5 (Goripalayam)</SelectItem>
+                          <SelectItem value="ZA - Zone A (North)">ZA - Zone A (North)</SelectItem>
+                          <SelectItem value="ZB - Zone B (South)">ZB - Zone B (South)</SelectItem>
+                          <SelectItem value="ZC - Zone C (East)">ZC - Zone C (East)</SelectItem>
+                          <SelectItem value="ZD - Zone D (West)">ZD - Zone D (West)</SelectItem>
+                          <SelectItem value="ZE - Zone E (Central)">ZE - Zone E (Central)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -222,25 +222,6 @@ export default function LandingPage() {
             </Card>
           </TabsContent>
         </Tabs>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-8 opacity-60 grayscale hover:grayscale-0 transition-all">
-          <div className="flex flex-col items-center text-xs gap-1">
-            <ShieldCheck className="h-5 w-5" />
-            <span>Secure</span>
-          </div>
-          <div className="flex flex-col items-center text-xs gap-1">
-            <MapPin className="h-5 w-5" />
-            <span>Smart Tracking</span>
-          </div>
-          <div className="flex flex-col items-center text-xs gap-1">
-            <Users className="h-5 w-5" />
-            <span>Collaborative</span>
-          </div>
-          <div className="flex flex-col items-center text-xs gap-1">
-            <UserCircle className="h-5 w-5" />
-            <span>Role-Based</span>
-          </div>
-        </div>
       </div>
     </div>
   )

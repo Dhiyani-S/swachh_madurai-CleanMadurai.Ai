@@ -4,64 +4,57 @@
     {
       "id": "comm-1",
       "password": "password123",
-      "name": "Dr. Madurai Commissioner",
+      "name": "Madurai Commissioner",
       "role": "Corporation Commissioner",
       "rewardPoints": 0
     },
     {
-      "id": "ward-admin-14",
+      "id": "admin-za",
       "password": "password123",
-      "name": "Senthil Kumar",
-      "role": "Ward Admin",
-      "wardId": "Ward 14",
-      "rewardPoints": 0
-    },
-    {
-      "id": "zone-admin-1",
-      "password": "password123",
-      "name": "Dharshini R.",
+      "name": "North Zone Admin",
       "role": "Zone Admin",
-      "zoneId": "Zone 1 (Central)",
+      "zoneId": "ZA - Zone A (North)",
       "rewardPoints": 0
     },
     {
-      "id": "zone-admin-2",
+      "id": "admin-ze",
       "password": "password123",
-      "name": "Anbu T.",
+      "name": "Central Zone Admin",
       "role": "Zone Admin",
-      "zoneId": "Zone 2 (Anna Nagar)",
+      "zoneId": "ZE - Zone E (Central)",
       "rewardPoints": 0
     },
     {
-      "id": "worker-04",
+      "id": "worker-za-1",
       "password": "password123",
-      "name": "Karthik",
+      "name": "Team Leader Arasaradi",
       "role": "Worker",
-      "teamNumber": "Team worker-04",
-      "zoneId": "Zone 1 (Central)",
-      "rewardPoints": 450,
-      "age": 28,
-      "contactNumber": "9876543210",
-      "address": "12, West St, Madurai",
+      "teamNumber": "Team ZA-01",
+      "zoneId": "ZA - Zone A (North)",
+      "wardId": "WA01",
+      "rewardPoints": 150,
+      "age": 30,
+      "contactNumber": "9000000001",
+      "address": "Arasaradi Ward Office",
       "members": [
-        { "id": "m1", "name": "Siva", "age": 32, "contactNumber": "9876543211", "address": "45, East St, Madurai" },
-        { "id": "m2", "name": "Meena", "age": 26, "contactNumber": "9876543212", "address": "7, South St, Madurai" }
+        { "id": "m1", "name": "Muthu", "age": 28, "contactNumber": "9000000002", "address": "North Madurai" },
+        { "id": "m2", "name": "Pandi", "age": 32, "contactNumber": "9000000003", "address": "North Madurai" }
       ]
     },
     {
-      "id": "worker-05",
+      "id": "worker-ze-1",
       "password": "password123",
-      "name": "Ramu S.",
+      "name": "Team Leader Simmakkal",
       "role": "Worker",
-      "teamNumber": "Team worker-05",
-      "zoneId": "Zone 2 (Anna Nagar)",
-      "rewardPoints": 120,
-      "age": 34,
-      "contactNumber": "9876543220",
-      "address": "Anna Nagar, Madurai",
+      "teamNumber": "Team ZE-01",
+      "zoneId": "ZE - Zone E (Central)",
+      "wardId": "WE01",
+      "rewardPoints": 200,
+      "age": 35,
+      "contactNumber": "9000000101",
+      "address": "Simmakkal Central Office",
       "members": [
-        { "id": "m3", "name": "Arjun", "age": 29, "contactNumber": "9876543221", "address": "Anna Nagar" },
-        { "id": "m4", "name": "Priya", "age": 25, "contactNumber": "9876543222", "address": "Anna Nagar" }
+        { "id": "m10", "name": "Selvam", "age": 40, "contactNumber": "9000000102", "address": "Central Madurai" }
       ]
     },
     {
@@ -74,38 +67,27 @@
   ],
   "tasks": [
     {
-      "id": "sensor-1",
-      "name": "Overflowing Dustbin (ML Alert)",
-      "location": "Mattuthavani Bus Stand - Platform 2",
+      "id": "sensor-za-1",
+      "name": "Dustbin Overflow Predicted (ML)",
+      "location": "Arasaradi Main Junction",
       "status": "Pending",
       "type": "Sensor",
       "subType": "Dustbin",
-      "wardId": "Ward 14",
-      "zoneId": "Zone 1 (Central)",
-      "createdAt": "2024-05-20T10:00:00Z"
+      "wardId": "WA01",
+      "zoneId": "ZA - Zone A (North)",
+      "createdAt": "2024-05-21T08:00:00Z"
     },
     {
-      "id": "sensor-2",
-      "name": "Drainage Leakage Detected",
-      "location": "Periyar Bus Stand Entrance",
+      "id": "sensor-ze-1",
+      "name": "Drainage Leakage Alert",
+      "location": "Simmakkal Clock Tower",
       "status": "In Progress",
       "type": "Sensor",
       "subType": "Drainage",
-      "wardId": "Ward 14",
-      "zoneId": "Zone 1 (Central)",
-      "assignedTo": "worker-04",
-      "createdAt": "2024-05-20T09:30:00Z"
-    },
-    {
-      "id": "citizen-task-1",
-      "name": "Garbage Heap on Street",
-      "location": "Near Meenakshi Temple East Gate",
-      "status": "Pending",
-      "type": "Citizen Public",
-      "wardId": "Ward 14",
-      "zoneId": "Zone 1 (Central)",
-      "createdAt": "2024-05-20T11:00:00Z",
-      "citizenId": "citizen-1"
+      "wardId": "WE01",
+      "zoneId": "ZE - Zone E (Central)",
+      "assignedTo": "worker-ze-1",
+      "createdAt": "2024-05-21T07:30:00Z"
     }
   ]
 }
