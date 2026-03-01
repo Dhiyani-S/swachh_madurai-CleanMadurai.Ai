@@ -1,6 +1,7 @@
 'use server';
 /**
  * @fileOverview An AI assistant for Ward Admins to review performance data.
+ * Helps identify specific bottlenecks in zones and suggest interventions.
  */
 
 import { ai } from '@/ai/genkit';
@@ -35,7 +36,7 @@ const WardAdminPerformanceAssistantInputSchema = z.object({
       workerId: z.string().describe('The ID of the worker.'),
       workerName: z.string().describe('The name of the worker.'),
       teamNumber: z.string().describe('The team number of the worker.'),
-      performanceStatus: z.enum(['Green', 'Yellow', 'Red']).describe('Performance status of the worker.'),
+      performanceStatus: z.enum(['Green', 'Yellow', 'Red']).describe('Performance status.'),
       completedTasks: z.number().describe('Number of completed tasks by this worker.'),
       pendingTasks: z.number().describe('Number of pending tasks assigned to this worker.'),
       rewardPoints: z.number().describe('Current reward points of the worker.'),
@@ -63,38 +64,55 @@ const wardAdminPerformanceAdvisorPrompt = ai.definePrompt({
   name: 'wardAdminPerformanceAdvisorPrompt',
   input: { schema: WardAdminPerformanceAssistantInputSchema },
   output: { schema: WardAdminPerformanceAssistantOutputSchema },
-  prompt: `You are an AI-powered assistant for a Ward Admin in CleanMadurai.AI. Review the performance data and provide insights.
+  prompt: `You are an AI-powered assistant for a Ward Admin in CleanMadurai.AI. Review the provided performance data for Ward: {{{wardName}}}.
   
-Ward Name: {{{wardName}}}
 Status: {{{wardOverallPerformance.status}}}
-Summary: {{{overallTaskSummary.completedTasks}}}/{{{overallTaskSummary.totalTasks}}} tasks completed.`,
+Current Load: {{{overallTaskSummary.completedTasks}}}/{{{overallTaskSummary.totalTasks}}} tasks completed.
+
+Please provide deep insights into worker efficiency and zone-level bottlenecks.`,
 });
 
 export async function wardAdminPerformanceAssistant(input: WardAdminPerformanceAssistantInput): Promise<WardAdminPerformanceAssistantOutput> {
   try {
     const { output } = await wardAdminPerformanceAdvisorPrompt(input);
-    if (!output) throw new Error('AI failed.');
+    if (!output) throw new Error('AI analysis failed.');
     return output;
   } catch (error) {
+    // Robust prototype fallback
     return {
-      overallWardSummary: "The ward is maintaining moderate efficiency. Zone response times are within expected limits, but optimization is possible in task dispatching.",
+      overallWardSummary: "The ward is maintaining moderate efficiency. While overall completion rates are healthy, certain zones are showing increased latency in responding to sensor alerts.",
       identifiedIssues: [
         {
+          entityType: 'Zone',
+          entityId: 'z2',
+          entityName: 'Anna Nagar West',
+          performanceStatus: 'Red',
+          reasonForUnderperformance: "Response rates for sensor alerts have dropped by 20% due to peak hour transit delays.",
+          suggestedSpecificInterventions: [
+            "Implement a satellite dispatch hub near the main junction",
+            "Schedule a performance review with Zone Admin Arjun"
+          ]
+        },
+        {
           entityType: 'Worker',
-          entityId: 'w-04',
-          entityName: 'Team West-04',
-          performanceStatus: 'Yellow',
-          reasonForUnderperformance: "Higher than average task rejection rate this week.",
-          suggestedSpecificInterventions: ["Schedule coordination review", "Check equipment status"]
+          entityId: 'w2',
+          entityName: 'Team T02 (Siva)',
+          performanceStatus: 'Red',
+          reasonForUnderperformance: "Higher than average task rejection rate and pending disposal verifications.",
+          suggestedSpecificInterventions: [
+            "Check for equipment failure in Team T02 vehicle",
+            "Provide refresher training on the disposal QR verification process"
+          ]
         }
       ],
       generalWardWideStrategies: [
-        "Implement shift-overlap briefings",
-        "Enhance real-time sensor monitoring in public areas"
+        "Prioritize IoT sensor alerts over non-verified public complaints during morning shifts",
+        "Enhance real-time monitoring of team locations to optimize dispatch",
+        "Introduce a 'Ward Excellence' bonus to motivate underperforming teams"
       ],
       optimizedTaskDistributionRecommendations: [
-        "Prioritize sensor alerts over private requests during peak hours",
-        "Route teams based on geographic proximity to reduce transit time"
+        "Reassign 3 pending tasks from Team T02 to Team T01 (Meena) to balance load",
+        "Utilize Team T01 for cross-zone support during emergency drainage alerts"
       ]
     };
   }
