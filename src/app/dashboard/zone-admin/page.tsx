@@ -63,10 +63,11 @@ export default function ZoneAdminDashboard() {
             <DialogContent>
               <DialogHeader><DialogTitle>Trigger Virtual Sensors (ML Alerts)</DialogTitle></DialogHeader>
               <div className="grid grid-cols-1 gap-2 pt-4">
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Dustbin')}>Dustbin (work-disprose waste)</Button>
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Drainage')}>Drainage (trainage leakage)</Button>
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Water')}>Water (water leakage)</Button>
-                <Button variant="secondary" onClick={() => handleSimulateSensor('Toilet')}>Toilet (toilet waste disposal)</Button>
+                <Button variant="secondary" onClick={() => handleSimulateSensor('Dustbin')}>Dustbin Overflow Predictor</Button>
+                <Button variant="secondary" onClick={() => handleSimulateSensor('Drainage')}>Drainage Leakage Detector</Button>
+                <Button variant="secondary" onClick={() => handleSimulateSensor('Water')}>Water Stagnation Alert</Button>
+                <Button variant="secondary" onClick={() => handleSimulateSensor('Toilet')}>Public Toilet Cleanliness Drop</Button>
+                <Button variant="secondary" onClick={() => handleSimulateSensor('Napkin')}>Napkin Disposal Unit Full</Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -85,21 +86,25 @@ export default function ZoneAdminDashboard() {
             <Card className="border-none shadow-xl">
               <CardHeader className="bg-rose-50/50 rounded-t-xl">
                 <CardTitle className="text-lg flex items-center gap-2 text-rose-700"><AlertTriangle className="h-5 w-5 animate-pulse" /> Live Sensor Alerts</CardTitle>
+                <CardDescription>Priority issues detected by IoT & Deep Learning sensors</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y">
                   {zoneTasks.filter(t => t.type === 'Sensor' && !t.assignedTo).map((task) => (
-                    <div key={task.id} className="p-4 flex items-center justify-between">
+                    <div key={task.id} className="p-4 flex items-center justify-between hover:bg-rose-50/30 transition-colors">
                       <div className="flex-1">
                         <h4 className="font-bold text-sm text-primary">{task.name}</h4>
                         <p className="text-[11px] text-muted-foreground">{task.location}</p>
                       </div>
-                      <select className="text-xs p-2 border rounded-lg" onChange={(e) => handleAssignTask(task.id, e.target.value)}>
+                      <select className="text-xs p-2 border rounded-lg bg-white" onChange={(e) => handleAssignTask(task.id, e.target.value)}>
                         <option value="">Assign Team...</option>
                         {zoneTeams.map(team => <option key={team.id} value={team.id}>{team.name}</option>)}
                       </select>
                     </div>
                   ))}
+                  {zoneTasks.filter(t => t.type === 'Sensor' && !t.assignedTo).length === 0 && (
+                    <div className="p-12 text-center text-muted-foreground text-sm italic">All sensor alerts cleared.</div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -107,33 +112,114 @@ export default function ZoneAdminDashboard() {
             <Card className="border-none shadow-xl">
               <CardHeader className="bg-primary/5 rounded-t-xl">
                 <CardTitle className="text-lg flex items-center gap-2 text-primary"><UserCircle className="h-5 w-5" /> Citizen Service Requests</CardTitle>
+                <CardDescription>AI-verified public complaints and private requests</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y">
                   {zoneTasks.filter(t => t.type.startsWith('Citizen') && !t.assignedTo).map((task) => (
-                    <div key={task.id} className="p-4 flex flex-col gap-3">
+                    <div key={task.id} className="p-4 flex flex-col gap-3 hover:bg-primary/5 transition-colors">
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <h4 className="font-bold text-sm">{task.name}</h4>
                           <p className="text-[11px] text-muted-foreground">{task.location}</p>
-                          {task.imageProof && <Button variant="ghost" size="sm" className="mt-2 h-7 text-[10px] gap-1 font-bold text-primary" onClick={() => setViewImage(task.imageProof!)}><Eye className="h-3 w-3" /> View Proof</Button>}
+                          {task.imageProof && (
+                            <Button variant="ghost" size="sm" className="mt-2 h-7 text-[10px] gap-1 font-bold text-primary" onClick={() => setViewImage(task.imageProof!)}>
+                              <Eye className="h-3 w-3" /> View Proof Image
+                            </Button>
+                          )}
                         </div>
+                        <StatusBadge status="Yellow" label={task.type === 'Citizen Public' ? 'Complaint' : 'Private'} />
                       </div>
-                      <select className="text-xs p-2 border rounded-lg" onChange={(e) => handleAssignTask(task.id, e.target.value)}>
+                      <select className="text-xs p-2 border rounded-lg bg-white" onChange={(e) => handleAssignTask(task.id, e.target.value)}>
                         <option value="">Select Team for Dispatch...</option>
                         {zoneTeams.map(team => <option key={team.id} value={team.id}>{team.name}</option>)}
                       </select>
                     </div>
                   ))}
+                  {zoneTasks.filter(t => t.type.startsWith('Citizen') && !t.assignedTo).length === 0 && (
+                    <div className="p-12 text-center text-muted-foreground text-sm italic">No pending citizen requests.</div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
+
+        <TabsContent value="performance" className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+             {zoneTeams.map(team => (
+               <Card key={team.id} className="border-none shadow-md">
+                 <CardHeader className="pb-2">
+                   <div className="flex justify-between items-start">
+                     <CardTitle className="text-md font-headline">{team.name}</CardTitle>
+                     <StatusBadge status={team.rewardPoints > 100 ? 'Green' : 'Yellow'} />
+                   </div>
+                   <CardDescription className="text-xs">{team.teamNumber}</CardDescription>
+                 </CardHeader>
+                 <CardContent className="space-y-4">
+                   <div className="flex items-center justify-between text-xs font-bold">
+                     <span>Today's Completion</span>
+                     <span>{zoneTasks.filter(t => t.assignedTo === team.id && t.status === 'Completed').length} Tasks</span>
+                   </div>
+                   <Progress value={75} className="h-1.5" />
+                   <div className="flex items-center gap-2">
+                     <Award className="h-4 w-4 text-amber-500" />
+                     <span className="text-sm font-bold text-primary">{team.rewardPoints} Efficiency Points</span>
+                   </div>
+                 </CardContent>
+               </Card>
+             ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="teams" className="pt-6">
+          <Card className="border-none shadow-xl">
+             <CardHeader>
+               <CardTitle className="text-lg">Daily Attendance & Team Status</CardTitle>
+               <CardDescription>Real-time field presence of your cleaning squads</CardDescription>
+             </CardHeader>
+             <CardContent>
+                <div className="divide-y">
+                   {zoneTeams.map(team => {
+                     const teamAttend = attendance[team.id];
+                     const isPresent = teamAttend && teamAttend.date === new Date().toLocaleDateString();
+                     return (
+                       <div key={team.id} className="py-4 flex items-center justify-between">
+                         <div className="flex items-center gap-4">
+                           <div className={cn("h-3 w-3 rounded-full", isPresent ? "bg-emerald-500 animate-pulse" : "bg-slate-300")} />
+                           <div>
+                             <p className="font-bold text-sm">{team.name}</p>
+                             <p className="text-[10px] text-muted-foreground">{team.teamNumber}</p>
+                           </div>
+                         </div>
+                         <div className="flex items-center gap-6">
+                            {isPresent ? (
+                              <div className="flex gap-1">
+                                {teamAttend.members.map((m, i) => (
+                                  <div key={i} className={cn("px-2 py-0.5 rounded text-[8px] font-bold uppercase", m.status === 'Present' ? "bg-emerald-50 text-emerald-700 border" : "bg-rose-50 text-rose-700 opacity-50")}>
+                                    {m.name.charAt(0)}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase">Not Started</span>
+                            )}
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground"><Edit2 className="h-3 w-3" /></Button>
+                         </div>
+                       </div>
+                     )
+                   })}
+                </div>
+             </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       <Dialog open={!!viewImage} onOpenChange={() => setViewImage(null)}>
-        <DialogContent className="max-w-2xl"><img src={viewImage!} className="w-full h-auto rounded-lg" /></DialogContent>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader><DialogTitle>AI Verified Proof</DialogTitle></DialogHeader>
+          <img src={viewImage!} className="w-full h-auto rounded-lg shadow-inner" />
+        </DialogContent>
       </Dialog>
     </div>
   )

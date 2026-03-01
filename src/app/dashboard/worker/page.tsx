@@ -28,14 +28,12 @@ import {
   AlertCircle,
   Info,
   UserCheck,
-  UserX,
-  ArrowRight
+  UserX
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function WorkerDashboard() {
   const { currentUser, tasks, updateTask, attendance, setAttendance } = useStore()
@@ -45,16 +43,17 @@ export default function WorkerDashboard() {
   const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null)
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = React.useState(false)
   const [attendanceState, setAttendanceState] = React.useState<MemberAttendance[]>([])
-  const [forwardedMessage, setForwardedMessage] = React.useState<string | null>(null)
-  const [today, setToday] = React.useState<string | null>(null)
+  const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
-    setToday(new Date().toLocaleDateString())
+    setMounted(true)
   }, [])
 
+  const today = React.useMemo(() => new Date().toLocaleDateString(), [])
+  
   // Use currentUser.id as the attendance key for consistency
   const currentTeamAttendance = currentUser?.id ? attendance[currentUser.id] : null
-  const hasMarkedAttendance = today && currentTeamAttendance?.date === today
+  const hasMarkedAttendance = currentTeamAttendance?.date === today
 
   // Filter tasks assigned to this team that are not yet fully completed
   const assignedTasks = tasks.filter(t => 
@@ -62,19 +61,11 @@ export default function WorkerDashboard() {
   )
 
   React.useEffect(() => {
-    if (today && !hasMarkedAttendance && currentUser?.teamMembers) {
+    if (mounted && !hasMarkedAttendance && currentUser?.teamMembers) {
       setAttendanceState(currentUser.teamMembers.map(m => ({ name: m, status: 'Present' })))
       setIsAttendanceModalOpen(true)
     }
-  }, [today, hasMarkedAttendance, currentUser])
-
-  const triggerForwarding = (taskName: string) => {
-    setForwardedMessage(`this taskk is forward to ather team: ${taskName}`);
-    // Keep message for 5 minutes (300,000 ms)
-    setTimeout(() => {
-      setForwardedMessage(null);
-    }, 5 * 60 * 1000);
-  };
+  }, [mounted, hasMarkedAttendance, currentUser])
 
   const handleAttendanceSubmit = () => {
     if (currentUser?.id) {
@@ -88,7 +79,6 @@ export default function WorkerDashboard() {
   }
 
   const handleTaskAction = (taskId: string, action: 'Accept' | 'Reject') => {
-    const task = tasks.find(t => t.id === taskId);
     if (action === 'Accept') {
       updateTask(taskId, { status: 'In Progress' })
       toast({
@@ -96,26 +86,12 @@ export default function WorkerDashboard() {
         description: "Proceed to the location to begin work.",
       })
     } else {
-      // Reject: Resets task and simulates forwarding by unassigning
       updateTask(taskId, { status: 'Pending', assignedTo: undefined })
-      if (task) triggerForwarding(task.name);
       toast({
         title: "Task Rejected",
         description: "The task has been released for other teams.",
       })
     }
-  }
-
-  const simulateTimeout = (taskId: string) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-    updateTask(taskId, { status: 'Pending', assignedTo: undefined });
-    triggerForwarding(task.name);
-    toast({
-      variant: "destructive",
-      title: "Response Time Expired",
-      description: "30 minutes exceeded. Task forwarded to another team.",
-    });
   }
 
   const handleMarkAsFinished = (taskId: string) => {
@@ -136,22 +112,10 @@ export default function WorkerDashboard() {
     })
   }
 
-  if (!today) return null; // Prevent hydration mismatch by waiting for mount
+  if (!mounted) return null
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
-      {/* Forwarded Message Notification */}
-      {forwardedMessage && (
-        <Alert className="bg-amber-50 border-amber-200 text-amber-800 animate-in fade-in slide-in-from-top-4">
-          <ArrowRight className="h-4 w-4" />
-          <AlertTitle className="font-bold">Task Forwarded</AlertTitle>
-          <AlertDescription>
-            {forwardedMessage}
-            <p className="text-[10px] mt-1 opacity-70 italic">(This message will persist for 5 minutes)</p>
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* Attendance Check Modal */}
       <Dialog open={isAttendanceModalOpen} onOpenChange={setIsAttendanceModalOpen}>
         <DialogContent className="sm:max-w-md">
@@ -303,7 +267,7 @@ export default function WorkerDashboard() {
 
       <div className="space-y-4">
         <h3 className="font-headline font-bold text-lg flex items-center gap-2">
-          <Clock className="h-5 w-5 text-primary" /> Tasks
+          <Clock className="h-5 w-5 text-primary" /> Active Tasks
         </h3>
         {assignedTasks.length === 0 ? (
           <div className="text-center py-12 bg-secondary/20 rounded-xl border border-dashed">
@@ -337,18 +301,8 @@ export default function WorkerDashboard() {
               </CardHeader>
               <CardContent>
                 {task.status === 'Pending' && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 p-2 rounded-lg">
-                      <Timer className="h-3 w-3" /> Must respond within 30 minutes
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-[10px] text-muted-foreground hover:text-destructive h-6"
-                      onClick={() => simulateTimeout(task.id)}
-                    >
-                      (Simulate 30m No Response)
-                    </Button>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-secondary/50 p-2 rounded-lg">
+                    <Timer className="h-3 w-3" /> Must respond within 30 minutes
                   </div>
                 )}
                 {task.status === 'In Progress' && (
@@ -401,7 +355,7 @@ export default function WorkerDashboard() {
                           <QrCode className="h-5 w-5 text-primary" /> Team Verification QR
                         </DialogTitle>
                         <DialogDescription>
-                          show this qr to the near by disposal place
+                          Scan this at the official disposal site terminal to confirm completion.
                         </DialogDescription>
                       </DialogHeader>
                       <div className="flex flex-col items-center justify-center gap-6 py-8">
