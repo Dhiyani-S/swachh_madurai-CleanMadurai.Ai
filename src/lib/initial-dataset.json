@@ -2,6 +2,54 @@
 {
   "users": [
     {
+      "id": "01",
+      "password": "123",
+      "name": "Madurai Commissioner",
+      "role": "Corporation Commissioner",
+      "rewardPoints": 0
+    },
+    {
+      "id": "02",
+      "password": "123",
+      "name": "Arasaradi Ward Admin",
+      "role": "Ward Admin",
+      "wardId": "WA01",
+      "rewardPoints": 0
+    },
+    {
+      "id": "03",
+      "password": "123",
+      "name": "North Zone Admin",
+      "role": "Zone Admin",
+      "zoneId": "ZA - Zone A (North)",
+      "rewardPoints": 0
+    },
+    {
+      "id": "04",
+      "password": "123",
+      "name": "Field Team Leader",
+      "role": "Worker",
+      "teamNumber": "Team ZA-01",
+      "zoneId": "ZA - Zone A (North)",
+      "wardId": "WA01",
+      "rewardPoints": 150,
+      "age": 30,
+      "contactNumber": "9000000001",
+      "address": "Arasaradi Ward Office",
+      "members": [
+        { "id": "m1", "name": "Muthu", "age": 28, "contactNumber": "9000000002", "address": "North Madurai" },
+        { "id": "m2", "name": "Pandi", "age": 32, "contactNumber": "9000000003", "address": "North Madurai" }
+      ],
+      "teamMembers": ["Muthu", "Pandi"]
+    },
+    {
+      "id": "05",
+      "password": "123",
+      "name": "Citizen Ramesh",
+      "role": "Citizen",
+      "rewardPoints": 50
+    },
+    {
       "id": "comm-1",
       "password": "password123",
       "name": "Madurai Commissioner",
@@ -15,54 +63,6 @@
       "role": "Zone Admin",
       "zoneId": "ZA - Zone A (North)",
       "rewardPoints": 0
-    },
-    {
-      "id": "admin-ze",
-      "password": "password123",
-      "name": "Central Zone Admin",
-      "role": "Zone Admin",
-      "zoneId": "ZE - Zone E (Central)",
-      "rewardPoints": 0
-    },
-    {
-      "id": "worker-za-1",
-      "password": "password123",
-      "name": "Team Leader Arasaradi",
-      "role": "Worker",
-      "teamNumber": "Team ZA-01",
-      "zoneId": "ZA - Zone A (North)",
-      "wardId": "WA01",
-      "rewardPoints": 150,
-      "age": 30,
-      "contactNumber": "9000000001",
-      "address": "Arasaradi Ward Office",
-      "members": [
-        { "id": "m1", "name": "Muthu", "age": 28, "contactNumber": "9000000002", "address": "North Madurai" },
-        { "id": "m2", "name": "Pandi", "age": 32, "contactNumber": "9000000003", "address": "North Madurai" }
-      ]
-    },
-    {
-      "id": "worker-ze-1",
-      "password": "password123",
-      "name": "Team Leader Simmakkal",
-      "role": "Worker",
-      "teamNumber": "Team ZE-01",
-      "zoneId": "ZE - Zone E (Central)",
-      "wardId": "WE01",
-      "rewardPoints": 200,
-      "age": 35,
-      "contactNumber": "9000000101",
-      "address": "Simmakkal Central Office",
-      "members": [
-        { "id": "m10", "name": "Selvam", "age": 40, "contactNumber": "9000000102", "address": "Central Madurai" }
-      ]
-    },
-    {
-      "id": "citizen-1",
-      "password": "password123",
-      "name": "Citizen Ramesh",
-      "role": "Citizen",
-      "rewardPoints": 50
     }
   ],
   "tasks": [
@@ -86,7 +86,7 @@
       "subType": "Drainage",
       "wardId": "WE01",
       "zoneId": "ZE - Zone E (Central)",
-      "assignedTo": "worker-ze-1",
+      "assignedTo": "04",
       "createdAt": "2024-05-21T07:30:00Z"
     }
   ]

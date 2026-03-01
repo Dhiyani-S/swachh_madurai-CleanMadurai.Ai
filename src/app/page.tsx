@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useStore, UserRole, User, AppLanguage } from "@/lib/store"
-import { Recycle, Globe, ChevronRight, Check } from "lucide-react"
+import { Recycle, Globe, ChevronRight, Check, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { translations } from "@/lib/translations"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function LandingPage() {
   const router = useRouter()
@@ -72,19 +73,24 @@ export default function LandingPage() {
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
+    // Trim and normalize ID for better matching
+    const normalizedId = userId.trim();
+    
     const existingUser = users.find(u => 
-      u.id === userId.trim() && 
+      u.id === normalizedId && 
       u.password === password && 
       u.role === role
     )
+
     if (!existingUser) {
       toast({
         title: "Authentication Failed",
-        description: "Invalid credentials or incorrect role.",
+        description: "Invalid credentials or incorrect role. Please check your User ID and Role.",
         variant: "destructive",
       })
       return
     }
+
     setCurrentUser(existingUser)
     const routes: Record<UserRole, string> = {
       'Corporation Commissioner': '/dashboard/commissioner',
@@ -103,11 +109,16 @@ export default function LandingPage() {
       return
     }
     addUser({
-      id: userId.trim(), password, name: userId.trim(), role, rewardPoints: 0,
+      id: userId.trim(), 
+      password, 
+      name: userId.trim(), 
+      role, 
+      rewardPoints: 0,
       zoneId: (role === 'Worker' || role === 'Zone Admin') ? zone : undefined,
     })
     toast({ title: "Success", description: "Account created! You can now sign in." })
-    setUserId(''); setPassword('');
+    setUserId(''); 
+    setPassword('');
   }
 
   return (
@@ -122,6 +133,15 @@ export default function LandingPage() {
             <h1 className="text-4xl font-headline font-bold text-slate-900 tracking-tight">{t.appName}</h1>
           </div>
           <h2 className="text-5xl font-headline font-bold leading-tight">{t.tagline}</h2>
+          
+          <Alert className="bg-white/50 backdrop-blur border-primary/20">
+            <AlertCircle className="h-4 w-4 text-primary" />
+            <AlertTitle className="font-bold text-xs uppercase tracking-wider">Prototype Guide</AlertTitle>
+            <AlertDescription className="text-xs text-muted-foreground">
+              Use <code className="font-bold text-primary">01</code> to <code className="font-bold text-primary">05</code> for quick testing of all roles. Password is <code className="font-bold">123</code>.
+            </AlertDescription>
+          </Alert>
+
           <div className="flex items-center gap-2 pt-4">
              <Button variant="ghost" size="sm" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} className="gap-2 font-bold">
                <Globe className="h-4 w-4" /> Switch to {language === 'en' ? 'Tamil' : 'English'}
@@ -143,11 +163,11 @@ export default function LandingPage() {
                   <CardContent className="space-y-5">
                     <div className="space-y-2">
                       <Label className="font-bold">{t.userId}</Label>
-                      <Input placeholder={t.userId} className="h-12" required value={userId} onChange={e => setUserId(e.target.value)} />
+                      <Input placeholder="Enter ID (e.g., 01)" className="h-12" required value={userId} onChange={e => setUserId(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label className="font-bold">{t.password}</Label>
-                      <Input type="password" className="h-12" required value={password} onChange={e => setPassword(e.target.value)} />
+                      <Input type="password" placeholder="Password" className="h-12" required value={password} onChange={e => setPassword(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label className="font-bold">{t.accessRole}</Label>
