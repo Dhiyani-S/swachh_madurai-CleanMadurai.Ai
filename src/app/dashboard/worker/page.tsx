@@ -88,6 +88,7 @@ export default function WorkerDashboard() {
     return () => clearInterval(interval);
   }, [mounted, assignedTasks]);
 
+  // Handle Attendance Modal on Mount
   React.useEffect(() => {
     if (mounted && !hasMarkedAttendance && currentUser?.teamRoster && currentUser.teamRoster.length > 0) {
       setAttendanceState(currentUser.teamRoster.map(m => ({ name: m.name, status: 'Present' })))
@@ -146,19 +147,19 @@ export default function WorkerDashboard() {
     <div className="space-y-8 max-w-4xl mx-auto">
       {/* Attendance Check Modal */}
       <Dialog open={isAttendanceModalOpen} onOpenChange={setIsAttendanceModalOpen}>
-        <DialogContent className="sm:max-w-md bg-zinc-900 border-white/10 text-white rounded-[2.5rem]">
+        <DialogContent className="sm:max-w-md bg-zinc-900 border-white/10 text-white rounded-[2.5rem] backdrop-blur-3xl shadow-2xl">
           <DialogHeader>
             <DialogTitle className="font-headline flex items-center gap-2 text-2xl">
               <UserCheck className="h-6 w-6 text-primary" /> {t.attendanceCheck}
             </DialogTitle>
             <DialogDescription className="text-white/60">
-              {t.attendanceDesc} ({today}).
+              {t.attendanceDesc} ({today}). This status is managed by your profile and Zone Admin.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-6 py-4">
+          <div className="space-y-6 py-4 max-h-[60vh] overflow-y-auto px-1">
             {attendanceState.map((member, idx) => (
               <div key={member.name} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10">
-                <span className="font-medium text-sm">{member.name}</span>
+                <span className="font-bold text-sm">{member.name}</span>
                 <RadioGroup 
                   defaultValue="Present" 
                   className="flex gap-4"
@@ -170,21 +171,24 @@ export default function WorkerDashboard() {
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="Present" id={`p-${idx}`} className="border-emerald-500 text-emerald-500" />
-                    <Label htmlFor={`p-${idx}`} className="text-xs cursor-pointer text-emerald-500">{t.present}</Label>
+                    <Label htmlFor={`p-${idx}`} className="text-xs cursor-pointer text-emerald-500 font-bold">{t.present}</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="Absent" id={`a-${idx}`} className="border-rose-500 text-rose-500" />
-                    <Label htmlFor={`a-${idx}`} className="text-xs cursor-pointer text-rose-500">{t.absent}</Label>
+                    <Label htmlFor={`a-${idx}`} className="text-xs cursor-pointer text-rose-500 font-bold">{t.absent}</Label>
                   </div>
                 </RadioGroup>
               </div>
             ))}
             {attendanceState.length === 0 && (
-              <p className="text-center text-white/40 italic py-8">Your Zone Admin has not added any members to your roster yet.</p>
+              <div className="text-center py-8">
+                 <AlertCircle className="h-10 w-10 mx-auto text-white/20 mb-3" />
+                 <p className="text-white/40 italic text-sm">Your Zone Admin has not registered any team members for your squad yet.</p>
+              </div>
             )}
           </div>
           <DialogFooterUI>
-            <Button className="w-full font-bold h-12 shadow-lg shadow-primary/30" onClick={handleAttendanceSubmit} disabled={attendanceState.length === 0}>
+            <Button className="w-full font-bold h-12 shadow-lg shadow-primary/30 rounded-2xl" onClick={handleAttendanceSubmit} disabled={attendanceState.length === 0}>
               {t.submitAttendance}
             </Button>
           </DialogFooterUI>
@@ -201,7 +205,7 @@ export default function WorkerDashboard() {
               <div>
                 <h1 className="text-3xl font-headline font-bold text-white">{currentUser?.teamNumber}</h1>
                 <div className="flex flex-col gap-2 mt-1">
-                  <p className="text-white/60 text-sm flex items-center gap-1">
+                  <p className="text-white/60 text-sm flex items-center gap-2 font-medium">
                     <Users className="h-4 w-4 text-primary" /> {currentUser?.name} • {currentUser?.zoneId || 'Zone Area'}
                   </p>
                   {hasMarkedAttendance && (
@@ -222,7 +226,7 @@ export default function WorkerDashboard() {
             {assignedTasks.length === 0 ? (
               <div className="text-center py-20 bg-white/5 backdrop-blur-3xl rounded-[3rem] border-2 border-dashed border-white/10">
                 <CheckCircle className="h-16 w-16 mx-auto text-white/10 mb-4" />
-                <p className="text-white/40 font-headline font-bold">{t.allCaughtUp}</p>
+                <p className="text-white/40 font-headline font-bold text-lg">{t.allCaughtUp}</p>
               </div>
             ) : (
               assignedTasks.map((task) => (
@@ -231,16 +235,16 @@ export default function WorkerDashboard() {
                   task.status === 'In Progress' ? "ring-2 ring-primary" : "",
                   task.status === 'Partially Completed' ? "ring-2 ring-amber-500" : ""
                 )}>
-                  <CardHeader className="pb-2">
+                  <CardHeader className="pb-2 px-8 pt-8">
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="font-headline text-2xl text-white">{task.name}</CardTitle>
-                        <CardDescription className="flex items-center gap-2 mt-1 text-white/60">
+                        <CardDescription className="flex items-center gap-2 mt-2 text-white/60 text-sm font-medium">
                           <MapPin className="h-4 w-4 text-primary" /> {task.location}
                         </CardDescription>
                       </div>
                       <div className={cn(
-                        "px-3 py-1 rounded-full text-[10px] font-bold uppercase border",
+                        "px-4 py-1.5 rounded-full text-[10px] font-bold uppercase border",
                         task.status === 'Pending' ? "bg-amber-500/10 text-amber-500 border-amber-500/20" : 
                         task.status === 'In Progress' ? "bg-blue-500/10 text-blue-500 border-blue-500/20" : 
                         "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
@@ -251,40 +255,40 @@ export default function WorkerDashboard() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="px-8 py-6">
                     {task.status === 'Pending' && (
-                      <div className="flex items-center justify-between text-xs text-rose-500 bg-rose-500/5 p-3 rounded-2xl border border-rose-500/10 font-bold">
-                        <div className="flex items-center gap-2">
-                          <Timer className="h-5 w-5 animate-pulse" /> {t.mustRespondWithin}
+                      <div className="flex items-center justify-between text-xs text-rose-500 bg-rose-500/5 p-4 rounded-2xl border border-rose-500/10 font-bold">
+                        <div className="flex items-center gap-3">
+                          <Timer className="h-6 w-6 animate-pulse" /> {t.mustRespondWithin}
                         </div>
-                        <span className="font-mono text-lg">{timeLefts[task.id] || '--:--'}</span>
+                        <span className="font-mono text-2xl tracking-tighter">{timeLefts[task.id] || '--:--'}</span>
                       </div>
                     )}
                     {task.status === 'Partially Completed' && (
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-3 text-sm font-bold text-amber-500 bg-amber-500/5 p-4 rounded-2xl border border-amber-500/10">
-                          <AlertCircle className="h-5 w-5" />
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4 text-sm font-bold text-amber-500 bg-amber-500/5 p-5 rounded-2xl border border-amber-500/10">
+                          <AlertCircle className="h-6 w-6" />
                           {t.pendingDisposalVerification}
                         </div>
-                        <p className="text-xs text-white/40 px-1">
+                        <p className="text-xs text-white/40 px-2 leading-relaxed">
                           {language === 'ta' ? "பணியை இறுதி செய்ய கழிவு மேலாண்மை தளத்தில் QR-ஐ ஸ்கேன் செய்யவும்." : "Your team QR is now active for this task. Proceed to a nearby disposal terminal to finalize."}
                         </p>
                       </div>
                     )}
                   </CardContent>
-                  <CardFooter className="gap-4 bg-black/20 p-6">
+                  <CardFooter className="gap-4 bg-black/20 p-8">
                     {task.status === 'Pending' && (
                       <>
-                        <Button onClick={() => handleTaskAction(task.id, 'Accept')} className="flex-1 bg-primary font-bold h-12 rounded-2xl shadow-lg shadow-primary/20">
+                        <Button onClick={() => handleTaskAction(task.id, 'Accept')} className="flex-1 bg-primary font-bold h-14 rounded-2xl shadow-lg shadow-primary/20 text-md">
                           <CheckCircle2 className="h-5 w-5 mr-2" /> {t.accept}
                         </Button>
-                        <Button onClick={() => handleTaskAction(task.id, 'Reject')} variant="outline" className="flex-1 text-rose-500 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 font-bold h-12 rounded-2xl">
+                        <Button onClick={() => handleTaskAction(task.id, 'Reject')} variant="outline" className="flex-1 text-rose-500 border-rose-500/20 bg-rose-500/5 hover:bg-rose-500/10 font-bold h-14 rounded-2xl text-md">
                           <XCircle className="h-5 w-5 mr-2" /> {t.reject}
                         </Button>
                       </>
                     )}
                     {task.status === 'In Progress' && (
-                      <Button onClick={() => handleMarkAsFinished(task.id)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-12 rounded-2xl">
+                      <Button onClick={() => handleMarkAsFinished(task.id)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-14 rounded-2xl shadow-lg shadow-emerald-900/20 text-md">
                         <CheckCircle2 className="h-5 w-5 mr-2" /> {t.markWorkFinished}
                       </Button>
                     )}
@@ -294,29 +298,29 @@ export default function WorkerDashboard() {
                         if (open) setSelectedTaskId(task.id);
                       }}>
                         <DialogTrigger asChild>
-                          <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-2xl shadow-lg shadow-primary/20">
+                          <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-14 rounded-2xl shadow-lg shadow-primary/20 text-md">
                             <QrCode className="h-5 w-5 mr-2" /> {t.showVerificationQr}
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-md bg-zinc-950/90 border-white/10 text-white rounded-[3rem] backdrop-blur-3xl">
-                          <DialogHeader>
-                            <DialogTitle className="font-headline text-2xl flex items-center gap-2">
-                              <QrCode className="h-6 w-6 text-primary" /> {t.verificationQrTitle}
+                        <DialogContent className="sm:max-w-md bg-zinc-950/90 border-white/10 text-white rounded-[3.5rem] backdrop-blur-[100px] shadow-2xl">
+                          <DialogHeader className="pt-6">
+                            <DialogTitle className="font-headline text-3xl flex items-center gap-3">
+                              <QrCode className="h-8 w-8 text-primary" /> {t.verificationQrTitle}
                             </DialogTitle>
-                            <DialogDescription className="text-white/60">
+                            <DialogDescription className="text-white/60 text-md mt-2">
                               {t.verificationQrDesc}
                             </DialogDescription>
                           </DialogHeader>
-                          <div className="flex flex-col items-center justify-center gap-8 py-10">
-                            <div className="p-8 bg-white rounded-[2.5rem] shadow-2xl">
+                          <div className="flex flex-col items-center justify-center gap-10 py-12">
+                            <div className="p-10 bg-white rounded-[3rem] shadow-2xl scale-110">
                               <div className="w-56 h-56 bg-slate-50 flex items-center justify-center border-4 border-slate-100 rounded-2xl">
-                                 <QrCode className="h-32 w-32 text-primary opacity-50" />
+                                 <QrCode className="h-36 w-36 text-primary opacity-50" />
                               </div>
                             </div>
                             <Button 
                               onClick={() => simulateExternalScan(task.id)} 
                               variant="outline"
-                              className="w-full h-12 font-bold border-white/10 hover:bg-white/5"
+                              className="w-full h-14 font-bold border-white/10 hover:bg-white/10 rounded-2xl text-lg"
                             >
                               {t.simulateScan}
                             </Button>
@@ -333,37 +337,41 @@ export default function WorkerDashboard() {
 
         <div className="space-y-8">
           <Card className="border-none bg-white/10 backdrop-blur-3xl shadow-2xl rounded-[3rem] overflow-hidden">
-            <CardHeader className="py-6 flex flex-row items-center justify-between border-b border-white/10 bg-white/5">
-              <CardTitle className="text-lg font-headline font-bold text-white flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" /> Team Roster & Attendance
+            <CardHeader className="py-8 flex flex-row items-center justify-between border-b border-white/10 bg-white/5 px-8">
+              <CardTitle className="text-xl font-headline font-bold text-white flex items-center gap-3">
+                <Users className="h-6 w-6 text-primary" /> Team Roster & Attendance
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="p-8 space-y-6">
               {hasMarkedAttendance ? (
-                <div className="space-y-3">
+                <div className="space-y-4">
+                  <p className="text-[11px] font-bold text-white/40 uppercase tracking-[0.2em] px-2 mb-2">Today's Presence</p>
                   {currentTeamAttendance.members.map((member, i) => (
                     <div key={i} className={cn(
-                      "p-4 rounded-[1.5rem] text-sm font-bold border flex items-center justify-between transition-all",
+                      "p-5 rounded-[2rem] text-sm font-bold border flex items-center justify-between transition-all",
                       member.status === 'Present' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-rose-500/10 text-rose-500 border-rose-500/20 opacity-60"
                     )}>
-                      <div className="flex items-center gap-3">
-                        {member.status === 'Present' ? <UserCheck className="h-4 w-4" /> : <UserX className="h-4 w-4" />}
-                        <span className="font-headline">{member.name}</span>
+                      <div className="flex items-center gap-4">
+                        <div className={cn("h-3 w-3 rounded-full", member.status === 'Present' ? "bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" : "bg-rose-500")} />
+                        <span className="font-headline text-md tracking-tight">{member.name}</span>
                       </div>
-                      <span className="text-[10px] uppercase tracking-widest font-bold">{member.status === 'Present' ? t.present : t.absent}</span>
+                      <span className="text-[10px] uppercase tracking-widest font-bold opacity-80">{member.status === 'Present' ? t.present : t.absent}</span>
                     </div>
                   ))}
-                  <div className="pt-4 border-t border-white/10">
-                     <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest text-center">Status: {t.attendanceMarkedToday}</p>
+                  <div className="pt-6 border-t border-white/10 mt-6">
+                     <div className="flex items-center justify-center gap-2 text-emerald-500 bg-emerald-500/5 py-3 rounded-2xl border border-emerald-500/20">
+                        <CheckCircle className="h-4 w-4" />
+                        <p className="text-[10px] font-bold uppercase tracking-widest">{t.attendanceMarkedToday}</p>
+                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="p-8 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/20">
-                    <AlertCircle className="h-10 w-10 mx-auto text-primary mb-3" />
-                    <p className="text-sm font-medium text-white/80">{t.attendanceDesc}</p>
+                <div className="space-y-6">
+                  <div className="p-10 text-center bg-white/5 rounded-[2.5rem] border border-dashed border-white/20">
+                    <AlertCircle className="h-12 w-12 mx-auto text-primary mb-4" />
+                    <p className="text-md font-bold text-white/80 leading-relaxed">{t.attendanceDesc}</p>
                     <Button 
-                      className="mt-6 w-full font-bold h-11 shadow-lg shadow-primary/20" 
+                      className="mt-8 w-full font-bold h-14 shadow-xl shadow-primary/30 rounded-2xl text-md" 
                       onClick={() => setIsAttendanceModalOpen(true)}
                       disabled={!currentUser?.teamRoster || currentUser.teamRoster.length === 0}
                     >
@@ -371,40 +379,46 @@ export default function WorkerDashboard() {
                     </Button>
                   </div>
                   
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest px-2">Team Members List</p>
+                  <div className="space-y-4">
+                    <p className="text-[11px] font-bold text-white/40 uppercase tracking-[0.2em] px-2">Team Members List</p>
                     {currentUser?.teamRoster?.map((member, i) => (
-                      <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-between">
-                         <div className="flex items-center gap-3">
+                      <div key={i} className="p-5 bg-white/5 rounded-[2rem] border border-white/10 flex items-center justify-between group hover:bg-white/10 transition-all">
+                         <div className="flex items-center gap-4">
                             <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                            <span className="text-sm text-white/80 font-medium">{member.name}</span>
+                            <span className="text-md text-white/90 font-bold tracking-tight">{member.name}</span>
                          </div>
-                         <span className="text-[9px] text-white/40 font-bold uppercase">{member.age} Yrs</span>
+                         <span className="text-[10px] text-white/40 font-bold uppercase tracking-wider">{member.age} Yrs</span>
                       </div>
-                    )) || <p className="text-center text-xs text-white/20">No members registered.</p>}
+                    )) || (
+                      <div className="text-center py-10">
+                        <Users className="h-10 w-10 mx-auto text-white/10 mb-2" />
+                        <p className="text-xs text-white/20 font-medium italic">No members registered by Zone Admin.</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <Card className="border-none bg-primary shadow-2xl shadow-primary/30 rounded-[3rem] text-white">
-            <CardHeader>
-              <CardTitle className="text-xl font-headline font-bold flex items-center gap-2">
-                <Award className="h-6 w-6 text-white" /> Performance Status
+          <Card className="border-none bg-primary shadow-2xl shadow-primary/40 rounded-[3.5rem] text-white">
+            <CardHeader className="pt-10 px-10">
+              <CardTitle className="text-2xl font-headline font-bold flex items-center gap-3">
+                <Award className="h-7 w-7 text-white" /> Performance Status
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-               <div className="p-6 bg-white/10 backdrop-blur-md rounded-[2rem] text-center border border-white/20">
-                  <p className="text-xs font-bold uppercase tracking-widest mb-1 text-white/80">Available Points</p>
-                  <p className="text-5xl font-headline font-bold">{currentUser?.rewardPoints || 0}</p>
+            <CardContent className="space-y-6 p-10 pt-4">
+               <div className="p-8 bg-white/15 backdrop-blur-xl rounded-[2.5rem] text-center border border-white/30 shadow-inner">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.3em] mb-2 text-white/80">Available Points</p>
+                  <p className="text-6xl font-headline font-bold tracking-tighter">{currentUser?.rewardPoints || 0}</p>
                </div>
-               <div className="space-y-3">
-                  <div className="flex items-center justify-between text-xs font-bold px-2">
-                     <span className="uppercase text-white/80">Goal Progress</span>
-                     <span>85%</span>
+               <div className="space-y-4 px-2">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                     <span className="uppercase tracking-[0.1em] text-white/80">Monthly Goal Progress</span>
+                     <span className="text-lg">85%</span>
                   </div>
-                  <Progress value={85} className="h-2 bg-white/20" />
+                  <Progress value={85} className="h-3 bg-white/20 rounded-full" />
+                  <p className="text-[10px] text-center font-medium text-white/60 italic">Keep maintaining daily attendance and resolving sensor alerts for bonus points!</p>
                </div>
             </CardContent>
           </Card>

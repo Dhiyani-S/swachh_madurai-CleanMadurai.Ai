@@ -79,9 +79,11 @@ export default function ZoneAdminTeams() {
     const updatedRoster = [...(selectedTeam.teamRoster || []), newMember]
     updateUser(selectedTeam.id, { teamRoster: updatedRoster })
     
-    // Refresh selected team to reflect changes
+    // Refresh selected team local state to reflect changes in UI
     const updatedTeam = users.find(u => u.id === selectedTeam.id)
-    if (updatedTeam) setSelectedTeam({ ...updatedTeam, teamRoster: updatedRoster })
+    if (updatedTeam) {
+        setSelectedTeam({ ...updatedTeam, teamRoster: updatedRoster })
+    }
 
     toast({ title: "Member Added", description: `${memberForm.name} added to the team roster.` })
     setMemberForm({ name: '', age: '', contactNumber: '', address: '' })
@@ -114,7 +116,7 @@ export default function ZoneAdminTeams() {
               <UserPlus className="h-5 w-5" /> Register Worker
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] bg-zinc-900 border-white/10 text-white">
+          <DialogContent className="sm:max-w-[425px] bg-zinc-900 border-white/10 text-white rounded-[2.5rem] backdrop-blur-3xl">
             <DialogHeader>
               <DialogTitle className="font-headline text-2xl">Create Worker Account</DialogTitle>
               <DialogDescription className="text-white/60">
@@ -127,7 +129,7 @@ export default function ZoneAdminTeams() {
                 <Input 
                   id="id" 
                   placeholder="e.g. wkr-001" 
-                  className="bg-white/5 border-white/10 text-white"
+                  className="bg-white/5 border-white/10 text-white rounded-xl"
                   value={newTeam.id} 
                   onChange={e => setNewTeam({...newTeam, id: e.target.value})}
                   required
@@ -138,7 +140,7 @@ export default function ZoneAdminTeams() {
                 <Input 
                   id="password" 
                   type="password" 
-                  className="bg-white/5 border-white/10 text-white"
+                  className="bg-white/5 border-white/10 text-white rounded-xl"
                   value={newTeam.password} 
                   onChange={e => setNewTeam({...newTeam, password: e.target.value})}
                 />
@@ -148,7 +150,7 @@ export default function ZoneAdminTeams() {
                 <Input 
                   id="teamNo" 
                   placeholder="e.g. Team North-A1" 
-                  className="bg-white/5 border-white/10 text-white"
+                  className="bg-white/5 border-white/10 text-white rounded-xl"
                   value={newTeam.teamNumber} 
                   onChange={e => setNewTeam({...newTeam, teamNumber: e.target.value})}
                   required
@@ -159,13 +161,13 @@ export default function ZoneAdminTeams() {
                 <Input 
                   id="contact" 
                   placeholder="Mobile number" 
-                  className="bg-white/5 border-white/10 text-white"
+                  className="bg-white/5 border-white/10 text-white rounded-xl"
                   value={newTeam.contactNumber} 
                   onChange={e => setNewTeam({...newTeam, contactNumber: e.target.value})}
                 />
               </div>
               <DialogFooter className="pt-4">
-                <Button type="submit" className="w-full font-bold h-12">Create Account</Button>
+                <Button type="submit" className="w-full font-bold h-12 rounded-2xl shadow-lg shadow-primary/30">Create Account</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -174,39 +176,39 @@ export default function ZoneAdminTeams() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {zoneTeams.length === 0 ? (
-          <div className="col-span-full py-20 text-center bg-black/40 backdrop-blur-3xl rounded-[3rem] border-2 border-dashed border-white/10">
-            <Users className="h-12 w-12 mx-auto text-white/20 mb-4" />
-            <p className="text-white/40 font-medium font-headline">No teams registered in this zone yet.</p>
+          <div className="col-span-full py-20 text-center bg-black/40 backdrop-blur-3xl rounded-[3.5rem] border-2 border-dashed border-white/10">
+            <Users className="h-16 w-16 mx-auto text-white/10 mb-4" />
+            <p className="text-white/40 font-bold font-headline text-xl">No teams registered in this zone yet.</p>
           </div>
         ) : (
           zoneTeams.map((team) => (
-            <Card key={team.id} className="border-none shadow-2xl hover:shadow-[0_0_60px_rgba(255,165,0,0.2)] transition-all bg-white/10 backdrop-blur-3xl group relative overflow-hidden rounded-[2.5rem]">
+            <Card key={team.id} className="border-none shadow-2xl hover:shadow-[0_0_80px_rgba(255,165,0,0.15)] transition-all bg-white/10 backdrop-blur-3xl group relative overflow-hidden rounded-[3rem]">
               <div className="absolute top-0 left-0 w-2 h-full bg-primary" />
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <div>
-                  <CardTitle className="text-xl font-headline font-bold text-white">{team.teamNumber}</CardTitle>
-                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Worker ID: {team.id}</p>
+                  <CardTitle className="text-2xl font-headline font-bold text-white">{team.teamNumber}</CardTitle>
+                  <p className="text-[10px] font-bold text-primary uppercase tracking-widest mt-1">Worker ID: {team.id}</p>
                 </div>
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 rounded-full px-4">
                   {team.teamRoster?.length || 0} Members
                 </Badge>
               </CardHeader>
-              <CardContent className="space-y-4 pt-4">
+              <CardContent className="space-y-4 pt-6">
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 text-sm text-white/80">
+                  <div className="flex items-center gap-3 text-sm font-medium text-white/80">
                     <Phone className="h-4 w-4 text-primary" />
                     <span>{team.contactNumber || 'No contact set'}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-white/80">
+                  <div className="flex items-center gap-3 text-sm font-medium text-white/80">
                     <MapPin className="h-4 w-4 text-primary" />
                     <span className="truncate">{team.address || 'Assigned Zone Base'}</span>
                   </div>
                 </div>
                 
-                <div className="pt-4 border-t border-white/10 flex flex-col gap-2">
+                <div className="pt-6 border-t border-white/10 flex flex-col gap-2">
                   <Button 
                     variant="ghost" 
-                    className="w-full font-bold text-sm text-primary hover:bg-primary/10"
+                    className="w-full font-bold text-sm text-primary hover:bg-primary/10 rounded-2xl h-11"
                     onClick={() => {
                       setSelectedTeam(team)
                       setIsManageMembersOpen(true)
@@ -223,27 +225,27 @@ export default function ZoneAdminTeams() {
 
       {/* Manage Members Modal */}
       <Dialog open={isManageMembersOpen} onOpenChange={setIsManageMembersOpen}>
-        <DialogContent className="max-w-4xl bg-zinc-950/90 backdrop-blur-3xl border-white/10 text-white max-h-[90vh] overflow-y-auto rounded-[3rem]">
-          <DialogHeader>
-            <DialogTitle className="font-headline text-3xl text-primary">Team Roster: {selectedTeam?.teamNumber}</DialogTitle>
-            <DialogDescription className="text-white/60">
-              Manage members associated with this worker account. These members will appear for daily attendance.
+        <DialogContent className="max-w-4xl bg-zinc-950/90 backdrop-blur-[100px] border-white/10 text-white max-h-[90vh] overflow-y-auto rounded-[3.5rem] shadow-2xl">
+          <DialogHeader className="px-4">
+            <DialogTitle className="font-headline text-4xl text-primary mt-4">Team Roster: {selectedTeam?.teamNumber}</DialogTitle>
+            <DialogDescription className="text-white/60 text-lg">
+              Manage members associated with this worker account. These members will appear for daily attendance marking.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 py-10 px-4">
             <div className="space-y-6">
-              <Card className="bg-white/5 border-white/10 border shadow-none rounded-[2rem]">
-                <CardHeader>
-                  <CardTitle className="text-lg font-headline text-white">Add New Member</CardTitle>
+              <Card className="bg-white/5 border-white/10 border shadow-none rounded-[2.5rem] overflow-hidden">
+                <CardHeader className="bg-white/5">
+                  <CardTitle className="text-xl font-headline text-white">Add New Member</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleAddMember} className="space-y-4">
+                <CardContent className="pt-6">
+                  <form onSubmit={handleAddMember} className="space-y-5">
                     <div className="grid gap-2">
-                      <Label>Full Name</Label>
+                      <Label className="ml-1 text-white/80">Full Name</Label>
                       <Input 
                         placeholder="Member name" 
-                        className="bg-white/10 border-white/5 text-white"
+                        className="h-12 bg-white/5 border-white/10 text-white rounded-xl focus:ring-primary"
                         value={memberForm.name}
                         onChange={e => setMemberForm({...memberForm, name: e.target.value})}
                         required
@@ -251,67 +253,68 @@ export default function ZoneAdminTeams() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="grid gap-2">
-                        <Label>Age</Label>
+                        <Label className="ml-1 text-white/80">Age</Label>
                         <Input 
                           type="number" 
                           placeholder="Age" 
-                          className="bg-white/10 border-white/5 text-white"
+                          className="h-12 bg-white/5 border-white/10 text-white rounded-xl focus:ring-primary"
                           value={memberForm.age}
                           onChange={e => setMemberForm({...memberForm, age: e.target.value})}
                         />
                       </div>
                       <div className="grid gap-2">
-                        <Label>Contact</Label>
+                        <Label className="ml-1 text-white/80">Contact</Label>
                         <Input 
                           placeholder="Phone" 
-                          className="bg-white/10 border-white/5 text-white"
+                          className="h-12 bg-white/5 border-white/10 text-white rounded-xl focus:ring-primary"
                           value={memberForm.contactNumber}
                           onChange={e => setMemberForm({...memberForm, contactNumber: e.target.value})}
                         />
                       </div>
                     </div>
                     <div className="grid gap-2">
-                      <Label>Address</Label>
+                      <Label className="ml-1 text-white/80">Address</Label>
                       <Input 
                         placeholder="Residential address" 
-                        className="bg-white/10 border-white/5 text-white"
+                        className="h-12 bg-white/5 border-white/10 text-white rounded-xl focus:ring-primary"
                         value={memberForm.address}
                         onChange={e => setMemberForm({...memberForm, address: e.target.value})}
                       />
                     </div>
-                    <Button type="submit" className="w-full font-bold h-11">
-                      <Plus className="h-4 w-4 mr-2" /> Add to Roster
+                    <Button type="submit" className="w-full font-bold h-14 rounded-2xl shadow-xl shadow-primary/20">
+                      <Plus className="h-5 w-5 mr-2" /> Add to Roster
                     </Button>
                   </form>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="space-y-4">
-              <h3 className="font-headline font-bold text-xl text-white flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" /> Current Members
+            <div className="space-y-6">
+              <h3 className="font-headline font-bold text-2xl text-white flex items-center gap-3 ml-2">
+                <Users className="h-7 w-7 text-primary" /> Current Roster
               </h3>
-              <div className="space-y-3">
+              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {selectedTeam?.teamRoster && selectedTeam.teamRoster.length > 0 ? (
                   selectedTeam.teamRoster.map((member) => (
-                    <div key={member.id} className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between group">
+                    <div key={member.id} className="p-5 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-between group hover:bg-white/10 transition-all">
                       <div>
-                        <p className="font-bold text-white">{member.name}</p>
-                        <p className="text-[10px] text-white/40 uppercase font-bold">{member.age} Yrs • {member.contactNumber || 'No Phone'}</p>
+                        <p className="font-bold text-white text-lg">{member.name}</p>
+                        <p className="text-[10px] text-white/40 uppercase font-bold tracking-widest mt-1">{member.age} Yrs • {member.contactNumber || 'No Phone'}</p>
                       </div>
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="text-white/20 hover:text-rose-500 hover:bg-rose-500/10"
+                        className="h-10 w-10 text-white/20 hover:text-rose-500 hover:bg-rose-500/10 rounded-full"
                         onClick={() => removeMember(selectedTeam.id, member.id)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-5 w-5" />
                       </Button>
                     </div>
                   ))
                 ) : (
-                  <div className="p-12 text-center text-white/20 bg-white/5 rounded-3xl border border-dashed border-white/10">
-                    No members added yet.
+                  <div className="p-16 text-center text-white/20 bg-white/5 rounded-[3rem] border border-dashed border-white/10">
+                    <Users className="h-12 w-12 mx-auto mb-4 opacity-10" />
+                    <p className="font-bold">No members added yet.</p>
                   </div>
                 )}
               </div>
