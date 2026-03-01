@@ -89,25 +89,29 @@ export default function DashboardLayout({
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden selection:bg-primary selection:text-white">
-      {/* Fixed Background Layer with High Visibility */}
+      {/* High-Visibility Background Layer */}
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-80 z-0" 
+        className="fixed inset-0 bg-cover bg-center opacity-90 z-0 scale-105 transition-transform duration-[30s] ease-linear" 
         style={{ backgroundImage: `url(${maduraiBg})` }}
         data-ai-hint="madurai temple aerial"
       />
-      <div className="fixed inset-0 bg-gradient-to-br from-black/80 via-black/40 to-primary/10 z-1" />
+      <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-transparent to-primary/10 z-[1]" />
       
       <div className="relative z-10 flex min-h-screen">
-        <DashboardSidebar />
+        {/* Sidebar with Glass Effect */}
+        <div className="hidden md:block">
+          <DashboardSidebar />
+        </div>
         
         <div className="flex-1 md:ml-64 flex flex-col">
-          <header className="h-16 bg-black/40 backdrop-blur-2xl border-b border-white/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
+          {/* Transparent Header */}
+          <header className="h-16 bg-black/20 backdrop-blur-xl border-b border-white/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
             <div className="flex items-center gap-4 flex-1">
               <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/10">
                 <Menu className="h-6 w-6" />
               </Button>
               <div className="flex items-center gap-2">
-                <Badge variant={isOnline ? "outline" : "destructive"} className="gap-1 hidden sm:flex border-white/20 text-white">
+                <Badge variant={isOnline ? "outline" : "destructive"} className="gap-1 hidden sm:flex border-white/20 text-white bg-black/20 backdrop-blur-md">
                   {isOnline ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
                   {isOnline ? t.liveMode : t.offlineReady}
                 </Badge>
@@ -118,7 +122,7 @@ export default function DashboardLayout({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="gap-2 font-bold text-xs text-white hover:bg-white/10"
+                className="gap-2 font-bold text-xs text-white hover:bg-white/10 bg-white/5 backdrop-blur-md border border-white/10"
                 onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')}
               >
                 <Globe className="h-4 w-4" />
@@ -127,14 +131,14 @@ export default function DashboardLayout({
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2 px-2 text-white hover:bg-white/10">
-                    <div className="h-8 w-8 rounded-full bg-primary/40 border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-lg">
+                  <Button variant="ghost" className="gap-2 px-2 text-white hover:bg-white/10 bg-white/5 backdrop-blur-md border border-white/10">
+                    <div className="h-8 w-8 rounded-full bg-primary/60 border border-white/20 flex items-center justify-center text-white font-bold text-xs shadow-lg">
                       {currentUser.name.charAt(0)}
                     </div>
                     <span className="hidden sm:inline font-medium text-sm">{currentUser.name}</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-zinc-900 border-white/10 text-white">
+                <DropdownMenuContent align="end" className="w-56 bg-zinc-900/90 backdrop-blur-2xl border-white/10 text-white">
                   <DropdownMenuLabel>{t.settings}</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-white/5" />
                   <DropdownMenuItem className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10" onClick={() => {
@@ -146,10 +150,10 @@ export default function DashboardLayout({
             </div>
           </header>
 
-          <main className="flex-1 p-4 md:p-12 overflow-y-auto">
-            {/* Centered Content Wrapper with High-Definition Glassmorphism */}
-            <div className="max-w-6xl mx-auto w-full">
-              <div className="bg-white/95 dark:bg-zinc-950/90 backdrop-blur-3xl rounded-[3rem] shadow-[0_0_100px_rgba(0,0,0,0.5)] p-8 md:p-12 border border-white/20 min-h-[calc(100vh-10rem)] transition-all">
+          {/* Centered App Pages with Transparency */}
+          <main className="flex-1 p-4 md:p-8 flex items-center justify-center overflow-y-auto">
+            <div className="max-w-6xl w-full mx-auto">
+              <div className="bg-white/80 dark:bg-zinc-950/70 backdrop-blur-3xl rounded-[3rem] shadow-[0_0_100px_rgba(0,0,0,0.6)] p-6 md:p-10 border border-white/30 min-h-[calc(100vh-10rem)] transition-all animate-in fade-in zoom-in-95 duration-700">
                 {children}
               </div>
             </div>
