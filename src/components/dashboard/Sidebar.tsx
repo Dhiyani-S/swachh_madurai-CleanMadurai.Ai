@@ -55,15 +55,15 @@ export function DashboardSidebar() {
 
   // Fallback for case sensitivity or slight name mismatches
   const currentRole = currentUser?.role?.toLowerCase() || '';
-  const routes = roleRoutes[currentRole] || roleRoutes[currentRole.replace(' ', '_')] || [];
+  const routes = roleRoutes[currentRole] || roleRoutes[currentRole.replace('_', ' ')] || [];
 
   return (
-    <div className="hidden border-r border-white/10 bg-black/20 backdrop-blur-[50px] md:block w-64 h-screen fixed left-0 top-0 z-50">
+    <div className="hidden border-r border-white/10 glass-sidebar md:block w-64 h-screen fixed left-0 top-0 z-50">
       <div className="flex h-full flex-col gap-2">
         <div className="flex h-20 items-center px-6 border-b border-white/10">
           <Link href="/dashboard" className="flex items-center gap-2 font-headline font-bold text-xl text-white">
             <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/30">
-              <Recycle className="h-6 w-6 text-white" />
+              <Recycle className="h-6 w-6 text-black" />
             </div>
             <span>CleanMadurai</span>
           </Link>
@@ -76,10 +76,10 @@ export function DashboardSidebar() {
               <span className={cn(
                 "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all group",
                 pathname === route.href 
-                  ? "bg-primary text-white shadow-xl shadow-primary/30" 
+                  ? "bg-primary text-black shadow-xl shadow-primary/30" 
                   : "text-white/60 hover:bg-white/5 hover:text-white"
               )}>
-                <route.icon className={cn("h-4 w-4", pathname === route.href ? "text-white" : "group-hover:scale-110 transition-transform")} />
+                <route.icon className={cn("h-4 w-4", pathname === route.href ? "text-black" : "group-hover:scale-110 transition-transform")} />
                 {route.name}
               </span>
             </Link>
@@ -91,7 +91,7 @@ export function DashboardSidebar() {
               <span className={cn(
                 "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all group",
                 pathname === '/dashboard/settings' 
-                  ? "bg-primary text-white shadow-xl shadow-primary/30" 
+                  ? "bg-primary text-black shadow-xl shadow-primary/30" 
                   : "text-white/60 hover:bg-white/5 hover:text-white"
               )}>
                 <Settings className="h-4 w-4" />
