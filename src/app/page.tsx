@@ -17,6 +17,7 @@ export default function LandingPage() {
   const [role, setRole] = React.useState<UserRole>('Citizen')
   const [userId, setUserId] = React.useState('')
   const [password, setPassword] = React.useState('')
+  const [zone, setZone] = React.useState('')
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,7 +26,8 @@ export default function LandingPage() {
       id: userId,
       name: userId || "User",
       role: role,
-      rewardPoints: role === 'Worker' ? 450 : 0
+      rewardPoints: role === 'Worker' ? 450 : 0,
+      zoneId: role === 'Worker' ? zone : undefined
     }
     setCurrentUser(user)
     
@@ -111,15 +113,15 @@ export default function LandingPage() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signup-id">User ID</Label>
-                    <Input id="signup-id" placeholder="Enter desired User ID" required />
+                    <Input id="signup-id" placeholder="Enter desired User ID" required value={userId} onChange={e => setUserId(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
-                    <Input id="signup-password" type="password" required />
+                    <Input id="signup-password" type="password" required value={password} onChange={e => setPassword(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-role">Role</Label>
-                    <Select onValueChange={(val) => setRole(val as UserRole)}>
+                    <Select value={role} onValueChange={(val) => setRole(val as UserRole)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select Role" />
                       </SelectTrigger>
@@ -132,6 +134,23 @@ export default function LandingPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                  {role === 'Worker' && (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <Label htmlFor="signup-zone">Assigned Zone</Label>
+                      <Select value={zone} onValueChange={setZone} required>
+                        <SelectTrigger id="signup-zone">
+                          <SelectValue placeholder="Select your Zone" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="zone-1">Zone 1 (Main City)</SelectItem>
+                          <SelectItem value="zone-2">Zone 2 (Anna Nagar)</SelectItem>
+                          <SelectItem value="zone-3">Zone 3 (Madurai West)</SelectItem>
+                          <SelectItem value="zone-4">Zone 4 (Vaikunth Nagar)</SelectItem>
+                          <SelectItem value="zone-5">Zone 5 (Goripalayam)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" className="w-full h-12 text-lg font-bold bg-accent hover:bg-accent/90 text-accent-foreground transition-all">Create Profile</Button>
