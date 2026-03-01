@@ -26,7 +26,6 @@ export default function LandingPage() {
 
   // Sign up state
   const [signUpRole, setSignUpRole] = React.useState<UserRole>('zone_admin')
-  const [signUpName, setSignUpName] = React.useState('')
   const [signUpId, setSignUpId] = React.useState('')
   const [signUpPassword, setSignUpPassword] = React.useState('')
   const [signUpZone, setSignUpZone] = React.useState('')
@@ -99,8 +98,8 @@ export default function LandingPage() {
 
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!signUpId || !signUpPassword || !signUpName) {
-      toast({ title: "Error", description: "Please fill all fields.", variant: "destructive" })
+    if (!signUpId || !signUpPassword) {
+      toast({ title: "Error", description: "Please fill all required fields.", variant: "destructive" })
       return
     }
 
@@ -118,7 +117,7 @@ export default function LandingPage() {
 
     const newUser: User = {
       id: signUpId,
-      name: signUpName,
+      name: signUpId, // Use User ID as Name since name option is removed
       password: signUpPassword,
       role: signUpRole,
       zone: signUpRole === 'zone_admin' ? signUpZone : undefined,
@@ -131,7 +130,6 @@ export default function LandingPage() {
     
     // Clear fields
     setSignUpId('')
-    setSignUpName('')
     setSignUpPassword('')
     setSignUpZone('')
     
@@ -216,11 +214,6 @@ export default function LandingPage() {
 
               <TabsContent value="signup" className="mt-0 space-y-6">
                 <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">Full Name</Label>
-                    <Input placeholder="Enter your name" className="h-12 bg-white/5 border-white/10 text-white placeholder:text-white/20 rounded-xl" required value={signUpName} onChange={e => setSignUpName(e.target.value)} />
-                  </div>
-                  
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">User ID</Label>
@@ -240,7 +233,6 @@ export default function LandingPage() {
                         <SelectItem value="commissioner">Corporation Commissioner</SelectItem>
                         <SelectItem value="ward_admin">Ward Admin</SelectItem>
                         <SelectItem value="zone_admin">Zone Admin</SelectItem>
-                        <SelectItem value="citizen">Citizen</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
