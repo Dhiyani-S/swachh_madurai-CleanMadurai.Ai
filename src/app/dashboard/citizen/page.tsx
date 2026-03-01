@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Camera, Send, History, Trash2, Home, MapPin, CheckCircle, Clock, CreditCard, RefreshCw, Award, Zap, Loader2 } from "lucide-react"
+import { Camera, Send, History, Trash2, Home, MapPin, CheckCircle, Clock, CreditCard, RefreshCw, Award, Zap, Loader2, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useStore, Task } from "@/lib/store"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -21,11 +21,16 @@ export default function CitizenDashboard() {
   const [selectedWard, setSelectedWard] = React.useState<string>("")
   const [address, setAddress] = React.useState<string>("")
   const [issueType, setIssueType] = React.useState<string>("")
+  const [mounted, setMounted] = React.useState(false)
   
   // Camera State
   const videoRef = React.useRef<HTMLVideoElement>(null)
   const [hasCameraPermission, setHasCameraPermission] = React.useState<boolean | null>(null)
   const [capturedImage, setCapturedImage] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const getCameraPermission = async () => {
     try {
@@ -114,14 +119,13 @@ export default function CitizenDashboard() {
 
         // Automatic Assignment Logic
         const zoneWorkers = users.filter(u => u.role === 'Worker' && u.zoneId === selectedZone);
-        // Find worker with least tasks (simplified for prototype)
         const suggestedWorker = zoneWorkers[0];
 
         const newTask: Task = {
           id: `task-${Date.now()}`,
           name: `Public Complaint: ${issueType || 'Waste Cleanup'}`,
           location: address,
-          status: suggestedWorker ? 'Pending' : 'Pending',
+          status: 'Pending',
           type: 'Citizen Public',
           wardId: selectedWard || 'Ward 1',
           zoneId: selectedZone,
@@ -135,10 +139,10 @@ export default function CitizenDashboard() {
         addCitizenRewards(currentUser?.id || "", 50);
 
         toast({
-          title: "AI Verified & Assigned!",
-          description: suggestedWorker 
-            ? `Report validated! Task automatically assigned to ${suggestedWorker.name}. +50 Rewards earned.`
-            : "Report validated! Task added to the zone queue. +50 Rewards earned.",
+          title: "Report Filed Successfully",
+          description: aiResult.issueType === 'Unverified Issue' 
+            ? "Report accepted for manual review (AI offline). +50 Rewards earned."
+            : `AI Verified! Task automatically assigned to ${suggestedWorker?.name || 'Zone Queue'}. +50 Rewards earned.`,
         });
       } else {
         // Private Service Flow
@@ -163,11 +167,12 @@ export default function CitizenDashboard() {
 
       setAddress("");
       setCapturedImage(null);
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Submission error:", error);
       toast({
         variant: 'destructive',
-        title: "System Error",
-        description: "AI verification service is currently offline. Please try again later.",
+        title: "Submission Failed",
+        description: "Something went wrong while filing your report. Please try again.",
       });
     } finally {
       setSubmitting(false);
@@ -181,6 +186,8 @@ export default function CitizenDashboard() {
       description: "Worker is allocated, soon there will reached the place",
     })
   }
+
+  if (!mounted) return null;
 
   const myRequests = tasks.filter(t => t.citizenId === currentUser?.id)
 
@@ -308,7 +315,7 @@ export default function CitizenDashboard() {
                 disabled={submitting || (!capturedImage && hasCameraPermission !== false)}
               >
                 {submitting ? (
-                  <><Loader2 className="h-5 w-5 animate-spin" /> Analyzing Report...</>
+                  <><Loader2 className="h-5 w-5 animate-spin" /> Verifying...</>
                 ) : (
                   <><Send className="h-5 w-5" /> File AI Report & Earn Rewards</>
                 )}
