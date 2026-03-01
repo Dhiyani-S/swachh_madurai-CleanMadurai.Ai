@@ -10,7 +10,7 @@
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 38 92% 50%; /* Traditional Saffron Gold */
+    --primary: 38 92% 50%; /* Saffron Gold */
     --primary-foreground: 0 0% 100%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
@@ -23,7 +23,7 @@
     --border: 214 32% 91%;
     --input: 214 32% 91%;
     --ring: 38 92% 50%;
-    --radius: 0.75rem;
+    --radius: 1.5rem;
   }
 
   .dark {
@@ -59,4 +59,12 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline tracking-tight;
   }
+}
+
+.glass-panel {
+  @apply bg-white/5 backdrop-blur-3xl border border-white/10 shadow-2xl;
+}
+
+.glass-card {
+  @apply bg-white/10 backdrop-blur-md border border-white/20 shadow-xl;
 }

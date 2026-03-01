@@ -1,4 +1,3 @@
-
 "use client"
 
 import Link from "next/link"
@@ -56,11 +55,11 @@ export function DashboardSidebar() {
   const routes = currentUser ? roleRoutes[currentUser.role] : []
 
   return (
-    <div className="hidden border-r border-white/10 bg-black/40 backdrop-blur-3xl md:block w-64 h-screen fixed left-0 top-0 z-50">
+    <div className="hidden border-r border-white/10 bg-black/20 backdrop-blur-[50px] md:block w-64 h-screen fixed left-0 top-0 z-50">
       <div className="flex h-full flex-col gap-2">
         <div className="flex h-20 items-center px-6 border-b border-white/10">
           <Link href="/dashboard" className="flex items-center gap-2 font-headline font-bold text-xl text-white">
-            <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+            <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/30">
               <Recycle className="h-6 w-6 text-white" />
             </div>
             <span>CleanMadurai</span>
@@ -72,7 +71,7 @@ export function DashboardSidebar() {
           {routes.map((route) => (
             <Link key={route.href} href={route.href}>
               <span className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all group",
+                "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all group",
                 pathname === route.href 
                   ? "bg-primary text-white shadow-xl shadow-primary/30" 
                   : "text-white/60 hover:bg-white/5 hover:text-white"
@@ -87,7 +86,7 @@ export function DashboardSidebar() {
             <p className="px-3 text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">Account</p>
             <Link href="/dashboard/settings">
               <span className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all group",
+                "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all group",
                 pathname === '/dashboard/settings' 
                   ? "bg-primary text-white shadow-xl shadow-primary/30" 
                   : "text-white/60 hover:bg-white/5 hover:text-white"
@@ -98,7 +97,7 @@ export function DashboardSidebar() {
             </Link>
             <button 
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-rose-400 hover:bg-rose-500/10 transition-all"
+              className="w-full flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-rose-400 hover:bg-rose-500/10 transition-all"
             >
               <LogOut className="h-4 w-4" />
               {t.logout}
@@ -107,7 +106,7 @@ export function DashboardSidebar() {
         </div>
 
         <div className="p-4 bg-white/5 border-t border-white/10">
-          <div className="rounded-2xl bg-zinc-900/50 backdrop-blur-md p-4 shadow-sm border border-white/10">
+          <div className="rounded-[2rem] bg-zinc-900/50 backdrop-blur-md p-4 shadow-sm border border-white/10">
             <p className="text-[10px] font-bold text-primary uppercase mb-1">{currentUser?.role}</p>
             <p className="text-sm font-bold truncate text-white">{currentUser?.name}</p>
             <div className="mt-3 flex items-center gap-2 px-2 py-1 bg-primary/10 rounded-lg w-fit">
