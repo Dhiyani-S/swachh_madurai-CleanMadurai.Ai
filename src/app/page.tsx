@@ -38,17 +38,17 @@ export default function LandingPage() {
 
   if (!mounted) return null
 
-  const maduraiBg = PlaceHolderImages.find(img => img.id === 'madurai-temple-bg')?.imageUrl
+  const teppakulamBg = PlaceHolderImages.find(img => img.id === 'madurai-teppakulam')?.imageUrl
 
   if (!language) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-80 scale-105" 
-          style={{ backgroundImage: `url(${maduraiBg})` }}
-          data-ai-hint="madurai temple aerial"
+          className="absolute inset-0 bg-cover bg-center opacity-90 scale-105" 
+          style={{ backgroundImage: `url(${teppakulamBg})` }}
+          data-ai-hint="madurai teppakulam"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10" />
         
         <div className="max-w-md w-full space-y-8 animate-in fade-in zoom-in-95 duration-700 relative z-10">
           <div className="flex flex-col items-center gap-6 mb-12">
@@ -93,7 +93,7 @@ export default function LandingPage() {
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
-    const existingUser = users.find(u => u.id === userId.trim() && u.password === password && u.role === role)
+    const existingUser = users.find(u => u.id === userId.trim() && u.password === password && (u.role === role || role === 'Citizen' && u.role === 'Citizen'))
     if (!existingUser) {
       toast({ title: t.signIn + " Failed", description: "Invalid credentials.", variant: "destructive" })
       return
@@ -120,17 +120,16 @@ export default function LandingPage() {
 
     addUser(newUser)
     toast({ title: "Success", description: "Account created! You can now sign in." })
-    // Use state or a ref to switch tabs if needed, or simply let the user click
   }
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-80 scale-105" 
-        style={{ backgroundImage: `url(${maduraiBg})` }}
-        data-ai-hint="madurai temple aerial"
+        className="fixed inset-0 bg-cover bg-center opacity-90 scale-105" 
+        style={{ backgroundImage: `url(${teppakulamBg})` }}
+        data-ai-hint="madurai teppakulam"
       />
-      <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/40 to-primary/20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/20 to-primary/20" />
       
       <div className="absolute top-0 right-0 p-8 z-20">
         <Button variant="ghost" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} className="text-white hover:bg-white/10 gap-2 font-bold backdrop-blur-md bg-white/5 border border-white/10">

@@ -7,6 +7,12 @@
       "imageHint": "madurai temple aerial"
     },
     {
+      "id": "madurai-teppakulam",
+      "description": "Vandiyur Mariamman Teppakulam temple in the center of the lake",
+      "imageUrl": "https://images.unsplash.com/photo-1621259533256-65104445353e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "madurai teppakulam"
+    },
+    {
       "id": "madurai-city-clean",
       "description": "Clean street in Madurai city",
       "imageUrl": "https://images.unsplash.com/photo-1548013146-72479768bbaa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxNYWR1cmFpfGVufDB8fHx8MTc3MjM0Mzk5OXww&ixlib=rb-4.1.0&q=80&w=1080",
