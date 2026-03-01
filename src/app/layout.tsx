@@ -21,7 +21,9 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className="font-body antialiased relative">
+        {/* Unified Heritage Background */}
         <div className="madurai-bg" />
+        
         {children}
         <Toaster />
       </body>

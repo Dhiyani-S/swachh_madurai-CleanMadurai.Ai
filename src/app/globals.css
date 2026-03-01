@@ -16,7 +16,7 @@
     --secondary-foreground: 150 20% 96%;
     --muted: 160 20% 15%;
     --muted-foreground: 150 10% 70%;
-    --accent: 38 92% 50%; /* Traditional Saffron */
+    --accent: 38 92% 50%; /* Traditional Saffron Gold */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 150 20% 96%;
@@ -27,7 +27,7 @@
   }
 }
 
-/* Global Madurai Background */
+/* Global Madurai Heritage Background */
 .madurai-bg {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -43,28 +43,28 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(5, 15, 10, 0.65);
+  background: rgba(5, 15, 10, 0.72);
   z-index: 1;
 }
 
 /* Glassmorphism Styles - Ultra Translucent */
 .glass-panel {
   background: rgba(10, 26, 16, 0.45) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
   border: 1px solid rgba(0, 200, 117, 0.15) !important;
   color: #E8F5EE !important;
 }
 
 .glass-sidebar {
   background: rgba(5, 15, 10, 0.70) !important;
-  backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(24px) !important;
   border-right: 1px solid rgba(0, 200, 117, 0.12) !important;
 }
 
 .glass-header {
   background: rgba(5, 15, 10, 0.75) !important;
-  backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(24px) !important;
   border-bottom: 1px solid rgba(0, 200, 117, 0.12) !important;
 }
 
@@ -83,6 +83,19 @@ input, select, textarea {
 
 input::placeholder {
   color: rgba(232, 245, 238, 0.4) !important;
+}
+
+/* Button styles - Saffron-Gold for visibility */
+button.bg-primary, .btn-primary, [class*="btn-primary"] {
+  background: #00C875 !important;
+  color: #050F0A !important;
+  font-weight: 700 !important;
+}
+
+button[variant="outline"], .btn-outline {
+  border-color: rgba(0, 200, 117, 0.4) !important;
+  color: #00C875 !important;
+  background: rgba(0, 200, 117, 0.05) !important;
 }
 
 /* Table rows transparent */

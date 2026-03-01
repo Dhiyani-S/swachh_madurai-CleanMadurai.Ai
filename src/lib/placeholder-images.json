@@ -1,10 +1,16 @@
 {
   "placeholderImages": [
     {
-      "id": "madurai-heritage",
-      "description": "Meenakshi Amman Temple Dusk View",
+      "id": "madurai-heritage-main",
+      "description": "Meenakshi Amman Temple Dusk View - High Definition",
       "imageUrl": "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&q=80&w=1920",
-      "imageHint": "madurai temple gopuram"
+      "imageHint": "madurai temple heritage"
+    },
+    {
+      "id": "madurai-cleanliness",
+      "description": "Clean Madurai Streets Representation",
+      "imageUrl": "https://images.unsplash.com/photo-1570160897040-30430f267ec0?auto=format&fit=crop&q=80&w=1920",
+      "imageHint": "clean city streets"
     }
   ]
 }
