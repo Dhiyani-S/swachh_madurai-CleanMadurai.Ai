@@ -17,7 +17,7 @@ export interface Task {
   id: string;
   name: string;
   location: string;
-  status: 'Pending' | 'In Progress' | 'Completed';
+  status: 'Pending' | 'In Progress' | 'Partially Completed' | 'Completed';
   type: 'Sensor' | 'Citizen Public' | 'Citizen Private';
   assignedTo?: string; // Team Number or Zone Admin
   wardId: string;
