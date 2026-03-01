@@ -10,19 +10,20 @@
     --card-foreground: 150 20% 96%;
     --popover: 160 40% 6%;
     --popover-foreground: 150 20% 96%;
-    --primary: 156 100% 39%; /* #00C875 - Saffron Green */
+    /* Bright Yellow/Saffron to match the Madurai sign */
+    --primary: 48 100% 50%; 
     --primary-foreground: 160 40% 4%;
     --secondary: 160 20% 12%;
     --secondary-foreground: 150 20% 96%;
     --muted: 160 20% 15%;
     --muted-foreground: 150 10% 70%;
-    --accent: 38 92% 50%; /* Traditional Saffron Gold */
+    --accent: 156 100% 39%; /* Lush green for secondary accents */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 150 20% 96%;
     --border: 160 30% 15%;
     --input: 160 30% 15%;
-    --ring: 156 100% 39%;
+    --ring: 48 100% 50%;
     --radius: 2rem;
   }
 }
@@ -31,41 +32,42 @@
 .madurai-bg {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-image: url('https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&q=80&w=1920');
+  /* Assuming the user saves the uploaded image as madurai_bg.jpg in public folder */
+  background-image: url('/madurai_bg.jpg');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
   z-index: -1;
 }
 
-/* Dark overlay for readability while keeping image visible */
+/* Light overlay to maintain readability while keeping the image very clear */
 .madurai-bg::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(5, 15, 10, 0.72);
+  background: rgba(5, 15, 10, 0.45);
   z-index: 1;
 }
 
 /* Glassmorphism Styles - Ultra Translucent */
 .glass-panel {
-  background: rgba(10, 26, 16, 0.45) !important;
+  background: rgba(10, 26, 16, 0.35) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(0, 200, 117, 0.15) !important;
+  border: 1px solid rgba(255, 200, 0, 0.1) !important;
   color: #E8F5EE !important;
 }
 
 .glass-sidebar {
-  background: rgba(5, 15, 10, 0.70) !important;
+  background: rgba(5, 15, 10, 0.60) !important;
   backdrop-filter: blur(24px) !important;
-  border-right: 1px solid rgba(0, 200, 117, 0.12) !important;
+  border-right: 1px solid rgba(255, 200, 0, 0.1) !important;
 }
 
 .glass-header {
-  background: rgba(5, 15, 10, 0.75) !important;
+  background: rgba(5, 15, 10, 0.65) !important;
   backdrop-filter: blur(24px) !important;
-  border-bottom: 1px solid rgba(0, 200, 117, 0.12) !important;
+  border-bottom: 1px solid rgba(255, 200, 0, 0.1) !important;
 }
 
 /* Override ShadCN Card for global glass effect */
@@ -76,7 +78,7 @@
 /* Input fields transparent style */
 input, select, textarea {
   background: rgba(5, 15, 10, 0.5) !important;
-  border: 1px solid rgba(0, 200, 117, 0.2) !important;
+  border: 1px solid rgba(255, 200, 0, 0.2) !important;
   color: #E8F5EE !important;
   backdrop-filter: blur(8px) !important;
 }
@@ -85,17 +87,18 @@ input::placeholder {
   color: rgba(232, 245, 238, 0.4) !important;
 }
 
-/* Button styles - Saffron-Gold for visibility */
+/* Button styles - Saffron-Yellow for high visibility matching the image sign */
 button.bg-primary, .btn-primary, [class*="btn-primary"] {
-  background: #00C875 !important;
-  color: #050F0A !important;
-  font-weight: 700 !important;
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 20px rgba(255, 200, 0, 0.3) !important;
 }
 
 button[variant="outline"], .btn-outline {
-  border-color: rgba(0, 200, 117, 0.4) !important;
-  color: #00C875 !important;
-  background: rgba(0, 200, 117, 0.05) !important;
+  border-color: rgba(255, 200, 0, 0.4) !important;
+  color: hsl(var(--primary)) !important;
+  background: rgba(255, 200, 0, 0.05) !important;
 }
 
 /* Table rows transparent */
@@ -104,39 +107,8 @@ table tr {
 }
 
 table th {
-  background: rgba(0, 200, 117, 0.08) !important;
-  color: #00C875 !important;
-}
-
-/* Animation Upgrades */
-@keyframes pointsFloat {
-  0% { opacity: 1; transform: translateY(0) scale(1); }
-  100% { opacity: 0; transform: translateY(-60px) scale(1.3); }
-}
-.points-toast {
-  position: fixed;
-  color: #00C875;
-  font-weight: 800;
-  font-size: 1.5rem;
-  animation: pointsFloat 1.5s ease forwards;
-  pointer-events: none;
-  z-index: 9999;
-}
-
-@keyframes alertPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
-  50% { box-shadow: 0 0 0 15px rgba(255, 107, 107, 0); }
-}
-.sensor-alert-card {
-  animation: alertPulse 1.5s infinite;
-}
-
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-.task-card-new {
-  animation: slideInRight 0.4s ease;
+  background: rgba(255, 200, 0, 0.08) !important;
+  color: hsl(var(--primary)) !important;
 }
 
 @layer base {
