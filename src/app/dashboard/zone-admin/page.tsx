@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -10,14 +11,11 @@ import {
   ClipboardList, 
   Map as MapIcon, 
   Plus,
-  MoreVertical,
   CheckCircle,
   AlertCircle,
-  Clock,
   Send,
   UserPlus,
   UserCheck,
-  UserX,
   ChevronDown
 } from "lucide-react"
 import { useStore } from "@/lib/store"
@@ -45,6 +43,8 @@ export default function ZoneAdminDashboard() {
       description: `Task has been pushed to Worker Team T04.`,
     })
   }
+
+  const today = new Date().toLocaleDateString()
 
   return (
     <div className="space-y-8">
@@ -141,13 +141,14 @@ export default function ZoneAdminDashboard() {
         <Card className="border-none shadow-md">
           <CardHeader>
             <CardTitle className="font-headline text-xl">Worker Team Health</CardTitle>
-            <CardDescription>Performance tracking and attendance</CardDescription>
+            <CardDescription>Daily attendance tracking ({today})</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {teamsMock.map((team) => {
               const teamAttendance = attendance[team.id];
-              const presentCount = teamAttendance?.members.filter(m => m.status === 'Present').length || 0;
-              const totalCount = teamAttendance?.members.length || team.members;
+              const isToday = teamAttendance?.date === today;
+              const presentCount = isToday ? teamAttendance.members.filter(m => m.status === 'Present').length : 0;
+              const totalCount = isToday ? teamAttendance.members.length : team.members;
 
               return (
                 <div key={team.id} className="p-4 rounded-xl border bg-card hover:border-primary transition-all group">
@@ -160,9 +161,13 @@ export default function ZoneAdminDashboard() {
                         <p className="font-bold text-sm">Team {team.leader}</p>
                         <div className="flex items-center gap-2">
                           <p className="text-[10px] text-muted-foreground">{team.members} members</p>
-                          {teamAttendance && (
+                          {isToday ? (
                             <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5">
                               <UserCheck className="h-2 w-2" /> {presentCount}/{totalCount} Present
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-amber-600 flex items-center gap-0.5">
+                              <AlertCircle className="h-2 w-2" /> Attendance Pending
                             </span>
                           )}
                         </div>
@@ -171,17 +176,17 @@ export default function ZoneAdminDashboard() {
                     <StatusBadge status={team.status as any} />
                   </div>
 
-                  {teamAttendance && (
+                  {isToday && (
                     <Collapsible className="mt-2">
                       <CollapsibleTrigger asChild>
-                        <Button variant="ghost" size="sm" className="w-full h-6 text-[9px] font-bold py-0 flex justify-between px-1">
+                        <Button variant="ghost" size="sm" className="w-full h-6 text-[9px] font-bold py-0 flex justify-between px-1 bg-secondary/30">
                           View Detailed Attendance <ChevronDown className="h-3 w-3" />
                         </Button>
                       </CollapsibleTrigger>
-                      <CollapsibleContent className="pt-2 space-y-1">
+                      <CollapsibleContent className="pt-2 space-y-1 bg-secondary/10 rounded p-1">
                         {teamAttendance.members.map((member, idx) => (
                           <div key={idx} className="flex items-center justify-between text-[10px] px-1">
-                            <span className="text-muted-foreground">{member.name}</span>
+                            <span className="text-muted-foreground font-medium">{member.name}</span>
                             <span className={cn(
                               "font-bold uppercase",
                               member.status === 'Present' ? "text-emerald-600" : "text-rose-600"
