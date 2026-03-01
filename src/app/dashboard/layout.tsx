@@ -58,7 +58,7 @@ export default function DashboardLayout({
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
-      {/* High-Visibility Background Layer */}
+      {/* High-Visibility Background Layer - Fixed and Full View */}
       <div 
         className="fixed inset-0 bg-cover bg-center opacity-100 z-0 scale-100 transition-transform duration-[60s] ease-linear" 
         style={{ backgroundImage: `url(${maduraiBg})` }}

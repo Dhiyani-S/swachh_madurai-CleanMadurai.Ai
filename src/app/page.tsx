@@ -43,7 +43,7 @@ export default function LandingPage() {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-100 scale-100" 
+          className="absolute inset-0 bg-cover bg-center opacity-100 scale-100 transition-transform duration-[60s] ease-linear" 
           style={{ backgroundImage: `url(${teppakulamBg})` }}
           data-ai-hint="madurai teppakulam"
         />
@@ -51,7 +51,7 @@ export default function LandingPage() {
         
         <div className="max-w-md w-full space-y-8 animate-in fade-in zoom-in-95 duration-700 relative z-10">
           <div className="flex flex-col items-center gap-6 mb-12">
-            <div className="h-28 w-28 bg-primary rounded-[2.5rem] flex items-center justify-center shadow-[0_0_60px_rgba(51,115,204,0.4)] border border-white/20">
+            <div className="h-28 w-28 bg-primary rounded-[2.5rem] flex items-center justify-center shadow-[0_0_60px_rgba(0,200,117,0.4)] border border-white/20">
               <Recycle className="h-14 w-14 text-white animate-pulse" />
             </div>
             <div className="space-y-2">

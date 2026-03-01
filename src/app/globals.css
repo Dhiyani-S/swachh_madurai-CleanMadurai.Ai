@@ -11,7 +11,7 @@
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 150 80% 39%; /* CleanMadurai Green */
+    --primary: 158 82% 43%; /* Refreshed Vibrant Emerald Green for Keys/Buttons */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
     --secondary-foreground: 222 47% 11%;
@@ -23,8 +23,8 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 150 80% 39%;
-    --radius: 1.5rem;
+    --ring: 158 82% 43%;
+    --radius: 2rem;
   }
 
   .dark {
@@ -34,7 +34,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
-    --primary: 150 80% 45%;
+    --primary: 158 82% 45%;
     --primary-foreground: 210 40% 98%;
     --secondary: 217 33% 12%;
     --secondary-foreground: 210 40% 98%;
@@ -46,7 +46,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 150 80% 39%;
+    --ring: 158 82% 43%;
   }
 }
 
@@ -76,7 +76,6 @@
   }
 }
 
-/* Ensure background image covers the screen and is fixed */
 .bg-heritage {
   @apply fixed inset-0 z-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000;
 }
