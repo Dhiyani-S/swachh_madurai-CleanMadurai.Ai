@@ -117,7 +117,7 @@ export default function LandingPage() {
 
     const newUser: User = {
       id: signUpId,
-      name: signUpId, // Use User ID as Name since name option is removed
+      name: signUpId,
       password: signUpPassword,
       role: signUpRole,
       zone: signUpRole === 'zone_admin' ? signUpZone : undefined,
@@ -134,15 +134,6 @@ export default function LandingPage() {
     setSignUpZone('')
     
     setIsSubmitting(false)
-  }
-
-  const handleDemoFill = (targetRole: UserRole) => {
-    const demoUser = users.find(u => u.role === targetRole);
-    if (demoUser) {
-      setUserId(demoUser.id);
-      setPassword(demoUser.password || '123');
-      setRole(targetRole);
-    }
   }
 
   return (
@@ -193,23 +184,6 @@ export default function LandingPage() {
                     {t.signIn} <ChevronRight className="h-6 w-6 ml-2" />
                   </Button>
                 </form>
-
-                <div className="pt-8 border-t border-white/10">
-                  <p className="text-[10px] font-bold text-white/40 text-center uppercase tracking-[0.2em] mb-4">Quick Demo Access</p>
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {(['commissioner', 'ward_admin', 'zone_admin', 'worker', 'citizen'] as UserRole[]).map((r) => (
-                      <Button 
-                        key={r} 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-8 text-[9px] font-bold uppercase tracking-wider text-white/60 hover:text-white hover:bg-white/10 rounded-full border border-white/5"
-                        onClick={() => handleDemoFill(r)}
-                      >
-                        {t[r as keyof typeof t] || r}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
               </TabsContent>
 
               <TabsContent value="signup" className="mt-0 space-y-6">
