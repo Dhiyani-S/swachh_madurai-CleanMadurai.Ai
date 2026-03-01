@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -21,6 +20,13 @@ export default function LandingPage() {
   const [userId, setUserId] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [zone, setZone] = React.useState('')
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,7 +49,7 @@ export default function LandingPage() {
       role: role,
       rewardPoints: role === 'Worker' ? 450 : 0,
       zoneId: needsZone ? zone : undefined,
-      teamNumber: role === 'Worker' ? "Team 04" : undefined,
+      teamNumber: role === 'Worker' ? `Team ${userId || '04'}` : undefined,
       teamMembers: role === 'Worker' ? ["Karthik (Lead)", "Siva", "Meena", "Arjun"] : undefined
     }
     setCurrentUser(user)
