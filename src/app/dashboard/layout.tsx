@@ -7,7 +7,9 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { Bell, Search, Menu, Globe, Wifi, WifiOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { translations } from "@/lib/translations"
+import { useToast } from "@/hooks/use-toast"
+import { Badge } from "@/components/ui/badge"
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -16,16 +18,13 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
-import { translations } from "@/lib/translations"
-import { useToast } from "@/hooks/use-toast"
-import { Badge } from "@/components/ui/badge"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { currentUser, language, setLanguage, tasks, updateTask } = useStore()
+  const { currentUser, language, setLanguage, tasks, updateTask, setCurrentUser } = useStore()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [isOnline, setIsOnline] = useState(true)
@@ -69,7 +68,7 @@ export default function DashboardLayout({
             if (currentUser?.role === 'Zone Admin' || currentUser?.id === task.assignedTo) {
               toast({
                 title: language === 'ta' ? "பணி மீண்டும் ஒதுக்கப்பட்டது" : "Task Re-assigned",
-                description: language === 'ta' ? "30 நிமிடம் தாமதமானதால் பணி திரும்பப் பெறப்பட்டது." : `Task "${task.name}" was unassigned due to 30-minute response timeout.`,
+                description: language === 'ta' ? "30 நிமிடம் தாமதமானதால் பணி திரும்பப் பெறப்பட்டது." : `Task "${task.name}" unassigned due to timeout.`,
                 variant: "destructive"
               });
             }
@@ -84,7 +83,6 @@ export default function DashboardLayout({
 
   if (!mounted || !currentUser) return null
 
-  const isWorker = currentUser.role === 'Worker'
   const t = translations[language || 'en'];
 
   return (
@@ -127,6 +125,7 @@ export default function DashboardLayout({
                 <DropdownMenuLabel>{t.settings}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-destructive" onClick={() => {
+                   setCurrentUser(null)
                    router.push('/')
                 }}>{t.logout}</DropdownMenuItem>
               </DropdownMenuContent>

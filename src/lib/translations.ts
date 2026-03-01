@@ -29,7 +29,6 @@ export const translations = {
     language: "Language",
     tamil: "Tamil (தமிழ்)",
     english: "English",
-    // New Keys
     teamManagement: "Team Management",
     taskHistory: "History",
     status: "Status",
@@ -52,6 +51,7 @@ export const translations = {
     cityOverview: "City Overview",
     liveMode: "Live Mode",
     offlineReady: "Offline Ready",
+    taglineFull: "AI-Powered Waste Management for Madurai Corporation",
   },
   ta: {
     appName: "தூய்மை மதுரை.AI",
@@ -82,7 +82,6 @@ export const translations = {
     language: "மொழி",
     tamil: "தமிழ்",
     english: "ஆங்கிலம் (English)",
-    // New Keys (Tamil)
     teamManagement: "குழு மேலாண்மை",
     taskHistory: "வரலாறு",
     status: "நிலை",
@@ -105,6 +104,7 @@ export const translations = {
     cityOverview: "நகர கண்ணோட்டம்",
     liveMode: "நேரடி முறை",
     offlineReady: "ஆஃப்லைனில் வேலை செய்யும்",
+    taglineFull: "மதுரை மாநகராட்சியின் AI-ஆல் இயங்கும் கழிவு மேலாண்மை அமைப்பு",
   }
 };
 

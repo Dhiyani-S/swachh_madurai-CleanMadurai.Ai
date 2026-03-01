@@ -9,8 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useStore, UserRole, User, AppLanguage } from "@/lib/store"
-import { Recycle, Globe, ChevronRight, Check, AlertCircle } from "lucide-react"
+import { useStore, UserRole } from "@/lib/store"
+import { Recycle, Globe, ChevronRight, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { translations } from "@/lib/translations"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -32,8 +32,7 @@ export default function LandingPage() {
 
   if (!mounted) return null
 
-  const t = translations[language || 'en'];
-
+  // Language Selection Screen
   if (!language) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center">
@@ -47,22 +46,24 @@ export default function LandingPage() {
           
           <Card className="border-none shadow-2xl p-8 rounded-3xl bg-white/80 backdrop-blur-xl">
             <h2 className="text-xl font-bold mb-6 flex items-center justify-center gap-2">
-              <Globe className="h-5 w-5 text-primary" /> Choose Your Language / மொழியைத் தேர்ந்தெடுக்கவும்
+              <Globe className="h-5 w-5 text-primary" /> Select Language / மொழியைத் தேர்ந்தெடுக்கவும்
             </h2>
             <div className="grid grid-cols-1 gap-4">
               <Button 
                 onClick={() => setLanguage('en')}
-                className="h-16 text-lg font-bold rounded-2xl border-2 border-transparent hover:border-primary/50 transition-all"
+                className="h-16 text-lg font-bold rounded-2xl border-2 border-transparent hover:border-primary/50 transition-all flex justify-between px-8"
                 variant="outline"
               >
-                English
+                <span>English</span>
+                <ChevronRight className="h-5 w-5 opacity-30" />
               </Button>
               <Button 
                 onClick={() => setLanguage('ta')}
-                className="h-16 text-lg font-bold rounded-2xl border-2 border-transparent hover:border-primary/50 transition-all font-body"
+                className="h-16 text-lg font-bold rounded-2xl border-2 border-transparent hover:border-primary/50 transition-all flex justify-between px-8 font-body"
                 variant="outline"
               >
-                தமிழ் (Tamil)
+                <span>தமிழ் (Tamil)</span>
+                <ChevronRight className="h-5 w-5 opacity-30" />
               </Button>
             </div>
           </Card>
@@ -71,9 +72,10 @@ export default function LandingPage() {
     );
   }
 
+  const t = translations[language];
+
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
-    // Trim and normalize ID for better matching
     const normalizedId = userId.trim();
     
     const existingUser = users.find(u => 
@@ -84,22 +86,15 @@ export default function LandingPage() {
 
     if (!existingUser) {
       toast({
-        title: "Authentication Failed",
-        description: "Invalid credentials or incorrect role. Please check your User ID and Role.",
+        title: language === 'ta' ? "உள்நுழைவு தோல்வியடைந்தது" : "Authentication Failed",
+        description: language === 'ta' ? "தவறான ஐடி அல்லது கடவுச்சொல்." : "Invalid credentials or incorrect role.",
         variant: "destructive",
       })
       return
     }
 
     setCurrentUser(existingUser)
-    const routes: Record<UserRole, string> = {
-      'Corporation Commissioner': '/dashboard/commissioner',
-      'Ward Admin': '/dashboard/ward-admin',
-      'Zone Admin': '/dashboard/zone-admin',
-      'Worker': '/dashboard/worker',
-      'Citizen': '/dashboard/citizen',
-    }
-    router.push(routes[role])
+    router.push('/dashboard')
   }
 
   const handleSignUp = (e: React.FormEvent) => {
@@ -117,8 +112,6 @@ export default function LandingPage() {
       zoneId: (role === 'Worker' || role === 'Zone Admin') ? zone : undefined,
     })
     toast({ title: "Success", description: "Account created! You can now sign in." })
-    setUserId(''); 
-    setPassword('');
   }
 
   return (
@@ -133,20 +126,19 @@ export default function LandingPage() {
             <h1 className="text-4xl font-headline font-bold text-slate-900 tracking-tight">{t.appName}</h1>
           </div>
           <h2 className="text-5xl font-headline font-bold leading-tight">{t.tagline}</h2>
+          <p className="text-lg text-muted-foreground">{t.taglineFull}</p>
           
           <Alert className="bg-white/50 backdrop-blur border-primary/20">
             <AlertCircle className="h-4 w-4 text-primary" />
-            <AlertTitle className="font-bold text-xs uppercase tracking-wider">Prototype Guide</AlertTitle>
+            <AlertTitle className="font-bold text-xs uppercase tracking-wider">Prototype Mode</AlertTitle>
             <AlertDescription className="text-xs text-muted-foreground">
-              Use <code className="font-bold text-primary">01</code> to <code className="font-bold text-primary">05</code> for quick testing of all roles. Password is <code className="font-bold">123</code>.
+              {language === 'ta' ? 'பரிசோதனைக்கு 01 முதல் 05 வரையிலான ஐடிகளை பயன்படுத்தவும். கடவுச்சொல்: 123' : 'Use 01 to 05 for testing. Password is 123.'}
             </AlertDescription>
           </Alert>
 
-          <div className="flex items-center gap-2 pt-4">
-             <Button variant="ghost" size="sm" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} className="gap-2 font-bold">
-               <Globe className="h-4 w-4" /> Switch to {language === 'en' ? 'Tamil' : 'English'}
-             </Button>
-          </div>
+          <Button variant="ghost" size="sm" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} className="gap-2 font-bold">
+            <Globe className="h-4 w-4" /> Switch Language / மொழி மாற்றவும்
+          </Button>
         </div>
 
         <div className="w-full max-w-md mx-auto">
@@ -163,11 +155,11 @@ export default function LandingPage() {
                   <CardContent className="space-y-5">
                     <div className="space-y-2">
                       <Label className="font-bold">{t.userId}</Label>
-                      <Input placeholder="Enter ID (e.g., 01)" className="h-12" required value={userId} onChange={e => setUserId(e.target.value)} />
+                      <Input placeholder="ID" className="h-12" required value={userId} onChange={e => setUserId(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label className="font-bold">{t.password}</Label>
-                      <Input type="password" placeholder="Password" className="h-12" required value={password} onChange={e => setPassword(e.target.value)} />
+                      <Input type="password" placeholder="••••" className="h-12" required value={password} onChange={e => setPassword(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label className="font-bold">{t.accessRole}</Label>
@@ -218,21 +210,6 @@ export default function LandingPage() {
                          </SelectContent>
                        </Select>
                      </div>
-                     {(role === 'Worker' || role === 'Zone Admin') && (
-                        <div className="space-y-2">
-                          <Label>Zone</Label>
-                          <Select value={zone} onValueChange={setZone}>
-                            <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="ZA - Zone A (North)">ZA - Zone A (North)</SelectItem>
-                              <SelectItem value="ZB - Zone B (South)">ZB - Zone B (South)</SelectItem>
-                              <SelectItem value="ZC - Zone C (East)">ZC - Zone C (East)</SelectItem>
-                              <SelectItem value="ZD - Zone D (West)">ZD - Zone D (West)</SelectItem>
-                              <SelectItem value="ZE - Zone E (Central)">ZE - Zone E (Central)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                     )}
                    </CardContent>
                    <CardFooter>
                      <Button type="submit" className="w-full h-14 text-lg font-bold bg-accent hover:bg-accent/90 text-white rounded-2xl">{t.register}</Button>
