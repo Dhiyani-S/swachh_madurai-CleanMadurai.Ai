@@ -90,13 +90,12 @@ export default function ZoneAdminDashboard() {
 
     updateTask(taskId, { 
       assignedTo: workerId, 
-      status: 'Pending',
-      paymentStatus: task.type === 'Citizen Private' ? 'Unpaid' : undefined
+      status: 'Pending'
     })
     
     toast({
       title: "Task Assigned",
-      description: `Task allocated to ${workerId}. Citizen will be notified.`,
+      description: `Task allocated to team associated with ${workerId}.`,
     })
   }
 
@@ -212,7 +211,6 @@ export default function ZoneAdminDashboard() {
     toast({ title: "Profile Updated", description: "Member details saved successfully." })
   }
 
-  // Calculate stats for each team
   const teamPerformanceData = zoneTeams.map(team => {
     const teamTasks = tasks.filter(t => t.assignedTo === team.id);
     const completed = teamTasks.filter(t => t.status === 'Completed').length;
@@ -286,7 +284,7 @@ export default function ZoneAdminDashboard() {
                   ) : (
                     zoneTasks.filter(t => t.type !== 'Citizen Private' && !t.assignedTo).map((task) => (
                       <div key={task.id} className="p-4 flex items-center justify-between hover:bg-secondary/5 transition-colors">
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-bold text-sm capitalize">{task.name}</h4>
                           <p className="text-xs text-muted-foreground flex items-center gap-1"><MapIcon className="h-3 w-3" /> {task.location}</p>
                           <span className="text-[10px] font-bold uppercase text-primary bg-primary/5 px-2 py-0.5 rounded mt-2 inline-block">
@@ -299,7 +297,11 @@ export default function ZoneAdminDashboard() {
                             onChange={(e) => handleAssignTask(task.id, e.target.value)}
                           >
                             <option value="">Assign Worker...</option>
-                            {zoneTeams.map(team => <option key={team.id} value={team.id}>{team.id}</option>)}
+                            {zoneTeams.map(team => (
+                              <option key={team.id} value={team.id}>
+                                {team.name} ({team.id})
+                              </option>
+                            ))}
                           </select>
                         </div>
                       </div>
@@ -341,8 +343,17 @@ export default function ZoneAdminDashboard() {
                             onChange={(e) => handleAssignTask(task.id, e.target.value)}
                           >
                             <option value="">Assign Worker...</option>
-                            {zoneTeams.map(team => <option key={team.id} value={team.id}>{team.id}</option>)}
+                            {zoneTeams.map(team => (
+                              <option key={team.id} value={team.id}>
+                                {team.name} ({team.id})
+                              </option>
+                            ))}
                           </select>
+                          {task.assignedTo && task.status === 'In Progress' && task.paymentStatus === 'Unpaid' && (
+                            <Button size="sm" variant="outline" className="text-[10px] h-8" onClick={() => updateTask(task.id, { paymentStatus: 'Paid' })}>
+                              Verify Payment
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))
@@ -434,7 +445,7 @@ export default function ZoneAdminDashboard() {
             {zoneTeams.length === 0 ? (
                <div className="col-span-full py-20 text-center space-y-4">
                   <Users className="h-12 w-12 mx-auto text-muted-foreground/30" />
-                  <p className="text-muted-foreground">No teams registered.</p>
+                  <p className="text-muted-foreground">No teams registered in this zone.</p>
                </div>
             ) : zoneTeams.map(team => (
               <Card key={team.id} className="border-none shadow-md flex flex-col group hover:ring-2 hover:ring-primary/20 transition-all">
