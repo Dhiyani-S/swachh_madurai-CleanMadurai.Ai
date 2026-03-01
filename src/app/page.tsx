@@ -45,7 +45,7 @@ export default function LandingPage() {
           className="absolute inset-0 bg-cover bg-center opacity-100 z-0" 
           style={{ backgroundImage: `url(${unifiedBg})` }}
         />
-        <div className="absolute inset-0 bg-black/10 z-[1]" />
+        <div className="absolute inset-0 bg-black/5 z-[1]" />
         
         <div className="max-w-md w-full space-y-8 animate-in fade-in duration-700 relative z-10">
           <div className="flex flex-col items-center gap-6 mb-12">
@@ -57,7 +57,7 @@ export default function LandingPage() {
             </div>
           </div>
           
-          <Card className="border-white/10 shadow-2xl p-8 rounded-[3.5rem] bg-white/5 backdrop-blur-3xl border-2">
+          <Card className="border-white/10 shadow-2xl p-8 rounded-[3.5rem] bg-white/10 backdrop-blur-3xl border-2">
             <h2 className="text-2xl font-bold mb-8 text-white font-headline">மொழியைத் தேர்ந்தெடுக்கவும்</h2>
             <div className="grid grid-cols-1 gap-4">
               <Button 
@@ -113,7 +113,7 @@ export default function LandingPage() {
         className="fixed inset-0 bg-cover bg-center opacity-100 z-0" 
         style={{ backgroundImage: `url(${unifiedBg})` }}
       />
-      <div className="fixed inset-0 bg-black/10 z-[1]" />
+      <div className="fixed inset-0 bg-black/5 z-[1]" />
       
       <div className="max-w-6xl w-full flex flex-col items-center justify-center relative z-10">
         <div className="mb-12 text-center space-y-4">
@@ -127,7 +127,7 @@ export default function LandingPage() {
         </div>
 
         <div className="w-full max-w-md mx-auto">
-          <Card className="border-white/10 shadow-2xl rounded-[4rem] bg-white/5 backdrop-blur-2xl overflow-hidden border">
+          <Card className="border-white/10 shadow-2xl rounded-[4rem] bg-white/10 backdrop-blur-3xl overflow-hidden border">
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-white/5 p-2 h-20 rounded-none border-b border-white/10">
                 <TabsTrigger value="signin" className="font-bold rounded-[2.5rem] text-white text-lg data-[state=active]:bg-primary">{t.signIn}</TabsTrigger>

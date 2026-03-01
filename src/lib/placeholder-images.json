@@ -2,33 +2,9 @@
   "placeholderImages": [
     {
       "id": "madurai-unified",
-      "description": "Composite of Madurai sign, Temple, Mosque, Church, and Cleanliness Workers",
+      "description": "Composite of Madurai Heritage Landmarks and Cleanliness Workers",
       "imageUrl": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&q=80&w=1920",
-      "imageHint": "madurai heritage workers"
-    },
-    {
-      "id": "madurai-temple-bg",
-      "description": "Aerial view of Meenakshi Amman Temple Madurai towers",
-      "imageUrl": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&q=80&w=1920",
-      "imageHint": "madurai temple aerial"
-    },
-    {
-      "id": "madurai-teppakulam",
-      "description": "Vandiyur Mariamman Teppakulam temple in the center of the lake",
-      "imageUrl": "https://images.unsplash.com/photo-1621259533256-65104445353e?auto=format&fit=crop&q=80&w=1920",
-      "imageHint": "madurai teppakulam"
-    },
-    {
-      "id": "madurai-temple-tower",
-      "description": "Magnificent ground-up view of the Madurai temple tower gopuram",
-      "imageUrl": "https://images.unsplash.com/photo-1616422319203-4fc99059f77a?auto=format&fit=crop&q=80&w=1920",
-      "imageHint": "madurai gopuram courtyard"
-    },
-    {
-      "id": "madurai-city-clean",
-      "description": "Clean street in Madurai city",
-      "imageUrl": "https://images.unsplash.com/photo-1548013146-72479768bbaa?auto=format&fit=crop&q=80&w=1080",
-      "imageHint": "madurai street"
+      "imageHint": "madurai heritage composite"
     }
   ]
 }
