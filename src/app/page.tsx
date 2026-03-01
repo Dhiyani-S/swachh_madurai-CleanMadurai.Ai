@@ -4,15 +4,16 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useStore, UserRole } from "@/lib/store"
-import { Recycle, Globe, ChevronRight, AlertCircle, Sparkles, Building2, MapPin, Users2, Trophy } from "lucide-react"
+import { Recycle, Globe, ChevronRight, Sparkles, Building2, MapPin, Trophy } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { translations } from "@/lib/translations"
+import { PlaceHolderImages } from "@/lib/placeholder-images"
 
 export default function LandingPage() {
   const router = useRouter()
@@ -30,10 +31,18 @@ export default function LandingPage() {
 
   if (!mounted) return null
 
+  const maduraiBg = PlaceHolderImages.find(img => img.id === 'madurai-temple-bg')?.imageUrl
+
   if (!language) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,200,117,0.1),transparent)]" />
+        <div 
+          className="absolute inset-0 bg-cover bg-center opacity-30 scale-105 blur-[2px]" 
+          style={{ backgroundImage: `url(${maduraiBg})` }}
+          data-ai-hint="madurai temple"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
+        
         <div className="max-w-md w-full space-y-8 animate-in fade-in zoom-in-95 duration-700 relative z-10">
           <div className="flex flex-col items-center gap-6">
             <div className="h-24 w-24 bg-primary rounded-[2rem] flex items-center justify-center shadow-[0_0_50px_rgba(0,200,117,0.3)] border border-primary/50">
@@ -68,17 +77,6 @@ export default function LandingPage() {
               </Button>
             </div>
           </Card>
-
-          <div className="grid grid-cols-2 gap-4 pt-8">
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-              <p className="text-2xl font-bold text-white">142+</p>
-              <p className="text-[10px] text-primary font-bold uppercase">Tasks Today</p>
-            </div>
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-              <p className="text-2xl font-bold text-white">2.8t</p>
-              <p className="text-[10px] text-primary font-bold uppercase">Waste Managed</p>
-            </div>
-          </div>
         </div>
       </div>
     );
@@ -105,8 +103,14 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(0,200,117,0.1),transparent)]" />
-      <div className="absolute top-0 right-0 p-8">
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-25 scale-110" 
+        style={{ backgroundImage: `url(${maduraiBg})` }}
+        data-ai-hint="madurai temple"
+      />
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-black/90 to-primary/20" />
+      
+      <div className="absolute top-0 right-0 p-8 z-20">
         <Button variant="ghost" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} className="text-white hover:bg-white/10 gap-2 font-bold">
           <Globe className="h-4 w-4" /> {language === 'en' ? 'தமிழ்' : 'English'}
         </Button>
@@ -133,7 +137,7 @@ export default function LandingPage() {
               { label: "Zones Connected", value: "5/5", icon: MapPin },
               { label: "Efficiency Rate", value: "94%", icon: Trophy }
             ].map((stat, i) => (
-              <div key={i} className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-1 group hover:bg-white/10 transition-all">
+              <div key={i} className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-1 group hover:bg-white/10 transition-all backdrop-blur-sm">
                 <stat.icon className="h-5 w-5 text-primary mb-2" />
                 <p className="text-3xl font-headline font-bold text-white">{stat.value}</p>
                 <p className="text-xs text-primary font-bold uppercase tracking-wider">{stat.label}</p>

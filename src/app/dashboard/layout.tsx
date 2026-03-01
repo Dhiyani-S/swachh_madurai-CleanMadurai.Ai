@@ -5,7 +5,7 @@ import { DashboardSidebar } from "@/components/dashboard/Sidebar"
 import { useStore } from "@/lib/store"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Bell, Search, Menu, Globe, Wifi, WifiOff } from "lucide-react"
+import { Menu, Globe, Wifi, WifiOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { translations } from "@/lib/translations"
 import { useToast } from "@/hooks/use-toast"
@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
+import { PlaceHolderImages } from "@/lib/placeholder-images"
 
 export default function DashboardLayout({
   children,
@@ -84,12 +85,17 @@ export default function DashboardLayout({
   if (!mounted || !currentUser) return null
 
   const t = translations[language || 'en'];
+  const maduraiBg = PlaceHolderImages.find(img => img.id === 'madurai-city-clean')?.imageUrl
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background relative overflow-hidden">
+      <div 
+        className="fixed inset-0 bg-cover bg-center opacity-[0.03] pointer-events-none" 
+        style={{ backgroundImage: `url(${maduraiBg})` }}
+      />
       <DashboardSidebar />
-      <div className="flex-1 md:ml-64 flex flex-col">
-        <header className="h-16 border-b bg-card px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
+      <div className="flex-1 md:ml-64 flex flex-col relative z-10">
+        <header className="h-16 border-b bg-card/80 backdrop-blur-md px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center gap-4 flex-1">
             <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="h-6 w-6" />
