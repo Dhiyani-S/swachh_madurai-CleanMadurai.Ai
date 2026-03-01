@@ -30,6 +30,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    // Adding cloud workstation host to allowed origins to fix the CORS warning
+    allowedDevOrigins: ['*.cloudworkstations.dev'],
+  },
 };
 
 export default nextConfig;

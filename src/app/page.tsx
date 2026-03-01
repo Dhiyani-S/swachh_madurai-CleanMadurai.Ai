@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -47,7 +46,7 @@ export default function LandingPage() {
           style={{ backgroundImage: `url(${towerBg})` }}
           data-ai-hint="madurai gopuram"
         />
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-[4px]" />
         
         <div className="max-w-md w-full space-y-8 animate-in fade-in zoom-in-95 duration-700 relative z-10">
           <div className="flex flex-col items-center gap-6 mb-12">
@@ -60,7 +59,7 @@ export default function LandingPage() {
             </div>
           </div>
           
-          <Card className="border-white/30 shadow-2xl p-8 rounded-[3rem] bg-white/10 backdrop-blur-3xl border-2">
+          <Card className="border-white/30 shadow-2xl p-8 rounded-[3rem] bg-black/40 backdrop-blur-3xl border-2">
             <h2 className="text-2xl font-bold mb-8 text-white flex items-center justify-center gap-3 font-headline">
               <Globe className="h-6 w-6 text-primary" /> மொழியைத் தேர்ந்தெடுக்கவும்
             </h2>
@@ -116,14 +115,14 @@ export default function LandingPage() {
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {/* High-Visibility Heritage Background */}
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-100 scale-100 transition-transform duration-[30s] ease-linear z-0" 
+        className="fixed inset-0 bg-cover bg-center opacity-90 scale-100 transition-transform duration-[30s] ease-linear z-0" 
         style={{ backgroundImage: `url(${towerBg})` }}
         data-ai-hint="madurai gopuram"
       />
-      <div className="fixed inset-0 bg-gradient-to-br from-black/60 via-transparent to-primary/10 z-[1]" />
+      <div className="fixed inset-0 bg-gradient-to-br from-black/80 via-black/20 to-primary/20 z-[1]" />
       
       <div className="absolute top-0 right-0 p-8 z-20">
-        <Button variant="ghost" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} className="text-white hover:bg-white/10 gap-2 font-bold backdrop-blur-md bg-white/5 border border-white/20">
+        <Button variant="ghost" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} className="text-white hover:bg-white/10 gap-2 font-bold backdrop-blur-md bg-white/10 border border-white/20">
           <Globe className="h-4 w-4" /> {language === 'en' ? 'தமிழ்' : 'English'}
         </Button>
       </div>
@@ -139,7 +138,7 @@ export default function LandingPage() {
           
           <div className="space-y-4">
             <h2 className="text-7xl font-headline font-bold leading-none text-white drop-shadow-2xl">{t.tagline}</h2>
-            <p className="text-2xl text-white/90 max-w-lg bg-black/30 backdrop-blur-2xl p-8 rounded-[3rem] border border-white/20 shadow-2xl">{t.taglineFull}</p>
+            <p className="text-2xl text-white/90 max-w-lg bg-black/40 backdrop-blur-2xl p-8 rounded-[3rem] border border-white/20 shadow-2xl">{t.taglineFull}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-6">
@@ -149,7 +148,7 @@ export default function LandingPage() {
               { label: "Zones Connected", value: "5/5", icon: MapPin },
               { label: "Efficiency Rate", value: "94%", icon: Trophy }
             ].map((stat, i) => (
-              <div key={i} className="p-6 bg-white/5 rounded-[2.5rem] border border-white/10 space-y-1 group hover:bg-white/10 transition-all backdrop-blur-md shadow-2xl">
+              <div key={i} className="p-6 bg-black/40 rounded-[2.5rem] border border-white/10 space-y-1 group hover:bg-black/60 transition-all backdrop-blur-md shadow-2xl">
                 <stat.icon className="h-6 w-6 text-primary mb-2" />
                 <p className="text-4xl font-headline font-bold text-white">{stat.value}</p>
                 <p className="text-xs text-primary font-bold uppercase tracking-wider">{stat.label}</p>
@@ -160,7 +159,7 @@ export default function LandingPage() {
 
         <div className="w-full max-w-md mx-auto">
           {/* Centered Transparent App Container */}
-          <Card className="border-white/20 shadow-[0_0_100px_rgba(0,0,0,0.6)] rounded-[3.5rem] bg-white/10 backdrop-blur-[40px] overflow-hidden border-2">
+          <Card className="border-white/30 shadow-[0_0_120px_rgba(0,0,0,0.6)] rounded-[3.5rem] bg-black/40 backdrop-blur-[40px] overflow-hidden border-2">
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-white/5 p-2 h-20 rounded-none border-b border-white/10">
                 <TabsTrigger value="signin" className="font-bold rounded-[2rem] text-white text-lg data-[state=active]:bg-primary transition-all">{t.signIn}</TabsTrigger>
@@ -173,16 +172,16 @@ export default function LandingPage() {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label className="text-white/80 font-bold ml-1">{t.userId}</Label>
-                        <Input placeholder="ID (e.g. 01)" className="h-16 bg-black/20 border-white/20 text-white rounded-[1.5rem] focus:ring-primary text-lg backdrop-blur-md" required value={userId} onChange={e => setUserId(e.target.value)} />
+                        <Input placeholder="ID (e.g. 01)" className="h-16 bg-black/30 border-white/20 text-white rounded-[1.5rem] focus:ring-primary text-lg backdrop-blur-md" required value={userId} onChange={e => setUserId(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white/80 font-bold ml-1">{t.password}</Label>
-                        <Input type="password" placeholder="••••" className="h-16 bg-black/20 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md" required value={password} onChange={e => setPassword(e.target.value)} />
+                        <Input type="password" placeholder="••••" className="h-16 bg-black/30 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md" required value={password} onChange={e => setPassword(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white/80 font-bold ml-1">{t.accessRole}</Label>
                         <Select value={role} onValueChange={(val) => setRole(val as UserRole)}>
-                          <SelectTrigger className="h-16 bg-black/20 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md"><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="h-16 bg-black/30 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md"><SelectValue /></SelectTrigger>
                           <SelectContent className="bg-zinc-900 border-white/20 text-white backdrop-blur-2xl">
                             <SelectItem value="Corporation Commissioner">{t.commissioner}</SelectItem>
                             <SelectItem value="Ward Admin">{t.wardAdmin}</SelectItem>
@@ -204,20 +203,20 @@ export default function LandingPage() {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label className="text-white/80 font-bold ml-1">Desired User ID</Label>
-                        <Input placeholder="Unique ID" className="h-16 bg-black/20 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md" required value={regId} onChange={e => setRegId(e.target.value)} />
+                        <Input placeholder="Unique ID" className="h-16 bg-black/30 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md" required value={regId} onChange={e => setRegId(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white/80 font-bold ml-1">Full Name</Label>
-                        <Input placeholder="Full Name" className="h-16 bg-black/20 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md" required value={regName} onChange={e => setRegName(e.target.value)} />
+                        <Input placeholder="Full Name" className="h-16 bg-black/30 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md" required value={regName} onChange={e => setRegName(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white/80 font-bold ml-1">Password</Label>
-                        <Input type="password" placeholder="••••" className="h-16 bg-black/20 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md" required value={regPassword} onChange={e => setRegPassword(e.target.value)} />
+                        <Input type="password" placeholder="••••" className="h-16 bg-black/30 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md" required value={regPassword} onChange={e => setRegPassword(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white/80 font-bold ml-1">Select Role</Label>
                         <Select value={regRole} onValueChange={(val) => setRegRole(val as UserRole)}>
-                          <SelectTrigger className="h-16 bg-black/20 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md"><SelectValue /></SelectTrigger>
+                          <SelectTrigger className="h-16 bg-black/30 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md"><SelectValue /></SelectTrigger>
                           <SelectContent className="bg-zinc-900 border-white/20 text-white backdrop-blur-2xl">
                             <SelectItem value="Corporation Commissioner">{t.commissioner}</SelectItem>
                             <SelectItem value="Ward Admin">{t.wardAdmin}</SelectItem>
@@ -231,7 +230,7 @@ export default function LandingPage() {
                         <div className="space-y-2">
                           <Label className="text-white/80 font-bold ml-1">Assigned Zone</Label>
                           <Select value={regZone} onValueChange={setRegZone}>
-                            <SelectTrigger className="h-16 bg-black/20 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md"><SelectValue placeholder="Select Zone" /></SelectTrigger>
+                            <SelectTrigger className="h-16 bg-black/30 border-white/20 text-white rounded-[1.5rem] text-lg backdrop-blur-md"><SelectValue placeholder="Select Zone" /></SelectTrigger>
                             <SelectContent className="bg-zinc-900 border-white/20 text-white backdrop-blur-2xl">
                               <SelectItem value="ZA - Zone A (North)">Zone A (North)</SelectItem>
                               <SelectItem value="ZB - Zone B (South)">Zone B (South)</SelectItem>
