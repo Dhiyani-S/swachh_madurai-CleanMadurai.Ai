@@ -27,7 +27,8 @@ export default function LandingPage() {
       name: userId || "User",
       role: role,
       rewardPoints: role === 'Worker' ? 450 : 0,
-      zoneId: role === 'Worker' ? zone : undefined
+      zoneId: role === 'Worker' ? zone : undefined,
+      teamNumber: role === 'Worker' ? "Team 04" : undefined
     }
     setCurrentUser(user)
     
@@ -95,6 +96,23 @@ export default function LandingPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                  {role === 'Worker' && (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <Label htmlFor="signin-zone">Select your Zone</Label>
+                      <Select value={zone} onValueChange={setZone} required>
+                        <SelectTrigger id="signin-zone">
+                          <SelectValue placeholder="Select your Zone" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="zone-1">Zone 1 (Main City)</SelectItem>
+                          <SelectItem value="zone-2">Zone 2 (Anna Nagar)</SelectItem>
+                          <SelectItem value="zone-3">Zone 3 (Madurai West)</SelectItem>
+                          <SelectItem value="zone-4">Zone 4 (Vaikunth Nagar)</SelectItem>
+                          <SelectItem value="zone-5">Zone 5 (Goripalayam)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter>
                   <Button type="submit" className="w-full h-12 text-lg font-bold bg-primary hover:bg-primary/90 transition-all">Sign In</Button>
