@@ -35,14 +35,27 @@ export interface SensorAlert {
   timestamp: string;
 }
 
+export interface MemberAttendance {
+  name: string;
+  status: 'Present' | 'Absent';
+}
+
+export interface TeamAttendance {
+  teamNumber: string;
+  date: string;
+  members: MemberAttendance[];
+}
+
 interface AppState {
   currentUser: User | null;
   tasks: Task[];
   sensorAlerts: SensorAlert[];
+  attendance: Record<string, TeamAttendance>; // Key: teamNumber
   setCurrentUser: (user: User | null) => void;
   addTask: (task: Task) => void;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
   addAlert: (alert: SensorAlert) => void;
+  setAttendance: (teamNumber: string, members: MemberAttendance[]) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -80,10 +93,21 @@ export const useStore = create<AppState>((set) => ({
       timestamp: new Date().toISOString(),
     }
   ],
+  attendance: {},
   setCurrentUser: (user) => set({ currentUser: user }),
   addTask: (task) => set((state) => ({ tasks: [task, ...state.tasks] })),
   updateTask: (taskId, updates) => set((state) => ({
     tasks: state.tasks.map((t) => t.id === taskId ? { ...t, ...updates } : t)
   })),
   addAlert: (alert) => set((state) => ({ sensorAlerts: [alert, ...state.sensorAlerts] })),
+  setAttendance: (teamNumber, members) => set((state) => ({
+    attendance: {
+      ...state.attendance,
+      [teamNumber]: {
+        teamNumber,
+        date: new Date().toLocaleDateString(),
+        members
+      }
+    }
+  })),
 }));

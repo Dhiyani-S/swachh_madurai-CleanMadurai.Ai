@@ -10,9 +10,10 @@ import {
   DialogDescription, 
   DialogHeader, 
   DialogTitle, 
-  DialogTrigger 
+  DialogTrigger,
+  DialogFooter as DialogFooterUI
 } from "@/components/ui/dialog"
-import { useStore } from "@/lib/store"
+import { useStore, MemberAttendance } from "@/lib/store"
 import { 
   Award, 
   MapPin, 
@@ -24,16 +25,44 @@ import {
   Timer,
   CheckCircle,
   AlertCircle,
-  Info
+  Info,
+  UserCheck,
+  UserX
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
 
 export default function WorkerDashboard() {
-  const { currentUser, tasks, updateTask } = useStore()
+  const { currentUser, tasks, updateTask, attendance, setAttendance } = useStore()
   const { toast } = useToast()
+  
   const [isQRModalOpen, setIsQRModalOpen] = React.useState(false)
   const [selectedTaskId, setSelectedTaskId] = React.useState<string | null>(null)
+  const [isAttendanceModalOpen, setIsAttendanceModalOpen] = React.useState(false)
+  const [attendanceState, setAttendanceState] = React.useState<MemberAttendance[]>([])
+
+  const currentTeamAttendance = currentUser?.teamNumber ? attendance[currentUser.teamNumber] : null
+  const hasMarkedAttendance = !!currentTeamAttendance
+
+  React.useEffect(() => {
+    if (!hasMarkedAttendance && currentUser?.teamMembers) {
+      setAttendanceState(currentUser.teamMembers.map(m => ({ name: m, status: 'Present' })))
+      setIsAttendanceModalOpen(true)
+    }
+  }, [hasMarkedAttendance, currentUser])
+
+  const handleAttendanceSubmit = () => {
+    if (currentUser?.teamNumber) {
+      setAttendance(currentUser.teamNumber, attendanceState)
+      setIsAttendanceModalOpen(false)
+      toast({
+        title: "Attendance Marked",
+        description: "Today's team status has been shared with the Zone Admin.",
+      })
+    }
+  }
 
   const handleTaskAction = (taskId: string, action: 'Accept' | 'Reject') => {
     if (action === 'Accept') {
@@ -67,6 +96,50 @@ export default function WorkerDashboard() {
 
   return (
     <div className="space-y-8 max-w-2xl mx-auto">
+      {/* Attendance Check Modal */}
+      <Dialog open={isAttendanceModalOpen} onOpenChange={setIsAttendanceModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-headline flex items-center gap-2">
+              <UserCheck className="h-5 w-5 text-primary" /> Daily Attendance Check
+            </DialogTitle>
+            <DialogDescription>
+              Please mark the attendance for all team members before starting work today.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {attendanceState.map((member, idx) => (
+              <div key={member.name} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                <span className="font-medium text-sm">{member.name}</span>
+                <RadioGroup 
+                  defaultValue="Present" 
+                  className="flex gap-4"
+                  onValueChange={(val) => {
+                    const newAttendance = [...attendanceState]
+                    newAttendance[idx].status = val as 'Present' | 'Absent'
+                    setAttendanceState(newAttendance)
+                  }}
+                >
+                  <div className="flex items-center space-x-1">
+                    <RadioGroupItem value="Present" id={`p-${idx}`} />
+                    <Label htmlFor={`p-${idx}`} className="text-xs cursor-pointer">Present</Label>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <RadioGroupItem value="Absent" id={`a-${idx}`} />
+                    <Label htmlFor={`a-${idx}`} className="text-xs cursor-pointer text-destructive">Absent</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            ))}
+          </div>
+          <DialogFooterUI>
+            <Button className="w-full font-bold" onClick={handleAttendanceSubmit}>
+              Submit Attendance
+            </Button>
+          </DialogFooterUI>
+        </DialogContent>
+      </Dialog>
+
       <div className="space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -75,9 +148,16 @@ export default function WorkerDashboard() {
             </div>
             <div>
               <h1 className="text-2xl font-headline font-bold">{currentUser?.name}</h1>
-              <p className="text-muted-foreground text-sm flex items-center gap-1">
-                <Users className="h-3 w-3" /> {currentUser?.teamNumber} • {currentUser?.zoneId || 'Zone 4'}
-              </p>
+              <div className="flex flex-col gap-1">
+                <p className="text-muted-foreground text-sm flex items-center gap-1">
+                  <Users className="h-3 w-3" /> {currentUser?.teamNumber} • {currentUser?.zoneId || 'Zone 4'}
+                </p>
+                {currentTeamAttendance && (
+                  <p className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                    <CheckCircle className="h-3 w-3" /> Attendance marked for {currentTeamAttendance.date}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
           
@@ -123,24 +203,35 @@ export default function WorkerDashboard() {
           </Dialog>
         </div>
 
-        {currentUser?.teamMembers && (
-          <Card className="border-none bg-secondary/20">
-            <CardHeader className="py-4">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <Users className="h-4 w-4" /> Team Members
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pb-4">
-              <div className="flex flex-wrap gap-2">
-                {currentUser.teamMembers.map((member, i) => (
-                  <div key={i} className="px-3 py-1 bg-white rounded-full text-xs font-medium border shadow-sm">
-                    {member}
+        <Card className="border-none bg-secondary/20">
+          <CardHeader className="py-4 flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-bold flex items-center gap-2">
+              <Users className="h-4 w-4" /> Team Status
+            </CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => setIsAttendanceModalOpen(true)} className="h-7 text-[10px] font-bold">
+              Update Attendance
+            </Button>
+          </CardHeader>
+          <CardContent className="pb-4">
+            <div className="flex flex-wrap gap-2">
+              {currentTeamAttendance ? (
+                currentTeamAttendance.members.map((member, i) => (
+                  <div key={i} className={cn(
+                    "px-3 py-1 rounded-full text-xs font-medium border shadow-sm flex items-center gap-1.5",
+                    member.status === 'Present' ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-rose-50 text-rose-700 border-rose-100 opacity-60"
+                  )}>
+                    {member.status === 'Present' ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
+                    {member.name}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                ))
+              ) : currentUser?.teamMembers?.map((member, i) => (
+                <div key={i} className="px-3 py-1 bg-white rounded-full text-xs font-medium border shadow-sm opacity-50">
+                  {member} (Pending)
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="space-y-4">

@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -16,20 +15,28 @@ import {
   AlertCircle,
   Clock,
   Send,
-  UserPlus
+  UserPlus,
+  UserCheck,
+  UserX,
+  ChevronDown
 } from "lucide-react"
 import { useStore } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { 
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 
-const teams = [
-  { id: 'T04', members: 4, leader: 'Karthik', status: 'Green', load: 30, rewards: 1200 },
+const teamsMock = [
+  { id: 'Team 04', members: 4, leader: 'Karthik', status: 'Green', load: 30, rewards: 1200 },
   { id: 'T08', members: 3, leader: 'Meena', status: 'Yellow', load: 75, rewards: 850 },
   { id: 'T12', members: 5, leader: 'Ravi', status: 'Red', load: 95, rewards: 400 },
 ]
 
 export default function ZoneAdminDashboard() {
-  const { tasks } = useStore()
+  const { tasks, attendance } = useStore()
   const { toast } = useToast()
 
   const handleAssignTask = (taskId: string) => {
@@ -134,43 +141,72 @@ export default function ZoneAdminDashboard() {
         <Card className="border-none shadow-md">
           <CardHeader>
             <CardTitle className="font-headline text-xl">Worker Team Health</CardTitle>
-            <CardDescription>Performance tracking and rewards</CardDescription>
+            <CardDescription>Performance tracking and attendance</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {teams.map((team) => (
-              <div key={team.id} className="p-4 rounded-xl border bg-card hover:border-primary transition-all group">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center text-primary font-bold">
-                      {team.id}
+            {teamsMock.map((team) => {
+              const teamAttendance = attendance[team.id];
+              const presentCount = teamAttendance?.members.filter(m => m.status === 'Present').length || 0;
+              const totalCount = teamAttendance?.members.length || team.members;
+
+              return (
+                <div key={team.id} className="p-4 rounded-xl border bg-card hover:border-primary transition-all group">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center text-primary font-bold">
+                        {team.id.replace('Team ', 'T')}
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm">Team {team.leader}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-[10px] text-muted-foreground">{team.members} members</p>
+                          {teamAttendance && (
+                            <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-0.5">
+                              <UserCheck className="h-2 w-2" /> {presentCount}/{totalCount} Present
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-sm">Team {team.leader}</p>
-                      <p className="text-[10px] text-muted-foreground">{team.members} members active</p>
+                    <StatusBadge status={team.status as any} />
+                  </div>
+
+                  {teamAttendance && (
+                    <Collapsible className="mt-2">
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="w-full h-6 text-[9px] font-bold py-0 flex justify-between px-1">
+                          View Detailed Attendance <ChevronDown className="h-3 w-3" />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="pt-2 space-y-1">
+                        {teamAttendance.members.map((member, idx) => (
+                          <div key={idx} className="flex items-center justify-between text-[10px] px-1">
+                            <span className="text-muted-foreground">{member.name}</span>
+                            <span className={cn(
+                              "font-bold uppercase",
+                              member.status === 'Present' ? "text-emerald-600" : "text-rose-600"
+                            )}>
+                              {member.status}
+                            </span>
+                          </div>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )}
+
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="font-medium text-muted-foreground">Current Workload</span>
+                      <span className="font-bold">{team.load}%</span>
                     </div>
+                    <Progress value={team.load} className={cn(
+                      "h-1.5",
+                      team.status === 'Red' ? "bg-rose-100" : team.status === 'Yellow' ? "bg-amber-100" : "bg-emerald-100"
+                    )} />
                   </div>
-                  <StatusBadge status={team.status as any} />
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="font-medium text-muted-foreground">Current Workload</span>
-                    <span className="font-bold">{team.load}%</span>
-                  </div>
-                  <Progress value={team.load} className={cn(
-                    "h-1.5",
-                    team.status === 'Red' ? "bg-rose-100" : team.status === 'Yellow' ? "bg-amber-100" : "bg-emerald-100"
-                  )} />
-                </div>
-                <div className="mt-4 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1 text-amber-600 font-bold">
-                    <Clock className="h-3 w-3" /> Rewards: {team.rewards} pts
-                  </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </CardContent>
           <CardFooter>
             <Button variant="outline" className="w-full font-bold">Manage All Teams</Button>
