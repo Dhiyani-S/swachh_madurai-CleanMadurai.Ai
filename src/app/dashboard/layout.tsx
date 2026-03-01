@@ -16,7 +16,7 @@ import {
   DropdownMenuLabel, 
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
-} from "@/dropdown-menu"
+} from "@/components/ui/dropdown-menu"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 
 export default function DashboardLayout({
