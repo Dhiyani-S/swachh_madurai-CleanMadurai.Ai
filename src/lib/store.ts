@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 export type UserRole = 'Corporation Commissioner' | 'Ward Admin' | 'Zone Admin' | 'Worker' | 'Citizen';
@@ -11,6 +10,7 @@ export interface User {
   zoneId?: string;
   teamNumber?: string;
   rewardPoints?: number;
+  teamMembers?: string[];
 }
 
 export interface Task {

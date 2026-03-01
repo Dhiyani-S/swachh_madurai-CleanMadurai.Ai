@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -9,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useStore, UserRole } from "@/lib/store"
+import { useStore, UserRole, User } from "@/lib/store"
 import { Recycle, ShieldCheck, MapPin, Users, UserCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -35,13 +34,14 @@ export default function LandingPage() {
     }
 
     // Simulated auth
-    const user = {
+    const user: User = {
       id: userId || "user-123",
-      name: userId || "User",
+      name: userId || (role === 'Worker' ? "Team Leader" : "User"),
       role: role,
       rewardPoints: role === 'Worker' ? 450 : 0,
       zoneId: role === 'Worker' ? zone : undefined,
-      teamNumber: role === 'Worker' ? "Team 04" : undefined
+      teamNumber: role === 'Worker' ? "Team 04" : undefined,
+      teamMembers: role === 'Worker' ? ["Karthik (Lead)", "Siva", "Meena", "Arjun"] : undefined
     }
     setCurrentUser(user)
     
