@@ -50,7 +50,7 @@ export default function DashboardLayout({
     }
   }, [currentUser, router])
 
-  // Unique background for each page
+  // Unique high-visibility backgrounds for each role's dashboard
   const backgroundImage = useMemo(() => {
     if (pathname.includes('/commissioner')) {
       return PlaceHolderImages.find(img => img.id === 'madurai-temple-bg')?.imageUrl;
@@ -75,7 +75,7 @@ export default function DashboardLayout({
         className="fixed inset-0 bg-cover bg-center opacity-100 z-0 scale-100 transition-all duration-1000 ease-in-out" 
         style={{ backgroundImage: `url(${backgroundImage})` }}
       />
-      <div className="fixed inset-0 bg-black/20 z-[1] backdrop-blur-[1px]" />
+      <div className="fixed inset-0 bg-black/10 z-[1] backdrop-blur-[1px]" />
       
       <div className="relative z-10 flex min-h-screen">
         {/* Sidebar with Glass Effect */}
@@ -85,7 +85,7 @@ export default function DashboardLayout({
         
         <div className="flex-1 md:ml-64 flex flex-col">
           {/* Transparent Header */}
-          <header className="h-16 bg-black/20 backdrop-blur-3xl border-b border-white/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
+          <header className="h-16 bg-black/30 backdrop-blur-3xl border-b border-white/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
             <div className="flex items-center gap-4 flex-1">
               <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/10">
                 <Menu className="h-6 w-6" />

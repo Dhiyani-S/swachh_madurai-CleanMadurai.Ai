@@ -36,16 +36,17 @@ export default function LandingPage() {
 
   if (!mounted) return null
 
-  const teppakulamBg = PlaceHolderImages.find(img => img.id === 'madurai-teppakulam')?.imageUrl
+  // Using the majestic temple tower image for the landing page background
+  const templeBg = PlaceHolderImages.find(img => img.id === 'madurai-temple-tower')?.imageUrl
 
   if (!language) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-100 scale-100 transition-transform duration-[60s] ease-linear" 
-          style={{ backgroundImage: `url(${teppakulamBg})` }}
+          className="absolute inset-0 bg-cover bg-center opacity-100 scale-110 transition-transform duration-[60s] ease-linear" 
+          style={{ backgroundImage: `url(${templeBg})` }}
         />
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" />
         
         <div className="max-w-md w-full space-y-8 animate-in fade-in zoom-in-95 duration-700 relative z-10">
           <div className="flex flex-col items-center gap-6 mb-12">
@@ -54,7 +55,7 @@ export default function LandingPage() {
             </div>
             <div className="space-y-2">
               <h1 className="text-6xl font-headline font-bold text-white tracking-tighter drop-shadow-2xl">CleanMadurai<span className="text-primary">.AI</span></h1>
-              <p className="text-primary-foreground font-bold tracking-[0.3em] text-sm uppercase bg-primary/20 backdrop-blur-sm px-4 py-1 rounded-full border border-primary/30">Smart City Ecosystem</p>
+              <p className="text-primary-foreground font-bold tracking-[0.3em] text-sm uppercase bg-primary/20 backdrop-blur-sm px-4 py-1 rounded-full border border-primary/30">Heritage City Ecosystem</p>
             </div>
           </div>
           
@@ -114,9 +115,9 @@ export default function LandingPage() {
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
       <div 
         className="fixed inset-0 bg-cover bg-center opacity-100 scale-100 transition-transform duration-[60s] ease-linear z-0" 
-        style={{ backgroundImage: `url(${teppakulamBg})` }}
+        style={{ backgroundImage: `url(${templeBg})` }}
       />
-      <div className="fixed inset-0 bg-black/30 z-[1] backdrop-blur-[1px]" />
+      <div className="fixed inset-0 bg-black/20 z-[1] backdrop-blur-[1px]" />
       
       <div className="absolute top-0 right-0 p-8 z-20">
         <Button variant="ghost" onClick={() => setLanguage(language === 'en' ? 'ta' : 'en')} className="text-white hover:bg-white/10 gap-2 font-bold backdrop-blur-md bg-white/10 border border-white/20">
