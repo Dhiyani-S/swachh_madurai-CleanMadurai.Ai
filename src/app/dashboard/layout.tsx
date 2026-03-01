@@ -1,3 +1,4 @@
+
 "use client"
 
 import { DashboardSidebar } from "@/components/dashboard/Sidebar"
@@ -15,7 +16,7 @@ import {
   DropdownMenuLabel, 
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu"
+} from "@/dropdown-menu"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 
 export default function DashboardLayout({
@@ -58,13 +59,13 @@ export default function DashboardLayout({
 
   return (
     <div className="relative min-h-screen bg-black overflow-hidden">
-      {/* High-Opacity Fixed Background */}
+      {/* High-Opacity Fixed Background - Shows the whole image */}
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-100 z-0 scale-100 transition-opacity duration-1000" 
+        className="fixed inset-0 bg-cover bg-center opacity-100 z-0 scale-100 transition-opacity duration-1000 bg-no-repeat" 
         style={{ backgroundImage: `url(${backgroundImage})` }}
       />
-      {/* Very subtle dark overlay for text contrast */}
-      <div className="fixed inset-0 bg-black/10 z-[1]" />
+      {/* Extremely subtle overlay to maintain image clarity */}
+      <div className="fixed inset-0 bg-black/5 z-[1]" />
       
       <div className="relative z-10 flex min-h-screen">
         <div className="hidden md:block">
@@ -72,8 +73,8 @@ export default function DashboardLayout({
         </div>
         
         <div className="flex-1 md:ml-64 flex flex-col">
-          {/* Header with high transparency */}
-          <header className="h-16 bg-white/5 backdrop-blur-[80px] border-b border-white/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
+          {/* Header with ultra-high transparency */}
+          <header className="h-16 bg-white/5 backdrop-blur-[120px] border-b border-white/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
             <div className="flex items-center gap-4 flex-1">
               <Button variant="ghost" size="icon" className="md:hidden text-white">
                 <Menu className="h-6 w-6" />
@@ -106,7 +107,7 @@ export default function DashboardLayout({
                     <span className="hidden sm:inline font-medium text-sm">{currentUser.name}</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-zinc-900/80 backdrop-blur-[100px] border-white/10 text-white">
+                <DropdownMenuContent align="end" className="w-56 bg-zinc-900/40 backdrop-blur-[120px] border-white/10 text-white">
                   <DropdownMenuLabel>{t.settings}</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-white/5" />
                   <DropdownMenuItem className="text-rose-400 hover:bg-rose-500/10" onClick={() => {
@@ -120,8 +121,8 @@ export default function DashboardLayout({
 
           <main className="flex-1 overflow-y-auto p-4 md:p-12 flex justify-center items-start">
             <div className="max-w-6xl w-full">
-              {/* Central Glass Container with High Transparency */}
-              <div className="bg-white/10 backdrop-blur-[80px] rounded-[3.5rem] shadow-[0_0_150px_rgba(0,0,0,0.7)] border border-white/10 p-6 md:p-10 min-h-[75vh] transition-all">
+              {/* Central Glass Container with Extreme Transparency */}
+              <div className="bg-white/5 backdrop-blur-[120px] rounded-[3.5rem] shadow-[0_0_150px_rgba(0,0,0,0.8)] border border-white/10 p-6 md:p-10 min-h-[75vh] transition-all">
                 <div className="relative z-10 text-white">
                   {children}
                 </div>

@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -63,14 +64,14 @@
 
 @layer components {
   .glass-card {
-    @apply bg-white/10 backdrop-blur-[100px] border border-white/20 shadow-[0_0_80px_rgba(0,0,0,0.5)];
+    @apply bg-white/5 backdrop-blur-[120px] border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.6)];
   }
   
   .glass-panel {
-    @apply bg-black/20 backdrop-blur-[100px] border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.6)];
+    @apply bg-black/5 backdrop-blur-[120px] border border-white/5 shadow-[0_0_80px_rgba(0,0,0,0.7)];
   }
 
   .transparent-app-container {
-    @apply bg-white/5 dark:bg-zinc-950/10 backdrop-blur-[100px] rounded-[3.5rem] border border-white/10 p-6 md:p-10 shadow-[0_0_150px_rgba(0,0,0,0.7)];
+    @apply bg-white/5 backdrop-blur-[120px] rounded-[3.5rem] border border-white/10 p-6 md:p-10 shadow-[0_0_150px_rgba(0,0,0,0.8)];
   }
 }

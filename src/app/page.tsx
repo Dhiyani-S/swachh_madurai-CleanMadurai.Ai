@@ -42,7 +42,7 @@ export default function LandingPage() {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-100 z-0" 
+          className="fixed inset-0 bg-cover bg-center opacity-100 z-0 bg-no-repeat" 
           style={{ backgroundImage: `url(${unifiedBg})` }}
         />
         <div className="absolute inset-0 bg-black/5 z-[1]" />
@@ -57,7 +57,7 @@ export default function LandingPage() {
             </div>
           </div>
           
-          <Card className="border-white/10 shadow-2xl p-8 rounded-[3.5rem] bg-white/10 backdrop-blur-3xl border-2">
+          <Card className="border-white/10 shadow-2xl p-8 rounded-[3.5rem] bg-white/5 backdrop-blur-[120px] border-2">
             <h2 className="text-2xl font-bold mb-8 text-white font-headline">மொழியைத் தேர்ந்தெடுக்கவும்</h2>
             <div className="grid grid-cols-1 gap-4">
               <Button 
@@ -110,7 +110,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 relative overflow-hidden">
       <div 
-        className="fixed inset-0 bg-cover bg-center opacity-100 z-0" 
+        className="fixed inset-0 bg-cover bg-center opacity-100 z-0 bg-no-repeat" 
         style={{ backgroundImage: `url(${unifiedBg})` }}
       />
       <div className="fixed inset-0 bg-black/5 z-[1]" />
@@ -127,7 +127,7 @@ export default function LandingPage() {
         </div>
 
         <div className="w-full max-w-md mx-auto">
-          <Card className="border-white/10 shadow-2xl rounded-[4rem] bg-white/10 backdrop-blur-3xl overflow-hidden border">
+          <Card className="border-white/10 shadow-2xl rounded-[4rem] bg-white/5 backdrop-blur-[120px] overflow-hidden border">
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-white/5 p-2 h-20 rounded-none border-b border-white/10">
                 <TabsTrigger value="signin" className="font-bold rounded-[2.5rem] text-white text-lg data-[state=active]:bg-primary">{t.signIn}</TabsTrigger>
@@ -140,17 +140,17 @@ export default function LandingPage() {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label className="text-white font-bold ml-1">{t.userId}</Label>
-                        <Input placeholder="ID" className="h-16 bg-black/40 border-white/10 text-white rounded-[1.5rem] text-lg" required value={userId} onChange={e => setUserId(e.target.value)} />
+                        <Input placeholder="ID" className="h-16 bg-black/20 border-white/10 text-white rounded-[1.5rem] text-lg" required value={userId} onChange={e => setUserId(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white font-bold ml-1">{t.password}</Label>
-                        <Input type="password" placeholder="••••" className="h-16 bg-black/40 border-white/10 text-white rounded-[1.5rem] text-lg" required value={password} onChange={e => setPassword(e.target.value)} />
+                        <Input type="password" placeholder="••••" className="h-16 bg-black/20 border-white/10 text-white rounded-[1.5rem] text-lg" required value={password} onChange={e => setPassword(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white font-bold ml-1">{t.accessRole}</Label>
                         <Select value={role} onValueChange={(val) => setRole(val as UserRole)}>
-                          <SelectTrigger className="h-16 bg-black/40 border-white/10 text-white rounded-[1.5rem] text-lg"><SelectValue /></SelectTrigger>
-                          <SelectContent className="bg-zinc-900/90 border-white/20 text-white backdrop-blur-2xl">
+                          <SelectTrigger className="h-16 bg-black/20 border-white/10 text-white rounded-[1.5rem] text-lg"><SelectValue /></SelectTrigger>
+                          <SelectContent className="bg-zinc-900/40 border-white/20 text-white backdrop-blur-[120px]">
                             <SelectItem value="Corporation Commissioner">{t.commissioner}</SelectItem>
                             <SelectItem value="Ward Admin">{t.wardAdmin}</SelectItem>
                             <SelectItem value="Zone Admin">{t.zoneAdmin}</SelectItem>
@@ -171,17 +171,17 @@ export default function LandingPage() {
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <Label className="text-white font-bold ml-1">User ID</Label>
-                        <Input placeholder="Enter ID" className="h-16 bg-black/40 border-white/10 text-white rounded-[1.5rem] text-lg" required value={regId} onChange={e => setRegId(e.target.value)} />
+                        <Input placeholder="Enter ID" className="h-16 bg-black/20 border-white/10 text-white rounded-[1.5rem] text-lg" required value={regId} onChange={e => setRegId(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white font-bold ml-1">Password</Label>
-                        <Input type="password" placeholder="••••" className="h-16 bg-black/40 border-white/10 text-white rounded-[1.5rem] text-lg" required value={regPassword} onChange={e => setRegPassword(e.target.value)} />
+                        <Input type="password" placeholder="••••" className="h-16 bg-black/20 border-white/10 text-white rounded-[1.5rem] text-lg" required value={regPassword} onChange={e => setRegPassword(e.target.value)} />
                       </div>
                       <div className="space-y-2">
                         <Label className="text-white font-bold ml-1">Select Role</Label>
                         <Select value={regRole} onValueChange={(val) => setRegRole(val as UserRole)}>
-                          <SelectTrigger className="h-16 bg-black/40 border-white/10 text-white rounded-[1.5rem] text-lg"><SelectValue /></SelectTrigger>
-                          <SelectContent className="bg-zinc-900/90 border-white/20 text-white backdrop-blur-2xl">
+                          <SelectTrigger className="h-16 bg-black/20 border-white/10 text-white rounded-[1.5rem] text-lg"><SelectValue /></SelectTrigger>
+                          <SelectContent className="bg-zinc-900/40 border-white/20 text-white backdrop-blur-[120px]">
                             <SelectItem value="Corporation Commissioner">{t.commissioner}</SelectItem>
                             <SelectItem value="Ward Admin">{t.wardAdmin}</SelectItem>
                             <SelectItem value="Zone Admin">{t.zoneAdmin}</SelectItem>
