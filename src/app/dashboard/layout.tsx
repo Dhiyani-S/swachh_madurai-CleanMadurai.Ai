@@ -3,7 +3,7 @@
 
 import { DashboardSidebar } from "@/components/dashboard/Sidebar"
 import { useStore } from "@/lib/store"
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useEffect, useState, useMemo } from "react"
 import { Menu, Globe, Wifi, WifiOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -74,7 +74,7 @@ export default function DashboardLayout({
         
         <div className="flex-1 md:ml-64 flex flex-col">
           {/* Transparent Header */}
-          <header className="h-16 bg-black/20 backdrop-blur-3xl border-b border-white/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
+          <header className="h-16 bg-black/40 backdrop-blur-3xl border-b border-white/10 px-4 md:px-8 flex items-center justify-between sticky top-0 z-40">
             <div className="flex items-center gap-4 flex-1">
               <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-white/10">
                 <Menu className="h-6 w-6" />
@@ -122,7 +122,7 @@ export default function DashboardLayout({
           <main className="flex-1 overflow-y-auto p-4 md:p-12 flex justify-center items-start">
             <div className="max-w-6xl w-full">
               {/* Centered Transparent Glass Container */}
-              <div className="bg-white/30 dark:bg-zinc-950/20 backdrop-blur-[120px] rounded-[3.5rem] shadow-[0_0_150px_rgba(0,0,0,0.6)] border border-white/20 p-6 md:p-10 min-h-[75vh] transition-all animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="bg-white/15 dark:bg-zinc-950/10 backdrop-blur-2xl rounded-[3.5rem] shadow-[0_0_150px_rgba(0,0,0,0.6)] border border-white/10 p-6 md:p-10 min-h-[75vh] transition-all animate-in fade-in slide-in-from-bottom-4 duration-700">
                 {children}
               </div>
             </div>

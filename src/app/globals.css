@@ -64,14 +64,14 @@
 
 @layer components {
   .glass-card {
-    @apply bg-white/20 backdrop-blur-3xl border border-white/20 shadow-2xl;
+    @apply bg-white/10 backdrop-blur-2xl border border-white/10 shadow-2xl;
   }
   
   .glass-panel {
-    @apply bg-black/30 backdrop-blur-[100px] border border-white/10 shadow-2xl;
+    @apply bg-black/40 backdrop-blur-3xl border border-white/10 shadow-2xl;
   }
 
   .transparent-app-container {
-    @apply bg-white/20 dark:bg-zinc-950/20 backdrop-blur-[80px] rounded-[3rem] border border-white/20 p-6 md:p-10 shadow-2xl;
+    @apply bg-white/15 dark:bg-zinc-950/10 backdrop-blur-2xl rounded-[3.5rem] border border-white/10 p-6 md:p-10 shadow-2xl;
   }
 }

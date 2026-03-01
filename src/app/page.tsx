@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useStore, UserRole } from "@/lib/store"
-import { Recycle, Globe, ChevronRight, Sparkles, Building2, MapPin, Trophy, UserPlus } from "lucide-react"
+import { Recycle, Globe, ChevronRight, UserPlus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { translations } from "@/lib/translations"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
@@ -28,7 +28,6 @@ export default function LandingPage() {
   const [regId, setRegId] = React.useState('')
   const [regPassword, setRegPassword] = React.useState('')
   const [regRole, setRegRole] = React.useState<UserRole>('Citizen')
-  const [regZone, setRegZone] = React.useState('')
 
   React.useEffect(() => {
     setMounted(true)
@@ -46,7 +45,7 @@ export default function LandingPage() {
           className="absolute inset-0 bg-cover bg-center opacity-100 z-0" 
           style={{ backgroundImage: `url(${unifiedBg})` }}
         />
-        <div className="absolute inset-0 bg-black/20 z-[1]" />
+        <div className="absolute inset-0 bg-black/10 z-[1]" />
         
         <div className="max-w-md w-full space-y-8 animate-in fade-in duration-700 relative z-10">
           <div className="flex flex-col items-center gap-6 mb-12">
@@ -58,7 +57,7 @@ export default function LandingPage() {
             </div>
           </div>
           
-          <Card className="border-white/20 shadow-2xl p-8 rounded-[3.5rem] bg-black/30 backdrop-blur-[100px] border-2">
+          <Card className="border-white/10 shadow-2xl p-8 rounded-[3.5rem] bg-white/5 backdrop-blur-3xl border-2">
             <h2 className="text-2xl font-bold mb-8 text-white font-headline">மொழியைத் தேர்ந்தெடுக்கவும்</h2>
             <div className="grid grid-cols-1 gap-4">
               <Button 
@@ -103,7 +102,7 @@ export default function LandingPage() {
       toast({ title: "Registration Failed", description: "User ID already exists.", variant: "destructive" })
       return
     }
-    const newUser = { id: regId, password: regPassword, name: regId, role: regRole, zoneId: regZone || undefined, rewardPoints: 0 };
+    const newUser = { id: regId, password: regPassword, name: regId, role: regRole, rewardPoints: 0 };
     addUser(newUser)
     toast({ title: "Success", description: "Account created! You can now sign in." })
   }
@@ -116,22 +115,19 @@ export default function LandingPage() {
       />
       <div className="fixed inset-0 bg-black/10 z-[1]" />
       
-      <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 gap-20 items-center relative z-10">
-        <div className="hidden lg:block space-y-8">
-          <div className="flex items-center gap-4">
-            <div className="h-20 w-20 bg-primary rounded-3xl flex items-center justify-center shadow-2xl border border-white/20">
-              <Recycle className="h-12 w-12 text-white" />
+      <div className="max-w-6xl w-full flex flex-col items-center justify-center relative z-10">
+        <div className="mb-12 text-center space-y-4">
+          <div className="flex items-center justify-center gap-4">
+            <div className="h-16 w-16 bg-primary rounded-2xl flex items-center justify-center shadow-2xl border border-white/20">
+              <Recycle className="h-10 w-10 text-white" />
             </div>
-            <h1 className="text-6xl font-headline font-bold text-white tracking-tighter drop-shadow-lg">CleanMadurai<span className="text-primary">.AI</span></h1>
+            <h1 className="text-5xl font-headline font-bold text-white tracking-tighter drop-shadow-lg">CleanMadurai<span className="text-primary">.AI</span></h1>
           </div>
-          <div className="space-y-4">
-            <h2 className="text-7xl font-headline font-bold leading-none text-white drop-shadow-2xl">{t.tagline}</h2>
-            <p className="text-2xl text-white/90 max-w-lg bg-black/30 backdrop-blur-3xl p-8 rounded-[3rem] border border-white/20 shadow-2xl">{t.taglineFull}</p>
-          </div>
+          <h2 className="text-4xl font-headline font-bold text-white drop-shadow-2xl">{t.taglineFull}</h2>
         </div>
 
         <div className="w-full max-w-md mx-auto">
-          <Card className="border-white/10 shadow-2xl rounded-[4rem] bg-black/20 backdrop-blur-[100px] overflow-hidden border-2">
+          <Card className="border-white/10 shadow-2xl rounded-[4rem] bg-white/5 backdrop-blur-2xl overflow-hidden border">
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-white/5 p-2 h-20 rounded-none border-b border-white/10">
                 <TabsTrigger value="signin" className="font-bold rounded-[2.5rem] text-white text-lg data-[state=active]:bg-primary">{t.signIn}</TabsTrigger>

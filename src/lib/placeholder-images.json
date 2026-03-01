@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "madurai-unified",
-      "description": "Composite of Madurai landmarks and cleanliness workers",
+      "description": "Composite of Madurai sign, Temple, Mosque, Church, and Cleanliness Workers",
       "imageUrl": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&q=80&w=1920",
-      "imageHint": "madurai temple heritage"
+      "imageHint": "madurai heritage workers"
     },
     {
       "id": "madurai-temple-bg",
