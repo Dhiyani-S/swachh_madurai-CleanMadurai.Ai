@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useStore, UserRole } from "@/lib/store"
-import { Recycle, Globe, ChevronRight, Sparkles, Building2, MapPin, Trophy } from "lucide-react"
+import { Recycle, Globe, ChevronRight, Sparkles, Building2, MapPin, Trophy, UserPlus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { translations } from "@/lib/translations"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
@@ -18,12 +18,19 @@ import { PlaceHolderImages } from "@/lib/placeholder-images"
 export default function LandingPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { setCurrentUser, users, language, setLanguage } = useStore()
+  const { setCurrentUser, users, addUser, language, setLanguage } = useStore()
   
   const [role, setRole] = React.useState<UserRole>('Citizen')
   const [userId, setUserId] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [mounted, setMounted] = React.useState(false)
+
+  // Registration states
+  const [regId, setRegId] = React.useState('')
+  const [regPassword, setRegPassword] = React.useState('')
+  const [regName, setRegName] = React.useState('')
+  const [regRole, setRegRole] = React.useState<UserRole>('Citizen')
+  const [regZone, setRegZone] = React.useState('')
 
   React.useEffect(() => {
     setMounted(true)
@@ -93,6 +100,29 @@ export default function LandingPage() {
     }
     setCurrentUser(existingUser)
     router.push('/dashboard')
+  }
+
+  const handleSignUp = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (users.find(u => u.id === regId)) {
+      toast({ title: "Registration Failed", description: "User ID already exists.", variant: "destructive" })
+      return
+    }
+
+    const newUser = {
+      id: regId,
+      password: regPassword,
+      name: regName,
+      role: regRole,
+      zoneId: regZone || undefined,
+      rewardPoints: 0,
+    }
+
+    addUser(newUser)
+    toast({ title: "Success", description: "Account created! You can now sign in." })
+    // Switch to sign in tab
+    const signInTab = document.querySelector('[value="signin"]') as HTMLElement
+    if (signInTab) signInTab.click()
   }
 
   const handleQuickLogin = (roleName: UserRole, id: string) => {
@@ -208,8 +238,54 @@ export default function LandingPage() {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="signup" className="mt-0">
-                  <p className="text-white/50 text-center py-12">Registration module enhanced for administrative validation. Please contact Ward Admin for official credentials.</p>
+                <TabsContent value="signup" className="mt-0 space-y-6">
+                  <form onSubmit={handleSignUp} className="space-y-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-white/70">Desired User ID</Label>
+                        <Input placeholder="Unique ID" className="h-14 bg-white/5 border-white/10 text-white rounded-2xl" required value={regId} onChange={e => setRegId(e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-white/70">Full Name</Label>
+                        <Input placeholder="Full Name" className="h-14 bg-white/5 border-white/10 text-white rounded-2xl" required value={regName} onChange={e => setRegName(e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-white/70">Password</Label>
+                        <Input type="password" placeholder="••••" className="h-14 bg-white/5 border-white/10 text-white rounded-2xl" required value={regPassword} onChange={e => setRegPassword(e.target.value)} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-white/70">Select Role</Label>
+                        <Select value={regRole} onValueChange={(val) => setRegRole(val as UserRole)}>
+                          <SelectTrigger className="h-14 bg-white/5 border-white/10 text-white rounded-2xl"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Corporation Commissioner">{t.commissioner}</SelectItem>
+                            <SelectItem value="Ward Admin">{t.wardAdmin}</SelectItem>
+                            <SelectItem value="Zone Admin">{t.zoneAdmin}</SelectItem>
+                            <SelectItem value="Worker">{t.worker}</SelectItem>
+                            <SelectItem value="Citizen">Citizen</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      {(regRole === 'Zone Admin' || regRole === 'Worker') && (
+                        <div className="space-y-2">
+                          <Label className="text-white/70">Assigned Zone</Label>
+                          <Select value={regZone} onValueChange={setRegZone}>
+                            <SelectTrigger className="h-14 bg-white/5 border-white/10 text-white rounded-2xl"><SelectValue placeholder="Select Zone" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="ZA - Zone A (North)">Zone A (North)</SelectItem>
+                              <SelectItem value="ZB - Zone B (South)">Zone B (South)</SelectItem>
+                              <SelectItem value="ZC - Zone C (East)">Zone C (East)</SelectItem>
+                              <SelectItem value="ZD - Zone D (West)">Zone D (West)</SelectItem>
+                              <SelectItem value="ZE - Zone E (Central)">Zone E (Central)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                    <Button type="submit" className="w-full h-16 text-xl font-bold bg-primary hover:bg-primary/90 rounded-2xl shadow-xl shadow-primary/20 group">
+                      <UserPlus className="mr-2" /> Register Account
+                    </Button>
+                  </form>
                 </TabsContent>
               </div>
             </Tabs>
