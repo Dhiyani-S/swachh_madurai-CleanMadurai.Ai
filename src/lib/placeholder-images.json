@@ -1,6 +1,12 @@
 {
   "placeholderImages": [
     {
+      "id": "madurai-unified",
+      "description": "Composite of Madurai landmarks and cleanliness workers",
+      "imageUrl": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&q=80&w=1920",
+      "imageHint": "madurai temple heritage"
+    },
+    {
       "id": "madurai-temple-bg",
       "description": "Aerial view of Meenakshi Amman Temple Madurai towers",
       "imageUrl": "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&q=80&w=1920",
