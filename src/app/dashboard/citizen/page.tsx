@@ -8,15 +8,64 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Camera, Send, History, Trash2, Home, MapPin, CheckCircle, Clock, CreditCard } from "lucide-react"
+import { Camera, Send, History, Trash2, Home, MapPin, CheckCircle, Clock, CreditCard, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useStore, Task } from "@/lib/store"
 import { StatusBadge } from "@/components/dashboard/StatusBadge"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function CitizenDashboard() {
   const { toast } = useToast()
   const { tasks, addTask, updateTask, currentUser } = useStore()
   const [submitting, setSubmitting] = React.useState(false)
+  
+  // Camera State
+  const videoRef = React.useRef<HTMLVideoElement>(null)
+  const [hasCameraPermission, setHasCameraPermission] = React.useState<boolean | null>(null)
+  const [capturedImage, setCapturedImage] = React.useState<string | null>(null)
+
+  const getCameraPermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      setHasCameraPermission(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      setHasCameraPermission(false);
+      toast({
+        variant: 'destructive',
+        title: 'Camera Access Denied',
+        description: 'Please enable camera permissions in your browser settings to report public issues.',
+      });
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        const dataUri = canvas.toDataURL('image/jpeg');
+        setCapturedImage(dataUri);
+        
+        // Stop the stream after capture to save battery/resource
+        const stream = videoRef.current.srcObject as MediaStream;
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+      }
+    }
+  };
+
+  const retakePhoto = () => {
+    setCapturedImage(null);
+    getCameraPermission();
+  };
 
   const handleSubmit = (type: 'public' | 'private') => {
     setSubmitting(true)
@@ -31,12 +80,14 @@ export default function CitizenDashboard() {
       zoneId: 'Zone 4 (Vaikunth Nagar)',
       createdAt: new Date().toISOString(),
       citizenId: currentUser?.id,
+      imageProof: type === 'public' ? capturedImage || undefined : undefined,
       paymentStatus: type === 'private' ? 'Unpaid' : undefined
     }
 
     setTimeout(() => {
       addTask(newTask)
       setSubmitting(false)
+      setCapturedImage(null)
       toast({
         title: "Request Submitted",
         description: type === 'public' ? "The authorities have been notified." : "Zone admin will generate your payment receipt shortly.",
@@ -64,7 +115,7 @@ export default function CitizenDashboard() {
       <Tabs defaultValue="private" className="w-full">
         <TabsList className="grid w-full grid-cols-2 bg-secondary/50 h-12">
           <TabsTrigger value="private" className="font-bold flex gap-2"><Home className="h-4 w-4" /> Private Service</TabsTrigger>
-          <TabsTrigger value="public" className="font-bold flex gap-2"><Trash2 className="h-4 w-4" /> Public Complaint</TabsTrigger>
+          <TabsTrigger value="public" className="font-bold flex gap-2" onClick={() => !capturedImage && getCameraPermission()}><Trash2 className="h-4 w-4" /> Public Complaint</TabsTrigger>
         </TabsList>
 
         <TabsContent value="private">
@@ -107,7 +158,7 @@ export default function CitizenDashboard() {
               <CardTitle className="font-headline text-rose-600 flex items-center gap-2">
                 <Trash2 className="h-6 w-6" /> Report Public Issue
               </CardTitle>
-              <CardDescription>Flag overflows or leakages</CardDescription>
+              <CardDescription>Flag overflows or leakages with photo proof</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -121,11 +172,54 @@ export default function CitizenDashboard() {
                   </SelectContent>
                 </Select>
               </div>
+              
               <div className="space-y-2">
                 <Label>Photo Proof</Label>
-                <div className="border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-2 bg-secondary/20">
-                  <Camera className="h-8 w-8 text-muted-foreground" />
-                  <p className="text-sm">Upload Photo</p>
+                <div className="relative rounded-xl overflow-hidden bg-black aspect-video flex items-center justify-center">
+                  {capturedImage ? (
+                    <img src={capturedImage} alt="Captured proof" className="w-full h-full object-cover" />
+                  ) : (
+                    <>
+                      <video 
+                        ref={videoRef} 
+                        className="w-full h-full object-cover" 
+                        autoPlay 
+                        muted 
+                        playsInline
+                      />
+                      {hasCameraPermission === false && (
+                        <div className="absolute inset-0 flex items-center justify-center p-4 bg-black/60">
+                           <Alert variant="destructive" className="bg-background">
+                            <AlertTitle>Camera Access Required</AlertTitle>
+                            <AlertDescription>
+                              Please allow camera access to take a photo of the issue.
+                              <Button variant="outline" size="sm" className="mt-2 w-full" onClick={getCameraPermission}>
+                                Try Again
+                              </Button>
+                            </AlertDescription>
+                          </Alert>
+                        </div>
+                      )}
+                      {hasCameraPermission === null && (
+                         <Button onClick={getCameraPermission} variant="secondary" className="gap-2">
+                            <Camera className="h-4 w-4" /> Enable Camera
+                         </Button>
+                      )}
+                    </>
+                  )}
+                </div>
+                
+                <div className="flex gap-2 mt-2">
+                  {!capturedImage && hasCameraPermission && (
+                    <Button type="button" onClick={capturePhoto} className="flex-1 font-bold gap-2">
+                      <Camera className="h-4 w-4" /> Take Photo
+                    </Button>
+                  )}
+                  {capturedImage && (
+                    <Button type="button" onClick={retakePhoto} variant="outline" className="flex-1 font-bold gap-2">
+                      <RefreshCw className="h-4 w-4" /> Retake
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -134,7 +228,7 @@ export default function CitizenDashboard() {
                 variant="destructive" 
                 className="w-full font-bold h-12 text-lg gap-2" 
                 onClick={() => handleSubmit('public')}
-                disabled={submitting}
+                disabled={submitting || (!capturedImage && hasCameraPermission !== false)}
               >
                 {submitting ? "Reporting..." : <><Send className="h-5 w-5" /> File Public Report</>}
               </Button>
@@ -149,33 +243,42 @@ export default function CitizenDashboard() {
             <CardTitle className="font-headline text-xl">My Requests & History</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {myRequests.map(task => (
-              <div key={task.id} className="flex gap-4 p-3 rounded-xl bg-secondary/30 border">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                  {task.type === 'Citizen Private' ? <Home className="h-5 w-5" /> : <Trash2 className="h-5 w-5" />}
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-start">
-                    <p className="font-bold text-sm">{task.name}</p>
-                    <span className="text-[10px] font-bold text-muted-foreground">{task.status}</span>
-                  </div>
-                  {task.paymentStatus === 'Unpaid' && (
-                    <Button 
-                      size="sm" 
-                      className="mt-2 h-7 text-[10px] font-bold gap-1"
-                      onClick={() => handlePayment(task.id)}
-                    >
-                      <CreditCard className="h-3 w-3" /> Pay Collection Fee
-                    </Button>
-                  )}
-                  {task.paymentStatus === 'Paid' && (
-                    <p className="text-[10px] text-emerald-600 font-bold mt-1 flex items-center gap-1">
-                      <CheckCircle className="h-3 w-3" /> Worker is allocated, soon there will reached the place
-                    </p>
-                  )}
-                </div>
+            {myRequests.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground italic">
+                No requests found.
               </div>
-            ))}
+            ) : (
+              myRequests.map(task => (
+                <div key={task.id} className="flex gap-4 p-3 rounded-xl bg-secondary/30 border">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    {task.type === 'Citizen Private' ? <Home className="h-5 w-5" /> : <Trash2 className="h-5 w-5" />}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-bold text-sm">{task.name}</p>
+                        <p className="text-[10px] text-muted-foreground">{new Date(task.createdAt).toLocaleDateString()}</p>
+                      </div>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase">{task.status}</span>
+                    </div>
+                    {task.paymentStatus === 'Unpaid' && (
+                      <Button 
+                        size="sm" 
+                        className="mt-2 h-7 text-[10px] font-bold gap-1"
+                        onClick={() => handlePayment(task.id)}
+                      >
+                        <CreditCard className="h-3 w-3" /> Pay Collection Fee
+                      </Button>
+                    )}
+                    {task.paymentStatus === 'Paid' && (
+                      <p className="text-[10px] text-emerald-600 font-bold mt-1 flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3" /> Worker is allocated, soon there will reached the place
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
 
