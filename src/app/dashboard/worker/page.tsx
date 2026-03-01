@@ -51,6 +51,11 @@ export default function WorkerDashboard() {
   const currentTeamAttendance = currentUser?.teamNumber ? attendance[currentUser.teamNumber] : null
   const hasMarkedAttendance = currentTeamAttendance?.date === today
 
+  // Filter tasks assigned to this team that are not yet fully completed
+  const assignedTasks = tasks.filter(t => 
+    t.assignedTo === currentUser?.teamNumber && t.status !== 'Completed'
+  )
+
   React.useEffect(() => {
     if (!hasMarkedAttendance && currentUser?.teamMembers) {
       setAttendanceState(currentUser.teamMembers.map(m => ({ name: m, status: 'Present' })))
@@ -60,7 +65,7 @@ export default function WorkerDashboard() {
 
   const triggerForwarding = (taskName: string) => {
     setForwardedMessage(`this taskk is forward to ather team: ${taskName}`);
-    // Keep message for 5 minutes
+    // Keep message for 5 minutes (300,000 ms)
     setTimeout(() => {
       setForwardedMessage(null);
     }, 5 * 60 * 1000);
@@ -80,13 +85,13 @@ export default function WorkerDashboard() {
   const handleTaskAction = (taskId: string, action: 'Accept' | 'Reject') => {
     const task = tasks.find(t => t.id === taskId);
     if (action === 'Accept') {
-      updateTask(taskId, { status: 'In Progress', assignedTo: currentUser?.teamNumber })
+      updateTask(taskId, { status: 'In Progress' })
       toast({
         title: "Task Accepted",
         description: "Proceed to the location to begin work.",
       })
     } else {
-      // Reject: Resets task and simulates forwarding
+      // Reject: Resets task and simulates forwarding by unassigning
       updateTask(taskId, { status: 'Pending', assignedTo: undefined })
       if (task) triggerForwarding(task.name);
       toast({
@@ -98,8 +103,9 @@ export default function WorkerDashboard() {
 
   const simulateTimeout = (taskId: string) => {
     const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
     updateTask(taskId, { status: 'Pending', assignedTo: undefined });
-    if (task) triggerForwarding(task.name);
+    triggerForwarding(task.name);
     toast({
       variant: "destructive",
       title: "Response Time Expired",
@@ -292,13 +298,13 @@ export default function WorkerDashboard() {
         <h3 className="font-headline font-bold text-lg flex items-center gap-2">
           <Clock className="h-5 w-5 text-primary" /> Tasks
         </h3>
-        {tasks.filter(t => t.status !== 'Completed').length === 0 ? (
+        {assignedTasks.length === 0 ? (
           <div className="text-center py-12 bg-secondary/20 rounded-xl border border-dashed">
             <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground/30 mb-2" />
-            <p className="text-muted-foreground font-medium">All caught up! No active tasks.</p>
+            <p className="text-muted-foreground font-medium">All caught up! No active tasks assigned to you.</p>
           </div>
         ) : (
-          tasks.filter(t => t.status !== 'Completed').map((task) => (
+          assignedTasks.map((task) => (
             <Card key={task.id} className={cn(
               "border-none shadow-md overflow-hidden transition-all",
               task.status === 'In Progress' ? "ring-2 ring-primary" : "",

@@ -34,13 +34,15 @@ const teamsMock = [
 ]
 
 export default function ZoneAdminDashboard() {
-  const { tasks, attendance } = useStore()
+  const { tasks, updateTask, attendance } = useStore()
   const { toast } = useToast()
 
   const handleAssignTask = (taskId: string) => {
+    // In a real app, you'd select a team. For this prototype, we assign to Team 04.
+    updateTask(taskId, { assignedTo: 'Team 04', status: 'Pending' })
     toast({
       title: "Task Assigned",
-      description: `Task has been pushed to Worker Team T04.`,
+      description: `Task has been pushed to Worker Team Team 04.`,
     })
   }
 
@@ -105,7 +107,7 @@ export default function ZoneAdminDashboard() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="divide-y">
-              {tasks.filter(t => t.status === 'Pending').map((task) => (
+              {tasks.filter(t => !t.assignedTo).map((task) => (
                 <div key={task.id} className="p-4 hover:bg-secondary/20 transition-all flex items-center justify-between">
                   <div className="flex gap-4">
                     <div className={cn(
@@ -134,7 +136,7 @@ export default function ZoneAdminDashboard() {
             </div>
           </CardContent>
           <CardFooter className="bg-secondary/20 p-4 justify-center">
-            <Button variant="ghost" className="text-primary font-bold text-sm">View 12 more tasks</Button>
+            <Button variant="ghost" className="text-primary font-bold text-sm">View more tasks</Button>
           </CardFooter>
         </Card>
 

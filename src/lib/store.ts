@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 
 export type UserRole = 'Corporation Commissioner' | 'Ward Admin' | 'Zone Admin' | 'Worker' | 'Citizen';
@@ -68,18 +69,18 @@ export const useStore = create<AppState>((set) => ({
       status: 'Pending',
       type: 'Sensor',
       wardId: 'ward-1',
-      zoneId: 'zone-1',
+      zoneId: 'Zone 4 (Vaikunth Nagar)',
       createdAt: new Date().toISOString(),
     },
     {
       id: 'task-2',
       name: 'Private Waste Collection',
       location: 'House #45, Anna Nagar',
-      status: 'In Progress',
+      status: 'Pending',
       type: 'Citizen Private',
       assignedTo: 'Team 04',
       wardId: 'ward-1',
-      zoneId: 'zone-2',
+      zoneId: 'Zone 4 (Vaikunth Nagar)',
       createdAt: new Date().toISOString(),
     }
   ],
@@ -89,7 +90,7 @@ export const useStore = create<AppState>((set) => ({
       type: 'Dustbin Overflow',
       location: 'Railway Station North',
       wardId: 'ward-1',
-      zoneId: 'zone-1',
+      zoneId: 'Zone 4 (Vaikunth Nagar)',
       timestamp: new Date().toISOString(),
     }
   ],
