@@ -14,10 +14,13 @@ import {
   FileText, 
   Zap,
   ChevronRight,
-  Send
+  Send,
+  RefreshCw,
+  Database
 } from "lucide-react"
 import { getCommissionerPerformanceInsights, CommissionerPerformanceInsightsOutput } from "@/ai/flows/commissioner-performance-insights"
 import { useToast } from "@/hooks/use-toast"
+import { useStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
 
 const wardData = [
@@ -32,6 +35,13 @@ export default function CommissionerDashboard() {
   const [aiInsights, setAiInsights] = React.useState<CommissionerPerformanceInsightsOutput | null>(null)
   const [isLoadingAi, setIsLoadingAi] = React.useState(false)
   const { toast } = useToast()
+  const { resetToDataset, tasks } = useStore()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+    fetchAiInsights()
+  }, [])
 
   const fetchAiInsights = async () => {
     setIsLoadingAi(true)
@@ -45,20 +55,31 @@ export default function CommissionerDashboard() {
     }
   }
 
-  React.useEffect(() => {
-    fetchAiInsights()
-  }, [])
+  const handleResetData = () => {
+    resetToDataset()
+    toast({
+      title: "System Reset",
+      description: "App data has been refreshed to match the latest Excel dataset.",
+    })
+    // Refresh page to clear local state if necessary
+    window.location.reload()
+  }
+
+  if (!mounted) return null
+
+  const completedTasks = tasks.filter(t => t.status === 'Completed').length
+  const completionRate = tasks.length > 0 ? Math.round((completedTasks / tasks.length) * 100) : 0
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-headline font-bold text-primary">City Overview</h1>
           <p className="text-muted-foreground">Corporation Commissioner Control Center</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
-            <FileText className="h-4 w-4" /> Reports
+          <Button variant="outline" className="gap-2" onClick={handleResetData}>
+            <Database className="h-4 w-4" /> Reset System Data
           </Button>
           <Button className="gap-2 bg-accent text-accent-foreground hover:bg-accent/90">
             <Zap className="h-4 w-4" /> Live Ops
@@ -70,17 +91,17 @@ export default function CommissionerDashboard() {
         <Card className="border-none shadow-md">
           <CardHeader className="pb-2">
             <CardDescription className="flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Total Tasks</CardDescription>
-            <CardTitle className="text-3xl">560</CardTitle>
+            <CardTitle className="text-3xl">{tasks.length}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Progress value={78} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-2">78% completion rate city-wide</p>
+            <Progress value={completionRate} className="h-2" />
+            <p className="text-xs text-muted-foreground mt-2">{completionRate}% completion rate city-wide</p>
           </CardContent>
         </Card>
         <Card className="border-none shadow-md">
           <CardHeader className="pb-2">
-            <CardDescription className="flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Active Alerts</CardDescription>
-            <CardTitle className="text-3xl text-rose-500">14</CardTitle>
+            <CardDescription className="flex items-center gap-1"><AlertTriangle className="h-3 w-3" /> Sensor Alerts</CardDescription>
+            <CardTitle className="text-3xl text-rose-500">{tasks.filter(t => t.type === 'Sensor' && t.status !== 'Completed').length}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex gap-1">
@@ -88,7 +109,7 @@ export default function CommissionerDashboard() {
               <div className="h-2 w-full bg-rose-500/30 rounded-full" />
               <div className="h-2 w-full bg-rose-500/10 rounded-full" />
             </div>
-            <p className="text-xs text-muted-foreground mt-2">3 Critical sensor issues</p>
+            <p className="text-xs text-muted-foreground mt-2">Active maintenance required</p>
           </CardContent>
         </Card>
         <Card className="border-none shadow-md">
@@ -150,9 +171,9 @@ export default function CommissionerDashboard() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="font-headline text-xl flex items-center gap-2">
-                <Zap className="h-5 w-5 fill-current" /> AI Insights
+                <Zap className="h-5 w-5 fill-current text-accent" /> AI Insights
               </CardTitle>
-              {isLoadingAi && <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white" />}
+              {isLoadingAi && <RefreshCw className="h-4 w-4 animate-spin text-white/50" />}
             </div>
             <CardDescription className="text-primary-foreground/70">Performance advisor for the Commissioner</CardDescription>
           </CardHeader>
@@ -163,7 +184,7 @@ export default function CommissionerDashboard() {
                   <p className="leading-relaxed">{aiInsights.overview}</p>
                 </div>
                 <div>
-                  <h5 className="text-xs font-bold uppercase tracking-wider mb-2 text-white/50">Inefficiencies Detected</h5>
+                  <h5 className="text-xs font-bold uppercase tracking-wider mb-2 text-accent">Inefficiencies Detected</h5>
                   <ul className="space-y-1">
                     {aiInsights.inefficiencies.slice(0, 3).map((item, i) => (
                       <li key={i} className="text-sm flex gap-2">
