@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -13,10 +12,8 @@ import {
   Edit2, 
   Plus, 
   Save, 
-  X, 
   UserCheck, 
   HardHat,
-  ChevronRight,
   UserCircle
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -36,14 +33,14 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function ZoneAdminTeams() {
-  const { users, currentUser, addUser, updateUser, teams, addTeam, addTeamMember, updateTeamMember, removeTeamMember } = useStore()
+  const { users, currentUser, addUser, updateUser, teams, addTeam, addTeamMember, removeTeamMember } = useStore()
   const { toast } = useToast()
   
   const [isRegisterOpen, setIsRegisterOpen] = React.useState(false)
   const [isManageMembersOpen, setIsManageMembersOpen] = React.useState(false)
   const [selectedWorker, setSelectedWorker] = React.useState<User | null>(null)
   
-  // Registration Form State
+  // Registration Form State (Team Account)
   const [newWorker, setNewWorker] = React.useState({
     id: '',
     password: '',
@@ -53,7 +50,7 @@ export default function ZoneAdminTeams() {
     teamId: '',
   })
 
-  // New Member Form State
+  // New Member Form State (Individual Personnel)
   const [newMember, setNewMember] = React.useState<TeamMember>({
     workerId: '',
     name: '',
@@ -65,19 +62,19 @@ export default function ZoneAdminTeams() {
   const currentZone = currentUser?.zone || 'ZA'
   const zoneWorkers = users.filter(u => u.role === 'worker' && u.zone === currentZone)
 
-  const handleRegisterWorker = (e: React.FormEvent) => {
+  const handleRegisterTeamAccount = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newWorker.id || !newWorker.password || !newWorker.name || !newWorker.teamId) {
-      toast({ title: "Error", description: "Worker ID, Name, Password and Team ID are required.", variant: "destructive" })
+      toast({ title: "Error", description: "Team ID, Name, Password and Team Code are required.", variant: "destructive" })
       return
     }
 
     if (users.find(u => u.id === newWorker.id)) {
-      toast({ title: "Error", description: "User ID already exists.", variant: "destructive" })
+      toast({ title: "Error", description: "Login ID already exists.", variant: "destructive" })
       return
     }
 
-    // Create User Account for Login
+    // 1. Create Login Account
     addUser({
       id: newWorker.id,
       name: newWorker.name,
@@ -91,23 +88,21 @@ export default function ZoneAdminTeams() {
       createdByAdmin: currentUser?.id
     })
 
-    // Initialize the Team record if it doesn't exist
-    if (!teams.find(t => t.id === newWorker.teamId)) {
-      addTeam({
-        id: newWorker.teamId,
-        zone: currentZone,
-        name: newWorker.name,
-        members: [],
-        supervisorId: currentUser?.id || ''
-      })
-    }
+    // 2. Initialize the Team Roster object
+    addTeam({
+      id: newWorker.teamId,
+      zone: currentZone,
+      name: newWorker.name,
+      members: [],
+      supervisorId: currentUser?.id || ''
+    })
 
-    toast({ title: "Worker Registered", description: `Account ${newWorker.id} created for Team ${newWorker.teamId}.` })
+    toast({ title: "Team Registered", description: `Account ${newWorker.id} created for Team ${newWorker.teamId}.` })
     setNewWorker({ id: '', password: '', name: '', phone: '', address: '', teamId: '' })
     setIsRegisterOpen(false)
   }
 
-  const handleUpdateWorker = (e: React.FormEvent) => {
+  const handleUpdateTeamDetails = (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedWorker) return
     
@@ -117,72 +112,69 @@ export default function ZoneAdminTeams() {
       address: selectedWorker.address
     })
     
-    toast({ title: "Details Updated", description: "Worker and Area details saved successfully." })
+    toast({ title: "Details Updated", description: "Team account details updated." })
     setIsManageMembersOpen(false)
   }
 
-  const handleAddMember = () => {
-    if (!selectedWorker?.teamId || !newMember.name || !newMember.workerId) {
-      toast({ title: "Validation Error", description: "Member Name and ID are required.", variant: "destructive" })
+  const handleAddPersonnelToTeam = () => {
+    if (!selectedWorker?.teamId || !newMember.name || !newMember.phone) {
+      toast({ title: "Validation Error", description: "Member Name and Phone are required.", variant: "destructive" })
       return
     }
-    addTeamMember(selectedWorker.teamId, newMember)
+    const memberWithId = { ...newMember, workerId: `M-${Date.now()}` }
+    addTeamMember(selectedWorker.teamId, memberWithId)
     setNewMember({ workerId: '', name: '', age: 0, phone: '', address: '' })
-    toast({ title: "Member Added", description: `${newMember.name} has been added to the roster.` })
+    toast({ title: "Member Added", description: `${newMember.name} added to the roster.` })
   }
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-headline font-bold text-white tracking-tighter">Field Management</h1>
-          <p className="text-white/40 font-medium">Assign Worker IDs, manage teams, and allocate areas for Zone {currentZone}</p>
+          <h1 className="text-4xl font-headline font-bold text-white tracking-tighter uppercase">Field Management</h1>
+          <p className="text-white/40 font-medium tracking-tight">Assign Team Login IDs and manage personnel rosters for Zone {currentZone}</p>
         </div>
         
         <Dialog open={isRegisterOpen} onOpenChange={setIsRegisterOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2 font-bold h-12 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30 text-black">
-              <UserPlus className="h-5 w-5" /> Register Worker Account
+            <Button className="gap-2 font-bold h-12 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/30 text-black rounded-2xl">
+              <UserPlus className="h-5 w-5" /> New Team Account
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px] glass-panel text-white rounded-[2.5rem] border-primary/20 shadow-2xl">
             <DialogHeader>
-              <DialogTitle className="font-headline text-3xl text-primary">New Worker Registration</DialogTitle>
+              <DialogTitle className="font-headline text-3xl text-primary">Register Field Team</DialogTitle>
               <DialogDescription className="text-white/60">
-                Create login credentials and assign an operational area for the team.
+                Create a single login account for the entire team and assign an operational area.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleRegisterWorker} className="space-y-4 py-4">
+            <form onSubmit={handleRegisterTeamAccount} className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="id">User ID (Login)</Label>
-                  <Input id="id" placeholder="e.g. WRK-NORTH-01" value={newWorker.id} onChange={e => setNewWorker({...newWorker, id: e.target.value})} required />
+                  <Label htmlFor="id" className="text-[10px] uppercase tracking-widest font-bold text-white/40 ml-2">Team Login ID</Label>
+                  <Input id="id" placeholder="e.g. TEAM-NORTH-01" value={newWorker.id} onChange={e => setNewWorker({...newWorker, id: e.target.value})} required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Login Password</Label>
+                  <Label htmlFor="password"  className="text-[10px] uppercase tracking-widest font-bold text-white/40 ml-2">Login Password</Label>
                   <Input id="password" type="password" placeholder="••••••••" value={newWorker.password} onChange={e => setNewWorker({...newWorker, password: e.target.value})} required />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="teamName">Team Display Name</Label>
+                  <Label htmlFor="teamName" className="text-[10px] uppercase tracking-widest font-bold text-white/40 ml-2">Team Display Name</Label>
                   <Input id="teamName" placeholder="e.g. North Alpha" value={newWorker.name} onChange={e => setNewWorker({...newWorker, name: e.target.value})} required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="teamId">Team ID (Code)</Label>
+                  <Label htmlFor="teamId" className="text-[10px] uppercase tracking-widest font-bold text-white/40 ml-2">Team Code (Internal)</Label>
                   <Input id="teamId" placeholder="e.g. T1" value={newWorker.teamId} onChange={e => setNewWorker({...newWorker, teamId: e.target.value})} required />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Contact Number</Label>
-                <Input id="phone" placeholder="98765 XXXXX" value={newWorker.phone} onChange={e => setNewWorker({...newWorker, phone: e.target.value})} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="area">Assigned Area (e.g., Mattuthavani)</Label>
-                <Input id="area" placeholder="Enter landmark or area name" value={newWorker.address} onChange={e => setNewWorker({...newWorker, address: e.target.value})} />
+                <Label htmlFor="area" className="text-[10px] uppercase tracking-widest font-bold text-white/40 ml-2">Assigned Area</Label>
+                <Input id="area" placeholder="e.g. Anna Nagar Junction" value={newWorker.address} onChange={e => setNewWorker({...newWorker, address: e.target.value})} />
               </div>
               <DialogFooter className="pt-4">
-                <Button type="submit" className="w-full font-bold h-14 rounded-2xl bg-primary text-black">Create Field Account</Button>
+                <Button type="submit" className="w-full font-bold h-14 rounded-2xl bg-primary text-black">Create Team Account</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -193,7 +185,7 @@ export default function ZoneAdminTeams() {
         {zoneWorkers.length === 0 ? (
           <div className="col-span-full py-24 text-center glass-panel border-2 border-dashed border-white/10 rounded-[3rem]">
             <HardHat className="h-16 w-16 mx-auto text-white/10 mb-4" />
-            <p className="text-white/40 font-bold font-headline text-2xl">No field units registered in this zone.</p>
+            <p className="text-white/40 font-bold font-headline text-2xl uppercase tracking-tighter">No field units active.</p>
           </div>
         ) : (
           zoneWorkers.map((worker) => {
@@ -207,24 +199,20 @@ export default function ZoneAdminTeams() {
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="text-2xl font-headline font-bold text-white">{worker.name}</CardTitle>
-                      <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] uppercase tracking-widest mt-1">Unit: {worker.teamId}</Badge>
+                      <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] uppercase tracking-widest mt-1">Code: {worker.teamId}</Badge>
                     </div>
-                    <Badge variant="outline" className="border-white/10 text-white/40 text-[10px]">{memberCount} Members</Badge>
+                    <Badge variant="outline" className="border-white/10 text-white/40 text-[10px] font-bold">{memberCount} Members</Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-5 pt-6">
                   <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
                     <div className="flex items-center gap-3 text-sm font-medium text-white/80">
                       <MapPin className="h-4 w-4 text-primary" />
-                      <span className="truncate">{worker.address || 'Area Unassigned'}</span>
+                      <span className="truncate">{worker.address || 'Location Pending'}</span>
                     </div>
                     <div className="flex items-center gap-3 text-sm font-medium text-white/80">
                       <Phone className="h-4 w-4 text-primary" />
-                      <span>{worker.phone || 'No Contact'}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs font-mono text-white/40">
-                      <UserCheck className="h-4 w-4" />
-                      <span>ID: {worker.id}</span>
+                      <span>{worker.phone || 'No Contact Info'}</span>
                     </div>
                   </div>
                   
@@ -236,7 +224,7 @@ export default function ZoneAdminTeams() {
                       setIsManageMembersOpen(true)
                     }}
                   >
-                    <Edit2 className="h-4 w-4 mr-2" /> Manage Team & Roster
+                    <Edit2 className="h-4 w-4 mr-2" /> Manage Personnel & Roster
                   </Button>
                 </CardContent>
               </Card>
@@ -248,20 +236,20 @@ export default function ZoneAdminTeams() {
       <Dialog open={isManageMembersOpen} onOpenChange={setIsManageMembersOpen}>
         <DialogContent className="max-w-3xl glass-panel text-white rounded-[3.5rem] shadow-2xl border-primary/20">
           <DialogHeader>
-            <DialogTitle className="font-headline text-4xl text-primary mt-4">Manage Unit: {selectedWorker?.name}</DialogTitle>
+            <DialogTitle className="font-headline text-4xl text-primary mt-4 uppercase tracking-tighter">Unit Profile: {selectedWorker?.name}</DialogTitle>
           </DialogHeader>
 
           <Tabs defaultValue="details" className="w-full mt-4">
-            <TabsList className="bg-white/5 p-1 h-12 rounded-2xl border border-white/10 mb-6">
-              <TabsTrigger value="details" className="rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black">Team Details</TabsTrigger>
-              <TabsTrigger value="roster" className="rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black">Personnel Roster</TabsTrigger>
+            <TabsList className="bg-white/5 p-1 h-12 rounded-2xl border border-white/10 mb-6 w-full">
+              <TabsTrigger value="details" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Account & Area</TabsTrigger>
+              <TabsTrigger value="roster" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Team Personnel</TabsTrigger>
             </TabsList>
 
             <TabsContent value="details">
-              <form onSubmit={handleUpdateWorker} className="space-y-6">
+              <form onSubmit={handleUpdateTeamDetails} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Display Name</Label>
+                    <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Team Name</Label>
                     <Input 
                       value={selectedWorker?.name || ''} 
                       onChange={e => setSelectedWorker(prev => prev ? {...prev, name: e.target.value} : null)}
@@ -269,11 +257,10 @@ export default function ZoneAdminTeams() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Assigned Operational Area</Label>
+                    <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Assigned Area</Label>
                     <Input 
                       value={selectedWorker?.address || ''} 
                       onChange={e => setSelectedWorker(prev => prev ? {...prev, address: e.target.value} : null)}
-                      placeholder="e.g. Periyar Bus Stand"
                       className="h-12 rounded-xl border-primary/30"
                     />
                   </div>
@@ -286,50 +273,47 @@ export default function ZoneAdminTeams() {
                     />
                   </div>
                 </div>
-                <Button type="submit" className="w-full h-14 rounded-2xl font-bold bg-primary text-black">
-                  <Save className="h-5 w-5 mr-2" /> Save Updates
+                <Button type="submit" className="w-full h-14 rounded-2xl font-bold bg-primary text-black shadow-2xl shadow-primary/20">
+                  <Save className="h-5 w-5 mr-2" /> Save Team Updates
                 </Button>
               </form>
             </TabsContent>
 
             <TabsContent value="roster">
               <div className="space-y-8">
-                {/* Add Member Form */}
                 <div className="p-6 rounded-[2rem] bg-white/5 border border-primary/10">
-                  <h4 className="font-headline font-bold text-lg mb-4 flex items-center gap-2"><Plus className="h-5 w-5 text-primary" /> Add New Member</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Input placeholder="Full Name" value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})} className="h-10 text-xs" />
-                    <Input placeholder="Member ID" value={newMember.workerId} onChange={e => setNewMember({...newMember, workerId: e.target.value})} className="h-10 text-xs" />
-                    <Input placeholder="Phone" value={newMember.phone} onChange={e => setNewMember({...newMember, phone: e.target.value})} className="h-10 text-xs" />
-                    <Button onClick={handleAddMember} className="h-10 font-bold bg-primary text-black">Add To Unit</Button>
+                  <h4 className="font-headline font-bold text-lg mb-4 flex items-center gap-2 uppercase tracking-tighter"><Plus className="h-5 w-5 text-primary" /> Add Personnel</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Input placeholder="Member Name" value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})} className="h-10 text-xs" />
+                    <Input placeholder="Phone Number" value={newMember.phone} onChange={e => setNewMember({...newMember, phone: e.target.value})} className="h-10 text-xs" />
+                    <Button onClick={handleAddPersonnelToTeam} className="h-10 font-bold bg-primary text-black rounded-xl">Add Member</Button>
                   </div>
                 </div>
 
-                {/* Member List */}
                 <div className="space-y-3">
-                   <h4 className="font-bold text-white/60 uppercase text-[10px] tracking-widest ml-2">Registered Personnel</h4>
-                   {teams.find(t => t.id === selectedWorker?.teamId)?.members.length === 0 ? (
-                     <p className="text-center py-10 text-white/20 italic">No members added to this unit yet.</p>
-                   ) : (
-                     teams.find(t => t.id === selectedWorker?.teamId)?.members.map((member, i) => (
-                       <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-black/30 border border-white/5 group transition-all hover:border-primary/20">
-                          <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
-                              <UserCircle className="h-6 w-6 text-primary/40" />
+                   <h4 className="font-bold text-white/60 uppercase text-[10px] tracking-widest ml-2">Active Roster ({teams.find(t => t.id === selectedWorker?.teamId)?.members.length || 0})</h4>
+                   <div className="max-h-[300px] overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+                     {teams.find(t => t.id === selectedWorker?.teamId)?.members.length === 0 ? (
+                       <p className="text-center py-10 text-white/20 italic">No personnel added to this unit.</p>
+                     ) : (
+                       teams.find(t => t.id === selectedWorker?.teamId)?.members.map((member, i) => (
+                         <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-black/30 border border-white/5 group transition-all hover:border-primary/20">
+                            <div className="flex items-center gap-4">
+                              <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center">
+                                <UserCircle className="h-6 w-6 text-primary/40" />
+                              </div>
+                              <div>
+                                <p className="font-bold text-md text-white">{member.name}</p>
+                                <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">{member.phone || 'No Phone'}</p>
+                              </div>
                             </div>
-                            <div>
-                              <p className="font-bold text-md text-white">{member.name}</p>
-                              <p className="text-[10px] text-white/40">{member.workerId} • {member.phone || 'No Phone'}</p>
-                            </div>
-                          </div>
-                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:bg-rose-500/10" onClick={() => removeTeamMember(selectedWorker?.teamId!, member.workerId)}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:bg-rose-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeTeamMember(selectedWorker?.teamId!, member.workerId)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
-                          </div>
-                       </div>
-                     ))
-                   )}
+                         </div>
+                       ))
+                     )}
+                   </div>
                 </div>
               </div>
             </TabsContent>
