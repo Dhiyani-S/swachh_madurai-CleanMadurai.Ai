@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -34,7 +35,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function ZoneAdminTeams() {
-  const { users, currentUser, addUser, updateUser, teams, addTeam, addTeamMember, removeTeamMember } = useStore()
+  const { users, currentUser, addUser, updateUser, teams, addTeam, addTeamMember, removeTeamMember, attendance } = useStore()
   const { toast } = useToast()
   
   const [isRegisterOpen, setIsRegisterOpen] = React.useState(false)
@@ -63,12 +64,13 @@ export default function ZoneAdminTeams() {
   const currentZone = currentUser?.zone || 'ZA'
   const zoneWorkers = users.filter(u => u.role === 'worker' && u.zone === currentZone)
 
-  // Derived state to get the latest selected worker and their team reactively
   const activeWorker = React.useMemo(() => users.find(u => u.id === selectedWorkerId), [users, selectedWorkerId]);
   const activeTeam = React.useMemo(() => {
     if (!activeWorker?.teamId) return null;
     return teams.find(t => t.id.toUpperCase() === activeWorker.teamId?.toUpperCase());
   }, [teams, activeWorker]);
+
+  const today = React.useMemo(() => new Date().toLocaleDateString(), []);
 
   const handleRegisterTeamAccount = (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,7 +85,6 @@ export default function ZoneAdminTeams() {
       return
     }
 
-    // 1. Create Login Account
     addUser({
       id: newWorker.id,
       name: newWorker.name,
@@ -97,7 +98,6 @@ export default function ZoneAdminTeams() {
       createdByAdmin: currentUser?.id
     })
 
-    // 2. Initialize the Team Roster object
     addTeam({
       id: teamCode,
       zone: currentZone,
@@ -200,6 +200,8 @@ export default function ZoneAdminTeams() {
           zoneWorkers.map((worker) => {
             const teamInfo = teams.find(t => t.id.toUpperCase() === worker.teamId?.toUpperCase());
             const memberCount = teamInfo?.members.length || 0;
+            const currentAtt = attendance[`${worker.teamId?.toUpperCase()}-${today}`];
+            const presentCount = currentAtt?.records.filter(r => r.status === 'Present').length || 0;
             
             return (
               <Card key={worker.id} className="border-none shadow-2xl relative overflow-hidden rounded-[3rem] glass-panel group hover:border-primary/40 transition-all">
@@ -222,13 +224,17 @@ export default function ZoneAdminTeams() {
                 </CardHeader>
                 <CardContent className="space-y-5 pt-6">
                   <div className="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+                    <div className="flex items-center justify-between">
+                       <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Duty Status</span>
+                       {currentAtt ? (
+                         <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[8px]">{presentCount}/{memberCount} Present</Badge>
+                       ) : (
+                         <Badge variant="outline" className="text-white/20 text-[8px]">Pending Roll Call</Badge>
+                       )}
+                    </div>
                     <div className="flex items-center gap-3 text-sm font-medium text-white/80">
                       <MapPin className="h-4 w-4 text-primary" />
                       <span className="truncate">{worker.address || 'Location Pending'}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm font-medium text-white/80">
-                      <Phone className="h-4 w-4 text-primary" />
-                      <span>{worker.phone || 'No Contact Info'}</span>
                     </div>
                   </div>
                   
@@ -257,8 +263,9 @@ export default function ZoneAdminTeams() {
 
           <Tabs defaultValue="roster" className="w-full mt-4">
             <TabsList className="bg-white/5 p-1 h-12 rounded-2xl border border-white/10 mb-6 w-full">
-              <TabsTrigger value="roster" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Team Personnel (Roster)</TabsTrigger>
+              <TabsTrigger value="roster" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Team Personnel (Roster)</Trigger>
               <TabsTrigger value="details" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Account & Area</TabsTrigger>
+              <TabsTrigger value="attendance" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Live Attendance</TabsTrigger>
             </TabsList>
 
             <TabsContent value="details">
@@ -266,12 +273,7 @@ export default function ZoneAdminTeams() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Team Name</Label>
-                    <Input 
-                      value={activeWorker?.name || ''} 
-                      onChange={e => setSelectedWorkerId(prev => prev ? prev : null)}
-                      className="h-12 rounded-xl"
-                      disabled
-                    />
+                    <Input value={activeWorker?.name || ''} className="h-12 rounded-xl" disabled />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Assigned Area</Label>
@@ -279,14 +281,6 @@ export default function ZoneAdminTeams() {
                       value={activeWorker?.address || ''} 
                       onChange={e => updateUser(activeWorker!.id, { address: e.target.value })}
                       className="h-12 rounded-xl border-primary/30"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Contact Number</Label>
-                    <Input 
-                      value={activeWorker?.phone || ''} 
-                      onChange={e => updateUser(activeWorker!.id, { phone: e.target.value })}
-                      className="h-12 rounded-xl"
                     />
                   </div>
                 </div>
@@ -300,17 +294,21 @@ export default function ZoneAdminTeams() {
               <div className="space-y-8">
                 <div className="p-6 rounded-[2rem] bg-white/5 border border-primary/10">
                   <h4 className="font-headline font-bold text-lg mb-4 flex items-center gap-2 uppercase tracking-tighter"><Plus className="h-5 w-5 text-primary" /> Add Team Member</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="space-y-1">
-                      <Label className="text-[8px] uppercase font-bold text-white/40 ml-1">Member Name</Label>
+                      <Label className="text-[8px] uppercase font-bold text-white/40 ml-1">Name</Label>
                       <Input placeholder="Full Name" value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})} className="h-10 text-xs" />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[8px] uppercase font-bold text-white/40 ml-1">Phone Number</Label>
-                      <Input placeholder="9876543210" value={newMember.phone} onChange={e => setNewMember({...newMember, phone: e.target.value})} className="h-10 text-xs" />
+                      <Label className="text-[8px] uppercase font-bold text-white/40 ml-1">Age</Label>
+                      <Input type="number" placeholder="Age" value={newMember.age || ''} onChange={e => setNewMember({...newMember, age: parseInt(e.target.value) || 0})} className="h-10 text-xs" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[8px] uppercase font-bold text-white/40 ml-1">Phone</Label>
+                      <Input placeholder="Phone" value={newMember.phone} onChange={e => setNewMember({...newMember, phone: e.target.value})} className="h-10 text-xs" />
                     </div>
                     <div className="flex items-end">
-                      <Button onClick={handleAddPersonnelToTeam} className="w-full h-10 font-bold bg-primary text-black rounded-xl">Add to Team</Button>
+                      <Button onClick={handleAddPersonnelToTeam} className="w-full h-10 font-bold bg-primary text-black rounded-xl">Add Personnel</Button>
                     </div>
                   </div>
                 </div>
@@ -321,7 +319,7 @@ export default function ZoneAdminTeams() {
                    </h4>
                    <div className="max-h-[300px] overflow-y-auto space-y-3 pr-2 custom-scrollbar">
                      {!activeTeam || activeTeam.members.length === 0 ? (
-                       <p className="text-center py-10 text-white/20 italic">No members have been added to this team yet.</p>
+                       <p className="text-center py-10 text-white/20 italic">No members added yet.</p>
                      ) : (
                        activeTeam.members.map((member, i) => (
                          <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-black/30 border border-white/5 group transition-all hover:border-primary/20">
@@ -330,9 +328,9 @@ export default function ZoneAdminTeams() {
                                 <UserCircle className="h-6 w-6 text-primary/40" />
                               </div>
                               <div>
-                                <p className="font-bold text-md text-white">{member.name}</p>
+                                <p className="font-bold text-md text-white">{member.name} ({member.age})</p>
                                 <div className="flex items-center gap-2 text-[10px] text-white/40 uppercase tracking-widest font-bold">
-                                  <Phone className="h-2 w-2" /> {member.phone || 'No Contact'}
+                                  <Phone className="h-2 w-2 text-primary" /> {member.phone}
                                 </div>
                               </div>
                             </div>
@@ -345,6 +343,39 @@ export default function ZoneAdminTeams() {
                    </div>
                 </div>
               </div>
+            </TabsContent>
+
+            <TabsContent value="attendance">
+               <div className="space-y-6">
+                 <div className="p-6 rounded-[2rem] bg-white/5 border border-white/10 flex justify-between items-center">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Reporting Date</p>
+                      <p className="text-xl font-bold">{today}</p>
+                    </div>
+                    {attendance[`${activeWorker?.teamId?.toUpperCase()}-${today}`] ? (
+                      <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-4 h-10 rounded-full">✓ Roll Call Complete</Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-rose-500 border-rose-500/20 px-4 h-10 rounded-full animate-pulse">Awaiting Report</Badge>
+                    )}
+                 </div>
+
+                 <div className="space-y-3">
+                   {attendance[`${activeWorker?.teamId?.toUpperCase()}-${today}`]?.records.map((rec, i) => (
+                     <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-black/30 border border-white/5">
+                        <span className="font-bold">{rec.name}</span>
+                        <Badge variant="outline" className={cn(
+                          "text-[10px] font-bold uppercase tracking-widest px-3 h-7",
+                          rec.status === 'Present' ? "text-emerald-500 border-emerald-500/20" : "text-rose-500 border-rose-500/20"
+                        )}>
+                          {rec.status}
+                        </Badge>
+                     </div>
+                   ))}
+                   {!attendance[`${activeWorker?.teamId?.toUpperCase()}-${today}`] && (
+                     <p className="text-center py-20 text-white/20 italic">No attendance data available for today yet.</p>
+                   )}
+                 </div>
+               </div>
             </TabsContent>
           </Tabs>
         </DialogContent>
