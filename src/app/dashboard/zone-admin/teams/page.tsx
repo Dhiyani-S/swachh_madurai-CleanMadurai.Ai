@@ -13,7 +13,6 @@ import {
   Edit2, 
   Plus, 
   Save, 
-  UserCheck, 
   HardHat,
   UserCircle,
   Users2,
@@ -41,7 +40,7 @@ export default function ZoneAdminTeams() {
   
   const [isRegisterOpen, setIsRegisterOpen] = React.useState(false)
   const [isManageMembersOpen, setIsManageMembersOpen] = React.useState(false)
-  const [selectedWorker, setSelectedWorker] = React.useState<User | null>(null)
+  const [selectedWorkerId, setSelectedWorkerId] = React.useState<string | null>(null)
   
   // Registration Form State (Team Account)
   const [newWorker, setNewWorker] = React.useState({
@@ -65,9 +64,14 @@ export default function ZoneAdminTeams() {
   const currentZone = currentUser?.zone || 'ZA'
   const zoneWorkers = users.filter(u => u.role === 'worker' && u.zone === currentZone)
 
+  // Derived state to get the latest selected worker and their team
+  const activeWorker = React.useMemo(() => users.find(u => u.id === selectedWorkerId), [users, selectedWorkerId]);
+  const activeTeam = React.useMemo(() => teams.find(t => t.id.toUpperCase() === activeWorker?.teamId?.toUpperCase()), [teams, activeWorker]);
+
   const handleRegisterTeamAccount = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newWorker.id || !newWorker.password || !newWorker.name || !newWorker.teamId) {
+    const teamCode = newWorker.teamId.toUpperCase().trim();
+    if (!newWorker.id || !newWorker.password || !newWorker.name || !teamCode) {
       toast({ title: "Error", description: "Team ID, Name, Password and Team Code are required.", variant: "destructive" })
       return
     }
@@ -83,7 +87,7 @@ export default function ZoneAdminTeams() {
       name: newWorker.name,
       password: newWorker.password,
       role: 'worker',
-      teamId: newWorker.teamId,
+      teamId: teamCode,
       zone: currentZone,
       phone: newWorker.phone,
       address: newWorker.address,
@@ -93,26 +97,26 @@ export default function ZoneAdminTeams() {
 
     // 2. Initialize the Team Roster object
     addTeam({
-      id: newWorker.teamId,
+      id: teamCode,
       zone: currentZone,
       name: newWorker.name,
       members: [],
       supervisorId: currentUser?.id || ''
     })
 
-    toast({ title: "Team Registered", description: `Account ${newWorker.id} created for Team ${newWorker.teamId}.` })
+    toast({ title: "Team Registered", description: `Account ${newWorker.id} created for Team ${teamCode}.` })
     setNewWorker({ id: '', password: '', name: '', phone: '', address: '', teamId: '' })
     setIsRegisterOpen(false)
   }
 
   const handleUpdateTeamDetails = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedWorker) return
+    if (!activeWorker) return
     
-    updateUser(selectedWorker.id, {
-      name: selectedWorker.name,
-      phone: selectedWorker.phone,
-      address: selectedWorker.address
+    updateUser(activeWorker.id, {
+      name: activeWorker.name,
+      phone: activeWorker.phone,
+      address: activeWorker.address
     })
     
     toast({ title: "Details Updated", description: "Team account details updated." })
@@ -120,12 +124,12 @@ export default function ZoneAdminTeams() {
   }
 
   const handleAddPersonnelToTeam = () => {
-    if (!selectedWorker?.teamId || !newMember.name || !newMember.phone) {
+    if (!activeWorker?.teamId || !newMember.name || !newMember.phone) {
       toast({ title: "Validation Error", description: "Member Name and Phone are required.", variant: "destructive" })
       return
     }
     const memberWithId = { ...newMember, workerId: `M-${Date.now()}` }
-    addTeamMember(selectedWorker.teamId, memberWithId)
+    addTeamMember(activeWorker.teamId, memberWithId)
     setNewMember({ workerId: '', name: '', age: 0, phone: '', address: '' })
     toast({ title: "Member Added", description: `${newMember.name} added to the roster.` })
   }
@@ -192,7 +196,7 @@ export default function ZoneAdminTeams() {
           </div>
         ) : (
           zoneWorkers.map((worker) => {
-            const teamInfo = teams.find(t => t.id === worker.teamId);
+            const teamInfo = teams.find(t => t.id.toUpperCase() === worker.teamId?.toUpperCase());
             const memberCount = teamInfo?.members.length || 0;
             
             return (
@@ -230,7 +234,7 @@ export default function ZoneAdminTeams() {
                     variant="outline" 
                     className="w-full font-bold text-sm border-white/10 hover:bg-primary/10 hover:text-primary rounded-2xl h-12"
                     onClick={() => {
-                      setSelectedWorker(worker)
+                      setSelectedWorkerId(worker.id)
                       setIsManageMembersOpen(true)
                     }}
                   >
@@ -246,7 +250,7 @@ export default function ZoneAdminTeams() {
       <Dialog open={isManageMembersOpen} onOpenChange={setIsManageMembersOpen}>
         <DialogContent className="max-w-3xl glass-panel text-white rounded-[3.5rem] shadow-2xl border-primary/20">
           <DialogHeader>
-            <DialogTitle className="font-headline text-4xl text-primary mt-4 uppercase tracking-tighter">Unit Profile: {selectedWorker?.name}</DialogTitle>
+            <DialogTitle className="font-headline text-4xl text-primary mt-4 uppercase tracking-tighter">Unit Profile: {activeWorker?.name}</DialogTitle>
           </DialogHeader>
 
           <Tabs defaultValue="roster" className="w-full mt-4">
@@ -261,24 +265,25 @@ export default function ZoneAdminTeams() {
                   <div className="space-y-2">
                     <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Team Name</Label>
                     <Input 
-                      value={selectedWorker?.name || ''} 
-                      onChange={e => setSelectedWorker(prev => prev ? {...prev, name: e.target.value} : null)}
+                      value={activeWorker?.name || ''} 
+                      onChange={e => setSelectedWorkerId(prev => prev ? prev : null)}
                       className="h-12 rounded-xl"
+                      disabled
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Assigned Area</Label>
                     <Input 
-                      value={selectedWorker?.address || ''} 
-                      onChange={e => setSelectedWorker(prev => prev ? {...prev, address: e.target.value} : null)}
+                      value={activeWorker?.address || ''} 
+                      onChange={e => updateUser(activeWorker!.id, { address: e.target.value })}
                       className="h-12 rounded-xl border-primary/30"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Contact Number</Label>
                     <Input 
-                      value={selectedWorker?.phone || ''} 
-                      onChange={e => setSelectedWorker(prev => prev ? {...prev, phone: e.target.value} : null)}
+                      value={activeWorker?.phone || ''} 
+                      onChange={e => updateUser(activeWorker!.id, { phone: e.target.value })}
                       className="h-12 rounded-xl"
                     />
                   </div>
@@ -310,13 +315,13 @@ export default function ZoneAdminTeams() {
 
                 <div className="space-y-3">
                    <h4 className="font-bold text-white/60 uppercase text-[10px] tracking-widest ml-2 flex items-center gap-2">
-                     <Users className="h-3 w-3" /> Unit Personnel List ({teams.find(t => t.id === selectedWorker?.teamId)?.members.length || 0})
+                     <Users className="h-3 w-3" /> Unit Personnel List ({activeTeam?.members.length || 0})
                    </h4>
                    <div className="max-h-[300px] overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-                     {teams.find(t => t.id === selectedWorker?.teamId)?.members.length === 0 ? (
+                     {!activeTeam || activeTeam.members.length === 0 ? (
                        <p className="text-center py-10 text-white/20 italic">No members have been added to this team yet.</p>
                      ) : (
-                       teams.find(t => t.id === selectedWorker?.teamId)?.members.map((member, i) => (
+                       activeTeam.members.map((member, i) => (
                          <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-black/30 border border-white/5 group transition-all hover:border-primary/20">
                             <div className="flex items-center gap-4">
                               <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center">
@@ -329,7 +334,7 @@ export default function ZoneAdminTeams() {
                                 </div>
                               </div>
                             </div>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:bg-rose-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeTeamMember(selectedWorker?.teamId!, member.workerId)}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:bg-rose-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeTeamMember(activeTeam.id, member.workerId)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                          </div>

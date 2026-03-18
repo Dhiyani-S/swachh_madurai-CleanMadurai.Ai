@@ -145,18 +145,25 @@ export const useStore = create<AppState>()(
         return { tasks: updatedTasks };
       }),
       
-      addTeam: (team) => set((state) => ({ teams: [...state.teams, team] })),
+      addTeam: (team) => set((state) => {
+        const teamId = team.id.toUpperCase().trim();
+        const exists = state.teams.find(t => t.id === teamId);
+        if (exists) return state; // Avoid duplicates
+        return { teams: [...state.teams, { ...team, id: teamId }] };
+      }),
       addTeamMember: (teamId, member) => set((state) => ({
-        teams: state.teams.map(t => t.id === teamId ? { ...t, members: [...t.members, member] } : t)
+        teams: state.teams.map(t => t.id.toUpperCase() === teamId.toUpperCase().trim() 
+          ? { ...t, members: [...t.members, member] } 
+          : t)
       })),
       updateTeamMember: (teamId, workerId, updates) => set((state) => ({
-        teams: state.teams.map(t => t.id === teamId ? {
+        teams: state.teams.map(t => t.id.toUpperCase() === teamId.toUpperCase().trim() ? {
           ...t,
           members: t.members.map(m => m.workerId === workerId ? { ...m, ...updates } : m)
         } : t)
       })),
       removeTeamMember: (teamId, workerId) => set((state) => ({
-        teams: state.teams.map(t => t.id === teamId ? {
+        teams: state.teams.map(t => t.id.toUpperCase() === teamId.toUpperCase().trim() ? {
           ...t,
           members: t.members.filter(m => m.workerId !== workerId)
         } : t)
