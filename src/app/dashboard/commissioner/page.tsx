@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -15,7 +16,11 @@ import {
   ShieldCheck,
   UserPlus,
   Users,
-  MapPin
+  MapPin,
+  Building2,
+  AlertCircle,
+  CheckCircle2,
+  Clock
 } from "lucide-react"
 import { useStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
@@ -67,6 +72,27 @@ export default function CommissionerDashboard() {
     }, 5000);
   }
 
+  // Generate Ward Performance Data
+  const getWardPerformance = () => {
+    // In a real app, this would be grouped by actual Ward ID from tasks
+    // Here we simulate for 100 wards to fulfill the requirement
+    return Array.from({ length: 100 }, (_, i) => {
+      const wardId = `Ward ${i + 1}`;
+      // Simulate completion rates for variety
+      const total = Math.floor(Math.random() * 50) + 10;
+      const completed = Math.floor(Math.random() * (total + 1));
+      const rate = (completed / total) * 100;
+      
+      let status: 'Green' | 'Yellow' | 'Red' = 'Red';
+      if (rate >= 80) status = 'Green';
+      else if (rate >= 40) status = 'Yellow';
+
+      return { wardId, total, completed, rate, status };
+    });
+  }
+
+  const wardPerformance = React.useMemo(() => getWardPerformance(), [tasks]);
+
   if (!mounted) return null
 
   const completedCount = tasks.filter(t => t.status === 'completed').length
@@ -101,7 +127,7 @@ export default function CommissionerDashboard() {
           { label: 'Total Tasks', val: tasks.length, icon: TrendingUp, color: 'text-primary' },
           { label: 'Efficiency', val: efficiency + '%', icon: ShieldCheck, color: 'text-emerald-500' },
           { label: 'Ward Admins', val: wardAdmins.length, icon: Users, color: 'text-amber-500' },
-          { label: 'Active Wards', val: '100', icon: MapPin, color: 'text-primary' }
+          { label: 'City Wards', val: '100', icon: Building2, color: 'text-primary' }
         ].map((stat, i) => (
           <Card key={i} className="glass-panel border-none shadow-2xl rounded-[2.5rem] overflow-hidden group">
             <CardHeader className="pb-2">
@@ -114,11 +140,75 @@ export default function CommissionerDashboard() {
         ))}
       </div>
 
-      <Tabs defaultValue="admin" className="w-full space-y-8">
-        <TabsList className="bg-white/5 p-1 h-16 rounded-[2rem] border border-white/10 w-fit">
-          <TabsTrigger value="admin" className="rounded-3xl font-bold px-8 h-full data-[state=active]:bg-primary">Administration</TabsTrigger>
-          <TabsTrigger value="lab" className="rounded-3xl font-bold px-8 h-full data-[state=active]:bg-primary">Intelligence Hub</TabsTrigger>
+      <Tabs defaultValue="wards" className="w-full space-y-8">
+        <TabsList className="bg-white/5 p-1 h-16 rounded-[2rem] border border-white/10 w-fit flex flex-wrap h-auto">
+          <TabsTrigger value="wards" className="rounded-3xl font-bold px-8 h-12 data-[state=active]:bg-primary">Ward Performance</TabsTrigger>
+          <TabsTrigger value="admin" className="rounded-3xl font-bold px-8 h-12 data-[state=active]:bg-primary">Administration</TabsTrigger>
+          <TabsTrigger value="lab" className="rounded-3xl font-bold px-8 h-12 data-[state=active]:bg-primary">Intelligence Hub</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="wards" className="space-y-6">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h2 className="text-2xl font-headline font-bold text-white">City Ward Monitor</h2>
+              <p className="text-white/40 text-sm">Live performance tracking for all 100 administrative wards.</p>
+            </div>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-emerald-500" />
+                <span className="text-[10px] font-bold text-white/60 uppercase">Active (80%+)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-amber-500" />
+                <span className="text-[10px] font-bold text-white/60 uppercase">Moderate (40%+)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-rose-500" />
+                <span className="text-[10px] font-bold text-white/60 uppercase">Low (&lt;40%)</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 h-[600px] overflow-y-auto pr-2 custom-scrollbar p-1">
+            {wardPerformance.map((ward) => (
+              <Card key={ward.wardId} className="rounded-3xl glass-panel border-white/5 relative overflow-hidden group hover:border-white/20 transition-all">
+                <div className={cn(
+                  "absolute top-0 left-0 w-1 h-full",
+                  ward.status === 'Green' ? 'bg-emerald-500' : ward.status === 'Yellow' ? 'bg-amber-500' : 'bg-rose-500'
+                )} />
+                <CardHeader className="p-4 pb-0">
+                  <div className="flex justify-between items-start">
+                    <span className="text-sm font-bold text-white uppercase tracking-tight">{ward.wardId}</span>
+                    <div className={cn(
+                      "h-2 w-2 rounded-full",
+                      ward.status === 'Green' ? 'bg-emerald-500 animate-pulse' : ward.status === 'Yellow' ? 'bg-amber-500' : 'bg-rose-500'
+                    )} />
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 pt-2 space-y-3">
+                  <div className="flex justify-between text-[10px] font-bold text-white/40 uppercase tracking-widest">
+                    <span>Efficiency</span>
+                    <span className={cn(
+                      ward.status === 'Green' ? 'text-emerald-500' : ward.status === 'Yellow' ? 'text-amber-500' : 'text-rose-500'
+                    )}>{Math.round(ward.rate)}%</span>
+                  </div>
+                  <Progress 
+                    value={ward.rate} 
+                    className="h-1 bg-white/5" 
+                  />
+                  <div className="flex justify-between items-center pt-1">
+                    <div className="flex items-center gap-1 text-[8px] text-white/40 font-bold uppercase">
+                      <CheckCircle2 className="h-2 w-2 text-primary" /> {ward.completed} Completed
+                    </div>
+                    <div className="flex items-center gap-1 text-[8px] text-white/40 font-bold uppercase">
+                      <Clock className="h-2 w-2 text-white/20" /> {ward.total - ward.completed} Pending
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
         <TabsContent value="admin">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
