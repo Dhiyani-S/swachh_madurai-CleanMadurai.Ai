@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -9,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useStore, UserRole, User } from "@/lib/store"
+import { useStore, UserRole } from "@/lib/store"
 import { Recycle, ChevronRight, Loader2, UserPlus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { translations } from "@/lib/translations"
@@ -85,20 +84,20 @@ export default function LandingPage() {
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Safety: Always ensure Commissioner is in the check if the store is empty
-    const allUsers = [...users]
-    if (!allUsers.find(u => u.id === '09071901')) {
-      allUsers.push({
+    // Default Commissioner Logic
+    if (userId === '09071901' && password === '1234' && role === 'commissioner') {
+      setCurrentUser({
         id: "09071901",
         name: "Corporation Commissioner",
         role: "commissioner",
-        password: "1234",
         rewardPoints: 0
       })
+      router.push('/dashboard')
+      return
     }
 
     const trimmedId = userId.trim()
-    const existingUser = allUsers.find(u => 
+    const existingUser = users.find(u => 
       u.id === trimmedId && 
       u.password === password && 
       u.role === role
@@ -107,7 +106,7 @@ export default function LandingPage() {
     if (!existingUser) {
       toast({ 
         title: "Sign In Failed", 
-        description: "Invalid ID, Password, or Role. Note: Administrative roles are assigned by the Corporation.", 
+        description: "Invalid ID, Password, or Role. Note: Administrative roles are assigned by the Corporation hierarchy.", 
         variant: "destructive" 
       })
       return
@@ -198,13 +197,13 @@ export default function LandingPage() {
                   <div className="p-4 bg-primary/10 border border-primary/20 rounded-2xl">
                     <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1 text-center">Citizen Registration Only</p>
                     <p className="text-[10px] text-white/60 leading-relaxed text-center italic">
-                      Administrative roles must be assigned by the Corporation hierarchy.
+                      Administrative roles (Ward, Zone, Worker) are strictly assigned by the Corporation hierarchy.
                     </p>
                   </div>
 
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">Username / Citizen ID</Label>
+                      <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">Citizen ID / Username</Label>
                       <Input placeholder="e.g. user123" className="h-14 rounded-2xl" required value={signUpId} onChange={e => setSignUpId(e.target.value)} />
                     </div>
                     <div className="space-y-2">

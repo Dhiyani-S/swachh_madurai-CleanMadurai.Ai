@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -15,7 +14,8 @@ import {
   Award,
   ShieldCheck,
   UserPlus,
-  Users
+  Users,
+  MapPin
 } from "lucide-react"
 import { useStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
@@ -26,18 +26,18 @@ export default function CommissionerDashboard() {
   const { tasks, sensors, isDemoRunning, setDemoState, addNotification, users, addUser, currentUser } = useStore()
   const { toast } = useToast()
   const [mounted, setMounted] = React.useState(false)
-  const [newWardAdmin, setNewWardAdmin] = React.useState({ id: '', password: '', name: '' })
+  const [newWardAdmin, setNewWardAdmin] = React.useState({ id: '', password: '', name: '', wardId: '' })
 
   React.useEffect(() => { setMounted(true) }, [])
 
   const handleCreateWardAdmin = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newWardAdmin.id || !newWardAdmin.password || !newWardAdmin.name) {
-      toast({ variant: 'destructive', title: "Error", description: "Fill all fields" })
+    if (!newWardAdmin.id || !newWardAdmin.password || !newWardAdmin.name || !newWardAdmin.wardId) {
+      toast({ variant: 'destructive', title: "Error", description: "All fields are required, including Ward Number." })
       return
     }
     if (users.find(u => u.id === newWardAdmin.id)) {
-      toast({ variant: 'destructive', title: "Error", description: "ID already exists" })
+      toast({ variant: 'destructive', title: "Error", description: "User ID already exists." })
       return
     }
     addUser({
@@ -45,11 +45,12 @@ export default function CommissionerDashboard() {
       name: newWardAdmin.name,
       password: newWardAdmin.password,
       role: 'ward_admin',
+      wardId: newWardAdmin.wardId,
       rewardPoints: 0,
       createdByAdmin: currentUser?.id
     })
-    toast({ title: "Success", description: "Ward Admin account created." })
-    setNewWardAdmin({ id: '', password: '', name: '' })
+    toast({ title: "Ward Admin Created", description: `Account for Ward ${newWardAdmin.wardId} has been registered.` })
+    setNewWardAdmin({ id: '', password: '', name: '', wardId: '' })
   }
 
   const handleStartDemo = () => {
@@ -78,7 +79,7 @@ export default function CommissionerDashboard() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-headline font-bold text-white tracking-tighter">Commissioner Intelligence</h1>
-          <p className="text-white/40 font-medium">Smart Waste Infrastructure Control Panel</p>
+          <p className="text-white/40 font-medium italic">Supreme Administrative Authority — Madurai Corporation</p>
         </div>
         <div className="flex gap-3">
           <Button 
@@ -100,7 +101,7 @@ export default function CommissionerDashboard() {
           { label: 'Total Tasks', val: tasks.length, icon: TrendingUp, color: 'text-primary' },
           { label: 'Efficiency', val: efficiency + '%', icon: ShieldCheck, color: 'text-emerald-500' },
           { label: 'Ward Admins', val: wardAdmins.length, icon: Users, color: 'text-amber-500' },
-          { label: 'Green Points', val: '2.8k', icon: Award, color: 'text-primary' }
+          { label: 'Active Wards', val: '100', icon: MapPin, color: 'text-primary' }
         ].map((stat, i) => (
           <Card key={i} className="glass-panel border-none shadow-2xl rounded-[2.5rem] overflow-hidden group">
             <CardHeader className="pb-2">
@@ -113,15 +114,75 @@ export default function CommissionerDashboard() {
         ))}
       </div>
 
-      <Tabs defaultValue="lab" className="w-full space-y-8">
+      <Tabs defaultValue="admin" className="w-full space-y-8">
         <TabsList className="bg-white/5 p-1 h-16 rounded-[2rem] border border-white/10 w-fit">
-          <TabsTrigger value="lab" className="rounded-3xl font-bold px-8 h-full data-[state=active]:bg-primary">Intelligence Hub</TabsTrigger>
           <TabsTrigger value="admin" className="rounded-3xl font-bold px-8 h-full data-[state=active]:bg-primary">Administration</TabsTrigger>
+          <TabsTrigger value="lab" className="rounded-3xl font-bold px-8 h-full data-[state=active]:bg-primary">Intelligence Hub</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="admin">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <Card className="rounded-[3rem] border-none shadow-2xl glass-panel">
+              <CardHeader>
+                <CardTitle className="text-2xl font-headline font-bold text-white">Register Ward Admin</CardTitle>
+                <CardDescription>Assign an administrator to oversee specific city wards.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleCreateWardAdmin} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="ml-2 text-[10px] font-bold uppercase text-white/40 tracking-widest">Ward Number</Label>
+                      <Input value={newWardAdmin.wardId} onChange={e => setNewWardAdmin({...newWardAdmin, wardId: e.target.value})} className="h-12 rounded-xl" placeholder="Ward 14" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="ml-2 text-[10px] font-bold uppercase text-white/40 tracking-widest">Admin Name</Label>
+                      <Input value={newWardAdmin.name} onChange={e => setNewWardAdmin({...newWardAdmin, name: e.target.value})} className="h-12 rounded-xl" placeholder="Full Name" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="ml-2 text-[10px] font-bold uppercase text-white/40 tracking-widest">User ID (Login ID)</Label>
+                    <Input value={newWardAdmin.id} onChange={e => setNewWardAdmin({...newWardAdmin, id: e.target.value})} className="h-12 rounded-xl" placeholder="WARD-ADMIN-01" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="ml-2 text-[10px] font-bold uppercase text-white/40 tracking-widest">Initial Password</Label>
+                    <Input type="password" value={newWardAdmin.password} onChange={e => setNewWardAdmin({...newWardAdmin, password: e.target.value})} className="h-12 rounded-xl" placeholder="••••••••" />
+                  </div>
+                  <Button type="submit" className="w-full h-14 rounded-2xl font-bold mt-4 shadow-lg shadow-primary/20 bg-primary text-black">
+                    <UserPlus className="h-5 w-5 mr-2" /> Register Ward Admin
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            <Card className="rounded-[3rem] border-none shadow-2xl glass-panel">
+              <CardHeader>
+                <CardTitle className="text-2xl font-headline font-bold text-white">Active Ward Roster</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                {wardAdmins.length === 0 ? (
+                  <p className="text-center py-20 text-white/20 italic">No ward admins registered yet.</p>
+                ) : (
+                  wardAdmins.map((admin) => (
+                    <div key={admin.id} className="p-5 rounded-3xl bg-white/5 border border-white/10 flex justify-between items-center group hover:bg-white/10 transition-all">
+                      <div>
+                        <p className="font-bold text-white text-lg">{admin.name}</p>
+                        <div className="flex gap-2 items-center">
+                          <Badge variant="outline" className="border-primary/20 text-primary uppercase text-[8px] font-bold tracking-widest">{admin.wardId}</Badge>
+                          <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">ID: {admin.id}</p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="border-emerald-500/20 text-emerald-500">Active</Badge>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         <TabsContent value="lab">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            <Card className="lg:col-span-2 rounded-[3rem] border-none shadow-2xl">
+            <Card className="lg:col-span-2 rounded-[3rem] border-none shadow-2xl glass-panel">
               <CardHeader>
                 <CardTitle className="text-2xl font-headline font-bold text-white">Live Sensor Intelligence</CardTitle>
                 <CardDescription>Real-time predictive analysis for Madurai city zones</CardDescription>
@@ -147,70 +208,19 @@ export default function CommissionerDashboard() {
 
             <Card className="glass-panel border-none shadow-2xl rounded-[3rem] h-fit">
               <CardHeader className="bg-primary text-black">
-                <CardTitle className="font-headline text-xl">AI Insights</CardTitle>
+                <CardTitle className="font-headline text-xl">AI System Insights</CardTitle>
               </CardHeader>
               <CardContent className="p-8 space-y-4">
-                <p className="text-sm font-medium leading-relaxed italic">
+                <p className="text-sm font-medium leading-relaxed italic text-white/80">
                   "City performance is up by 14%. Recommendation: Increase morning sweep teams in North Zone (Thirunagar) to maintain efficiency."
                 </p>
                 <div className="pt-4 border-t border-white/10">
                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">System Status</p>
                    <div className="flex items-center gap-2">
                      <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                     <span className="text-xs font-bold">Cloud Synced & Live</span>
+                     <span className="text-xs font-bold text-white/60">Cloud Synced & Live</span>
                    </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="admin">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            <Card className="rounded-[3rem] border-none shadow-2xl">
-              <CardHeader>
-                <CardTitle className="text-2xl font-headline font-bold text-white">Register Ward Admin</CardTitle>
-                <CardDescription>Assign an administrator to oversee city wards.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleCreateWardAdmin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="ml-2 text-[10px] font-bold uppercase text-white/40">Ward Admin ID (Login ID)</Label>
-                    <Input value={newWardAdmin.id} onChange={e => setNewWardAdmin({...newWardAdmin, id: e.target.value})} className="h-12 rounded-xl" placeholder="WARD-ADMIN-01" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="ml-2 text-[10px] font-bold uppercase text-white/40">Admin Name</Label>
-                    <Input value={newWardAdmin.name} onChange={e => setNewWardAdmin({...newWardAdmin, name: e.target.value})} className="h-12 rounded-xl" placeholder="Full Name" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="ml-2 text-[10px] font-bold uppercase text-white/40">Initial Password</Label>
-                    <Input type="password" value={newWardAdmin.password} onChange={e => setNewWardAdmin({...newWardAdmin, password: e.target.value})} className="h-12 rounded-xl" placeholder="••••••••" />
-                  </div>
-                  <Button type="submit" className="w-full h-14 rounded-2xl font-bold mt-4 shadow-lg shadow-primary/20">
-                    <UserPlus className="h-5 w-5 mr-2" /> Register Ward Admin
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-[3rem] border-none shadow-2xl glass-panel">
-              <CardHeader>
-                <CardTitle className="text-2xl font-headline font-bold text-white">Active Ward Admins</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {wardAdmins.length === 0 ? (
-                  <p className="text-center py-20 text-white/20 italic">No ward admins registered yet.</p>
-                ) : (
-                  wardAdmins.map((admin) => (
-                    <div key={admin.id} className="p-5 rounded-3xl bg-white/5 border border-white/10 flex justify-between items-center group hover:bg-white/10 transition-all">
-                      <div>
-                        <p className="font-bold text-white">{admin.name}</p>
-                        <p className="text-[10px] text-primary font-bold uppercase tracking-widest">{admin.id}</p>
-                      </div>
-                      <Badge variant="outline" className="border-emerald-500/20 text-emerald-500">Active</Badge>
-                    </div>
-                  ))
-                )}
               </CardContent>
             </Card>
           </div>
