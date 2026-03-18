@@ -103,7 +103,6 @@ interface AppState {
   addTask: (task: Task) => void;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
   
-  // Team Roster Actions
   addTeam: (team: Team) => void;
   addTeamMember: (teamId: string, member: TeamMember) => void;
   updateTeamMember: (teamId: string, workerId: string, updates: Partial<TeamMember>) => void;
@@ -145,10 +144,8 @@ export const useStore = create<AppState>()(
         const updatedTasks = state.tasks.map(t => {
           if (t.id === taskId) {
             const newTask = { ...t, ...updates };
-            
-            // Logic for awarding points on completion
             if (updates.status === 'completed' && t.status !== 'completed' && t.assignedTo) {
-              const points = 25; // Base points for task completion
+              const points = 25;
               const worker = state.users.find(u => u.id === t.assignedTo);
               if (worker) {
                 const updatedUsers = state.users.map(u => u.id === worker.id ? { ...u, rewardPoints: u.rewardPoints + points } : u);
@@ -208,18 +205,20 @@ export const useStore = create<AppState>()(
       checkTaskTimeouts: () => set((state) => {
         const now = new Date().getTime();
         const thirtyMinutes = 30 * 60 * 1000;
+        let changed = false;
         
         const updatedTasks = state.tasks.map(t => {
           if (t.status === 'assigned' && t.assignedAt) {
             const assignedTime = new Date(t.assignedAt).getTime();
             if (now - assignedTime > thirtyMinutes) {
-              // Timeout reached - reassign to pending
+              changed = true;
               return { ...t, status: 'pending', assignedTo: undefined, assignedAt: undefined, teamId: undefined };
             }
           }
           return t;
         });
         
+        if (!changed) return state;
         return { tasks: updatedTasks };
       }),
       resetToDataset: () => set({ 

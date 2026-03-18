@@ -13,12 +13,11 @@ import {
   DialogTitle, 
   DialogFooter as DialogFooterUI
 } from "@/components/ui/dialog"
-import { useStore, AttendanceRecord } from "@/lib/store"
+import { useStore, AttendanceRecord, Task } from "@/lib/store"
 import { 
   Award, 
   MapPin, 
   CheckCircle2, 
-  XCircle, 
   QrCode, 
   Clock, 
   Users,
@@ -30,7 +29,8 @@ import {
   Phone,
   Zap,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Timer
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
@@ -38,6 +38,40 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { translations } from "@/lib/translations"
 import { Badge } from "@/components/ui/badge"
+
+const TaskCountdown = ({ assignedAt, onTimeout }: { assignedAt?: string, onTimeout: () => void }) => {
+  const [timeLeft, setTimeLeft] = React.useState<string>("");
+
+  React.useEffect(() => {
+    if (!assignedAt) return;
+    const assignedTime = new Date(assignedAt).getTime();
+    const thirtyMinutes = 30 * 60 * 1000;
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const diff = thirtyMinutes - (now - assignedTime);
+
+      if (diff <= 0) {
+        clearInterval(interval);
+        onTimeout();
+        return;
+      }
+
+      const minutes = Math.floor(diff / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+      setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [assignedAt, onTimeout]);
+
+  return (
+    <div className="flex items-center gap-2 text-rose-500 font-bold text-xs uppercase animate-pulse">
+      <Timer className="h-4 w-4" />
+      <span>Timeout in {timeLeft}</span>
+    </div>
+  );
+};
 
 export default function WorkerDashboard() {
   const { currentUser, tasks, updateTask, attendance, submitAttendance, language, teams, addNotification, checkTaskTimeouts } = useStore()
@@ -62,12 +96,13 @@ export default function WorkerDashboard() {
 
   React.useEffect(() => {
     setMounted(true)
-    const interval = setInterval(() => checkTaskTimeouts(), 60000); // Check every minute
+    const timeoutChecker = setInterval(() => checkTaskTimeouts(), 5000);
+    
     if (myTeam && !hasMarkedAttendance) {
       setAttendanceState(myTeam.members.map(m => ({ workerId: m.workerId, name: m.name, status: 'Present' })))
       setIsAttendanceModalOpen(true)
     }
-    return () => clearInterval(interval);
+    return () => clearInterval(timeoutChecker);
   }, [mounted, hasMarkedAttendance, myTeam, checkTaskTimeouts])
 
   const handleAttendanceSubmit = () => {
@@ -133,36 +168,32 @@ export default function WorkerDashboard() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
-            {attendanceState.length === 0 ? (
-              <p className="text-center py-10 text-white/40 italic">No personnel found.</p>
-            ) : (
-              attendanceState.map((record, idx) => (
-                <div key={record.workerId} className="p-5 rounded-3xl bg-white/5 border border-white/10 flex flex-col gap-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-lg">{record.name}</span>
-                    <Badge variant="outline" className="border-white/10 text-[8px] uppercase tracking-widest text-white/40">Personnel</Badge>
-                  </div>
-                  <RadioGroup 
-                    defaultValue="Present" 
-                    className="flex gap-4"
-                    onValueChange={(val) => {
-                      const next = [...attendanceState]
-                      next[idx].status = val as any
-                      setAttendanceState(next)
-                    }}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Present" id={`p-${idx}`} className="border-primary" />
-                      <Label htmlFor={`p-${idx}`} className="text-xs font-bold text-primary cursor-pointer">Present</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="Absent" id={`a-${idx}`} className="border-rose-500" />
-                      <Label htmlFor={`a-${idx}`} className="text-xs font-bold text-rose-500 cursor-pointer">Absent</Label>
-                    </div>
-                  </RadioGroup>
+            {attendanceState.map((record, idx) => (
+              <div key={record.workerId} className="p-5 rounded-3xl bg-white/5 border border-white/10 flex flex-col gap-4">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-lg">{record.name}</span>
+                  <Badge variant="outline" className="border-white/10 text-[8px] uppercase tracking-widest text-white/40">Personnel</Badge>
                 </div>
-              ))
-            )}
+                <RadioGroup 
+                  defaultValue="Present" 
+                  className="flex gap-4"
+                  onValueChange={(val) => {
+                    const next = [...attendanceState]
+                    next[idx].status = val as any
+                    setAttendanceState(next)
+                  }}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Present" id={`p-${idx}`} className="border-primary" />
+                    <Label htmlFor={`p-${idx}`} className="text-xs font-bold text-primary cursor-pointer">Present</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="Absent" id={`a-${idx}`} className="border-rose-500" />
+                    <Label htmlFor={`a-${idx}`} className="text-xs font-bold text-rose-500 cursor-pointer">Absent</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            ))}
           </div>
           <DialogFooterUI className="pb-4">
             <Button className="w-full h-14 rounded-2xl font-bold bg-primary shadow-2xl shadow-primary/20 text-black uppercase" onClick={handleAttendanceSubmit}>
@@ -218,15 +249,18 @@ export default function WorkerDashboard() {
                             <Badge variant="outline" className="border-white/10 text-[8px] uppercase tracking-widest text-white/40">ID: {task.id.slice(-6)}</Badge>
                           </div>
                         </div>
-                        <Badge className={cn(
-                          "rounded-full px-4 h-8 uppercase text-[10px] font-bold tracking-widest",
-                          task.status === 'assigned' ? 'bg-amber-500/20 text-amber-500' : 
-                          task.status === 'in_progress' ? 'bg-primary/20 text-primary' : 'bg-emerald-500/20 text-emerald-500'
-                        )}>
-                          {task.status === 'assigned' ? 'New Request' : 
-                           task.status === 'in_progress' ? 'Processing' : 
-                           task.status === 'partially_completed' ? 'Awaiting Disposal' : task.status}
-                        </Badge>
+                        <div className="flex flex-col items-end gap-2">
+                          <Badge className={cn(
+                            "rounded-full px-4 h-8 uppercase text-[10px] font-bold tracking-widest",
+                            task.status === 'assigned' ? 'bg-amber-500/20 text-amber-500' : 
+                            task.status === 'in_progress' ? 'bg-primary/20 text-primary' : 'bg-emerald-500/20 text-emerald-500'
+                          )}>
+                            {task.status === 'assigned' ? 'New Request' : 
+                             task.status === 'in_progress' ? 'Processing' : 
+                             task.status === 'partially_completed' ? 'Awaiting Disposal' : task.status}
+                          </Badge>
+                          {task.status === 'assigned' && <TaskCountdown assignedAt={task.assignedAt} onTimeout={() => checkTaskTimeouts()} />}
+                        </div>
                       </div>
                     </CardHeader>
                     
@@ -267,11 +301,6 @@ export default function WorkerDashboard() {
                         </Button>
                       )}
                     </CardFooter>
-                    {task.status === 'assigned' && (
-                      <div className="px-8 pb-4 flex items-center gap-2 text-[10px] font-bold text-amber-500 uppercase">
-                         <Clock className="h-3 w-3 animate-pulse" /> Auto-reassign if not accepted within 30m
-                      </div>
-                    )}
                   </Card>
                 ))}
               </div>
@@ -308,34 +337,30 @@ export default function WorkerDashboard() {
                 </CardTitle>
              </CardHeader>
              <CardContent className="p-6 space-y-4">
-                {!myTeam || myTeam.members.length === 0 ? (
-                  <p className="text-xs text-white/40 italic text-center py-6 uppercase tracking-widest">No personnel registered.</p>
-                ) : (
-                  myTeam.members.map((member, i) => {
-                    const status = currentAttendance?.records.find(r => r.workerId === member.workerId)?.status || 'Pending';
-                    return (
-                      <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/10 group">
-                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center">
-                               <UserCircle className="h-6 w-6 text-primary/40" />
-                            </div>
-                            <div className="flex flex-col">
-                               <span className="font-bold text-sm text-white">{member.name}</span>
-                               <div className="flex items-center gap-1 text-[8px] text-white/40 font-bold uppercase tracking-widest">
-                                  <Phone className="h-2 w-2 text-primary" /> {member.phone || 'N/A'}
-                               </div>
-                            </div>
-                         </div>
-                         <Badge variant="outline" className={cn(
-                           "text-[8px] font-bold uppercase tracking-widest px-2 h-6 flex items-center",
-                           status === 'Present' ? "text-emerald-500 border-emerald-500/20" : status === 'Absent' ? "text-rose-500 border-rose-500/20" : "text-white/20"
-                         )}>
-                           {status}
-                         </Badge>
-                      </div>
-                    )
-                  })
-                )}
+                {myTeam?.members.map((member, i) => {
+                  const status = currentAttendance?.records.find(r => r.workerId === member.workerId)?.status || 'Pending';
+                  return (
+                    <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/10 group">
+                       <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center">
+                             <UserCircle className="h-6 w-6 text-primary/40" />
+                          </div>
+                          <div className="flex flex-col">
+                             <span className="font-bold text-sm text-white">{member.name}</span>
+                             <div className="flex items-center gap-1 text-[8px] text-white/40 font-bold uppercase tracking-widest">
+                                <Phone className="h-2 w-2 text-primary" /> {member.phone || 'N/A'}
+                             </div>
+                          </div>
+                       </div>
+                       <Badge variant="outline" className={cn(
+                         "text-[8px] font-bold uppercase tracking-widest px-2 h-6 flex items-center",
+                         status === 'Present' ? "text-emerald-500 border-emerald-500/20" : status === 'Absent' ? "text-rose-500 border-rose-500/20" : "text-white/20"
+                       )}>
+                         {status}
+                       </Badge>
+                    </div>
+                  )
+                })}
              </CardContent>
           </Card>
         </div>
