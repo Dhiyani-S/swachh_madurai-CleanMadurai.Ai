@@ -33,6 +33,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { cn } from "@/lib/utils"
 
 export default function ZoneAdminTeams() {
   const { users, currentUser, addUser, updateUser, teams, addTeam, addTeamMember, removeTeamMember, attendance } = useStore()
@@ -256,14 +257,14 @@ export default function ZoneAdminTeams() {
       </div>
 
       <Dialog open={isManageMembersOpen} onOpenChange={setIsManageMembersOpen}>
-        <DialogContent className="max-w-3xl glass-panel text-white rounded-[3.5rem] shadow-2xl border-primary/20">
+        <DialogContent className="max-w-3xl glass-panel text-white rounded-[3.5rem] shadow-2xl border-primary/20 overflow-hidden">
           <DialogHeader>
             <DialogTitle className="font-headline text-4xl text-primary mt-4 uppercase tracking-tighter">Unit Profile: {activeWorker?.name}</DialogTitle>
           </DialogHeader>
 
           <Tabs defaultValue="roster" className="w-full mt-4">
             <TabsList className="bg-white/5 p-1 h-12 rounded-2xl border border-white/10 mb-6 w-full">
-              <TabsTrigger value="roster" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Team Personnel (Roster)</Trigger>
+              <TabsTrigger value="roster" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Team Personnel (Roster)</TabsTrigger>
               <TabsTrigger value="details" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Account & Area</TabsTrigger>
               <TabsTrigger value="attendance" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Live Attendance</TabsTrigger>
             </TabsList>
