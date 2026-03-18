@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect } from "react"
@@ -16,14 +15,11 @@ export default function DashboardRedirect() {
       return
     }
 
-    // Robust route mapping to handle both store-level keys and display roles
+    // Mapping system roles to dashboard paths
     const routes: Record<string, string> = {
       'commissioner': '/dashboard/commissioner',
-      'corporation commissioner': '/dashboard/commissioner',
       'ward_admin': '/dashboard/ward-admin',
-      'ward admin': '/dashboard/ward-admin',
       'zone_admin': '/dashboard/zone-admin',
-      'zone admin': '/dashboard/zone-admin',
       'worker': '/dashboard/worker',
       'citizen': '/dashboard/citizen',
     }

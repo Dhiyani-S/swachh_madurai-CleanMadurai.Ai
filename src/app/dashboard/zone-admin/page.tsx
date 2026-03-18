@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -10,26 +9,19 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { 
   Users, 
-  ClipboardList, 
   Map as MapIcon, 
-  Plus, 
-  AlertTriangle, 
   UserPlus, 
   BarChart3, 
-  Zap, 
   LayoutGrid, 
-  ArrowRight,
-  MoreVertical,
-  CheckCircle2,
-  Timer
+  ArrowRight
 } from "lucide-react"
-import { useStore, User, Team, Task } from "@/lib/store"
+import { useStore } from "@/lib/store"
 import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
 
 export default function ZoneAdminDashboard() {
-  const { tasks, users, teams, currentUser, addUser, updateTask, updateSensors, sensors } = useStore()
+  const { tasks, users, teams, currentUser, addUser, updateTask } = useStore()
   const { toast } = useToast()
   const currentZone = currentUser?.zone || 'ZA'
   
