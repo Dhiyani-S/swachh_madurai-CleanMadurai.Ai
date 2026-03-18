@@ -47,12 +47,12 @@ export default function DashboardLayout({
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="relative min-h-screen flex overflow-hidden">
+    <div className="relative min-h-screen flex overflow-hidden bg-transparent">
       <div className="relative z-50 hidden md:block">
         <DashboardSidebar />
       </div>
       
-      <div className="relative z-40 flex-1 md:ml-64 flex flex-col min-h-screen">
+      <div className="relative z-40 flex-1 md:ml-64 flex flex-col min-h-screen bg-transparent">
         <header className="h-20 glass-header px-4 md:px-8 flex items-center justify-between sticky top-0 z-50">
           <div className="flex items-center gap-6 flex-1">
             <Button variant="ghost" size="icon" className="md:hidden text-white">
@@ -60,7 +60,7 @@ export default function DashboardLayout({
             </Button>
             <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-white/5 rounded-2xl border border-white/10 w-64 group">
               <Search className="h-4 w-4 text-white/40" />
-              <input placeholder="Search tasks..." className="bg-transparent border-none text-xs outline-none w-full" />
+              <input placeholder="Search tasks..." className="bg-transparent border-none text-xs outline-none w-full text-white" />
             </div>
             <Badge variant={isOnline ? "outline" : "destructive"} className="gap-1 hidden sm:flex bg-white/5 border-white/20 text-white uppercase tracking-widest text-[8px] font-bold">
               {isOnline ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
@@ -138,8 +138,8 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <main className="flex-1 p-4 md:p-10 flex justify-center items-start overflow-y-auto">
-          <div className="max-w-6xl w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <main className="flex-1 p-4 md:p-10 flex justify-center items-start overflow-y-auto bg-transparent">
+          <div className="max-w-6xl w-full animate-in fade-in slide-in-from-bottom-4 duration-700 bg-transparent">
             {children}
           </div>
         </main>
