@@ -9,13 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { 
-  BarChart3, 
-  AlertTriangle, 
   TrendingUp, 
   Zap,
   Activity,
   Award,
-  RefreshCw,
   ShieldCheck,
   UserPlus,
   Users
@@ -26,7 +23,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 
 export default function CommissionerDashboard() {
-  const { tasks, sensors, isDemoRunning, demoStep, setDemoState, addNotification, users, addUser, currentUser } = useStore()
+  const { tasks, sensors, isDemoRunning, setDemoState, addNotification, users, addUser, currentUser } = useStore()
   const { toast } = useToast()
   const [mounted, setMounted] = React.useState(false)
   const [newWardAdmin, setNewWardAdmin] = React.useState({ id: '', password: '', name: '' })
@@ -58,20 +55,11 @@ export default function CommissionerDashboard() {
   const handleStartDemo = () => {
     setDemoState(true, 1)
     addNotification({ title: 'DEMO STARTED', message: '60-second city automation sequence initiated.', type: 'info' })
-    const steps = [
-      "📡 ML Sensor Alert: Dustbin fill rate detected high at Mattuthavani.",
-      "🤖 AI Auto-Task Created: Dispose Waste at Mattuthavani.",
-      "👥 AI Resource Optimizer: Recommending Team T1 for dispatch.",
-      "✅ Task Assigned to Team T1 (WRK-ZA-001).",
-      "🏃 Worker WRK-ZA-001 accepted task. Response timer started.",
-      "🔍 QR Verification Successful at Disposal Point.",
-      "🌿 +20 Green Points awarded to Team T1."
-    ];
     let current = 0;
     const interval = setInterval(() => {
       current++;
       setDemoState(true, current);
-      if (current >= steps.length) {
+      if (current >= 7) {
         clearInterval(interval);
         setTimeout(() => setDemoState(false, 0), 2000);
       }
@@ -111,7 +99,7 @@ export default function CommissionerDashboard() {
         {[
           { label: 'Total Tasks', val: tasks.length, icon: TrendingUp, color: 'text-primary' },
           { label: 'Efficiency', val: efficiency + '%', icon: ShieldCheck, color: 'text-emerald-500' },
-          { label: 'Active Ward Admins', val: wardAdmins.length, icon: Users, color: 'text-amber-500' },
+          { label: 'Ward Admins', val: wardAdmins.length, icon: Users, color: 'text-amber-500' },
           { label: 'Green Points', val: '2.8k', icon: Award, color: 'text-primary' }
         ].map((stat, i) => (
           <Card key={i} className="glass-panel border-none shadow-2xl rounded-[2.5rem] overflow-hidden group">
@@ -182,44 +170,44 @@ export default function CommissionerDashboard() {
             <Card className="rounded-[3rem] border-none shadow-2xl">
               <CardHeader>
                 <CardTitle className="text-2xl font-headline font-bold text-white">Register Ward Admin</CardTitle>
-                <CardDescription>Accounts created here allow login to the Ward Admin Dashboard.</CardDescription>
+                <CardDescription>Assign an administrator to oversee city wards.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleCreateWardAdmin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="ml-2 text-[10px] font-bold uppercase text-white/40">Admin ID / Login Username</Label>
-                    <Input value={newWardAdmin.id} onChange={e => setNewWardAdmin({...newWardAdmin, id: e.target.value})} className="h-12 rounded-xl" placeholder="e.g. WARD-14-ADMIN" />
+                    <Label className="ml-2 text-[10px] font-bold uppercase text-white/40">Ward Admin ID (Login ID)</Label>
+                    <Input value={newWardAdmin.id} onChange={e => setNewWardAdmin({...newWardAdmin, id: e.target.value})} className="h-12 rounded-xl" placeholder="WARD-ADMIN-01" />
                   </div>
                   <div className="space-y-2">
-                    <Label className="ml-2 text-[10px] font-bold uppercase text-white/40">Full Name</Label>
-                    <Input value={newWardAdmin.name} onChange={e => setNewWardAdmin({...newWardAdmin, name: e.target.value})} className="h-12 rounded-xl" placeholder="Full name of admin" />
+                    <Label className="ml-2 text-[10px] font-bold uppercase text-white/40">Admin Name</Label>
+                    <Input value={newWardAdmin.name} onChange={e => setNewWardAdmin({...newWardAdmin, name: e.target.value})} className="h-12 rounded-xl" placeholder="Full Name" />
                   </div>
                   <div className="space-y-2">
                     <Label className="ml-2 text-[10px] font-bold uppercase text-white/40">Initial Password</Label>
                     <Input type="password" value={newWardAdmin.password} onChange={e => setNewWardAdmin({...newWardAdmin, password: e.target.value})} className="h-12 rounded-xl" placeholder="••••••••" />
                   </div>
-                  <Button type="submit" className="w-full h-14 rounded-2xl font-bold text-lg mt-4">
-                    <UserPlus className="h-5 w-5 mr-2" /> Create Ward Admin Account
+                  <Button type="submit" className="w-full h-14 rounded-2xl font-bold mt-4 shadow-lg shadow-primary/20">
+                    <UserPlus className="h-5 w-5 mr-2" /> Register Ward Admin
                   </Button>
                 </form>
               </CardContent>
             </Card>
 
-            <Card className="rounded-[3rem] border-none shadow-2xl bg-white/5">
+            <Card className="rounded-[3rem] border-none shadow-2xl glass-panel">
               <CardHeader>
-                <CardTitle className="text-2xl font-headline font-bold text-white">Managed Ward Admins</CardTitle>
+                <CardTitle className="text-2xl font-headline font-bold text-white">Active Ward Admins</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {wardAdmins.length === 0 ? (
                   <p className="text-center py-20 text-white/20 italic">No ward admins registered yet.</p>
                 ) : (
                   wardAdmins.map((admin) => (
-                    <div key={admin.id} className="p-5 rounded-3xl bg-white/5 border border-white/10 flex justify-between items-center">
+                    <div key={admin.id} className="p-5 rounded-3xl bg-white/5 border border-white/10 flex justify-between items-center group hover:bg-white/10 transition-all">
                       <div>
                         <p className="font-bold text-white">{admin.name}</p>
-                        <p className="text-[10px] text-white/40 font-mono">{admin.id}</p>
+                        <p className="text-[10px] text-primary font-bold uppercase tracking-widest">{admin.id}</p>
                       </div>
-                      <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">Active</Badge>
+                      <Badge variant="outline" className="border-emerald-500/20 text-emerald-500">Active</Badge>
                     </div>
                   ))
                 )}

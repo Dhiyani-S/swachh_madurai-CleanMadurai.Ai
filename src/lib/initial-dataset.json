@@ -9,38 +9,6 @@
       "phone": "9876500001",
       "email": "commissioner@madurai.gov.in",
       "rewardPoints": 0
-    },
-    {
-      "id": "wardadmin1",
-      "name": "Rajaram Pillai",
-      "role": "ward_admin",
-      "password": "123",
-      "phone": "9876500002",
-      "rewardPoints": 0
-    },
-    {
-      "id": "zoneadmin-za",
-      "name": "Karthik M.",
-      "role": "zone_admin",
-      "zone": "ZA",
-      "password": "123",
-      "phone": "9876500003",
-      "rewardPoints": 0
-    },
-    {
-      "id": "WRK-ZA-001",
-      "name": "Rajan K.",
-      "role": "worker",
-      "password": "work@1234",
-      "zone": "ZA",
-      "teamId": "T1",
-      "age": 32,
-      "phone": "9876543210",
-      "address": "45 Main Street, Arasaradi, Madurai",
-      "rewardPoints": 2480,
-      "tasksCompleted": 142,
-      "correctDisposals": 138,
-      "createdByAdmin": "zoneadmin-za"
     }
   ],
   "teams": [

@@ -1,7 +1,7 @@
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import initialData from './initial-dataset.json';
-import { SensorReading, simulateSensorStep } from './ai-sensor-engine';
 
 export type UserRole = 'commissioner' | 'ward_admin' | 'zone_admin' | 'worker' | 'citizen';
 export type AppLanguage = 'en' | 'ta';
@@ -48,11 +48,11 @@ export interface Task {
   work: string;
   place: string;
   status: TaskStatus;
-  type?: 'Sensor' | 'Citizen Public' | 'Citizen Private'; // For backward compatibility if needed
+  type?: 'Sensor' | 'Citizen Public' | 'Citizen Private';
   source: TaskSource;
   zone: string;
   teamId?: string;
-  assignedTo?: string; // workerId
+  assignedTo?: string;
   assignedAt?: string;
   createdAt: string;
   priority?: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
@@ -89,7 +89,7 @@ interface AppState {
   tasks: Task[];
   users: User[];
   teams: Team[];
-  attendance: Record<string, DailyAttendance>; // key: teamId-date
+  attendance: Record<string, DailyAttendance>;
   language: AppLanguage | null;
   notifications: Notification[];
   sensors: Record<string, any>;
@@ -169,7 +169,7 @@ export const useStore = create<AppState>()(
       })
     }),
     {
-      name: 'clean-madurai-v3-storage',
+      name: 'clean-madurai-v4-storage',
       storage: createJSONStorage(() => localStorage),
     }
   )
