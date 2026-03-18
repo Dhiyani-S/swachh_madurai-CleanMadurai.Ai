@@ -16,7 +16,8 @@ import {
   UserCheck, 
   HardHat,
   UserCircle,
-  Users2
+  Users2,
+  Key
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { 
@@ -201,7 +202,12 @@ export default function ZoneAdminTeams() {
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="text-2xl font-headline font-bold text-white">{worker.name}</CardTitle>
-                      <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] uppercase tracking-widest mt-1">Code: {worker.teamId}</Badge>
+                      <div className="flex gap-2 mt-1">
+                        <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] uppercase tracking-widest">Code: {worker.teamId}</Badge>
+                        <Badge variant="outline" className="border-white/10 text-white/40 text-[8px] font-bold flex items-center gap-1">
+                          <Key className="h-2 w-2" /> ID: {worker.id}
+                        </Badge>
+                      </div>
                     </div>
                     <Badge variant="outline" className="border-white/10 text-white/40 text-[10px] font-bold flex items-center gap-1">
                       <Users2 className="h-3 w-3" /> {memberCount} Personnel
