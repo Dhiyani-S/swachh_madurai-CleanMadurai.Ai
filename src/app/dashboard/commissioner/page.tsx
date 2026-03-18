@@ -20,7 +20,8 @@ import {
   Building2,
   AlertCircle,
   CheckCircle2,
-  Clock
+  Clock,
+  Loader2
 } from "lucide-react"
 import { useStore } from "@/lib/store"
 import { cn } from "@/lib/utils"
@@ -28,7 +29,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 
 export default function CommissionerDashboard() {
-  const { tasks, sensors, isDemoRunning, setDemoState, addNotification, users, addUser, currentUser } = useStore()
+  const { tasks, sensors, isDemoRunning, setDemoState, addNotification, users, addUser, currentUser, runSmartAutomation } = useStore()
   const { toast } = useToast()
   const [mounted, setMounted] = React.useState(false)
   const [newWardAdmin, setNewWardAdmin] = React.useState({ id: '', password: '', name: '', wardId: '' })
@@ -60,25 +61,25 @@ export default function CommissionerDashboard() {
 
   const handleStartDemo = () => {
     setDemoState(true, 1)
-    addNotification({ title: 'DEMO STARTED', message: '60-second city automation sequence initiated.', type: 'info' })
-    let current = 0;
+    addNotification({ title: 'AI SMART DISPATCH STARTED', message: 'The city is now autonomously predicting usage and assigning teams.', type: 'info' })
+    
+    let iterations = 0;
     const interval = setInterval(() => {
-      current++;
-      setDemoState(true, current);
-      if (current >= 7) {
+      runSmartAutomation();
+      iterations++;
+      if (iterations >= 10) {
         clearInterval(interval);
-        setTimeout(() => setDemoState(false, 0), 2000);
+        setTimeout(() => {
+          setDemoState(false, 0);
+          toast({ title: "Automation Complete", description: "Predictive tasks successfully distributed to zone teams." });
+        }, 3000);
       }
-    }, 5000);
+    }, 4000);
   }
 
-  // Generate Ward Performance Data
   const getWardPerformance = () => {
-    // In a real app, this would be grouped by actual Ward ID from tasks
-    // Here we simulate for 100 wards to fulfill the requirement
     return Array.from({ length: 100 }, (_, i) => {
       const wardId = `Ward ${i + 1}`;
-      // Simulate completion rates for variety
       const total = Math.floor(Math.random() * 50) + 10;
       const completed = Math.floor(Math.random() * (total + 1));
       const rate = (completed / total) * 100;
@@ -116,8 +117,8 @@ export default function CommissionerDashboard() {
             onClick={handleStartDemo}
             disabled={isDemoRunning}
           >
-            {isDemoRunning ? <Activity className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
-            {isDemoRunning ? "Demo Running..." : "Start System Demo"}
+            {isDemoRunning ? <Loader2 className="h-5 w-5 animate-spin" /> : <Zap className="h-5 w-5" />}
+            {isDemoRunning ? "Autonomous Mode Running..." : "Start AI Auto-Dispatch"}
           </Button>
         </div>
       </div>
@@ -150,7 +151,7 @@ export default function CommissionerDashboard() {
         <TabsContent value="wards" className="space-y-6">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h2 className="text-2xl font-headline font-bold text-white">City Ward Monitor</h2>
+              <h2 className="text-2xl font-headline font-bold text-white uppercase">City Ward Monitor</h2>
               <p className="text-white/40 text-sm">Live performance tracking for all 100 administrative wards.</p>
             </div>
             <div className="flex gap-4">
@@ -164,7 +165,7 @@ export default function CommissionerDashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-rose-500" />
-                <span className="text-[10px] font-bold text-white/60 uppercase">Low (&lt;40%)</span>
+                <span className="text-[10px] font-bold text-white/60 uppercase">Low (<40%)</span>
               </div>
             </div>
           </div>
@@ -192,18 +193,7 @@ export default function CommissionerDashboard() {
                       ward.status === 'Green' ? 'text-emerald-500' : ward.status === 'Yellow' ? 'text-amber-500' : 'text-rose-500'
                     )}>{Math.round(ward.rate)}%</span>
                   </div>
-                  <Progress 
-                    value={ward.rate} 
-                    className="h-1 bg-white/5" 
-                  />
-                  <div className="flex justify-between items-center pt-1">
-                    <div className="flex items-center gap-1 text-[8px] text-white/40 font-bold uppercase">
-                      <CheckCircle2 className="h-2 w-2 text-primary" /> {ward.completed} Completed
-                    </div>
-                    <div className="flex items-center gap-1 text-[8px] text-white/40 font-bold uppercase">
-                      <Clock className="h-2 w-2 text-white/20" /> {ward.total - ward.completed} Pending
-                    </div>
-                  </div>
+                  <Progress value={ward.rate} className="h-1 bg-white/5" />
                 </CardContent>
               </Card>
             ))}
@@ -214,7 +204,7 @@ export default function CommissionerDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <Card className="rounded-[3rem] border-none shadow-2xl glass-panel">
               <CardHeader>
-                <CardTitle className="text-2xl font-headline font-bold text-white">Register Ward Admin</CardTitle>
+                <CardTitle className="text-2xl font-headline font-bold text-white uppercase">Register Ward Admin</CardTitle>
                 <CardDescription>Assign an administrator to oversee specific city wards.</CardDescription>
               </CardHeader>
               <CardContent>
@@ -237,7 +227,7 @@ export default function CommissionerDashboard() {
                     <Label className="ml-2 text-[10px] font-bold uppercase text-white/40 tracking-widest">Initial Password</Label>
                     <Input type="password" value={newWardAdmin.password} onChange={e => setNewWardAdmin({...newWardAdmin, password: e.target.value})} className="h-12 rounded-xl" placeholder="••••••••" />
                   </div>
-                  <Button type="submit" className="w-full h-14 rounded-2xl font-bold mt-4 shadow-lg shadow-primary/20 bg-primary text-black">
+                  <Button type="submit" className="w-full h-14 rounded-2xl font-bold mt-4 shadow-lg shadow-primary/20 bg-primary text-black uppercase">
                     <UserPlus className="h-5 w-5 mr-2" /> Register Ward Admin
                   </Button>
                 </form>
@@ -246,7 +236,7 @@ export default function CommissionerDashboard() {
 
             <Card className="rounded-[3rem] border-none shadow-2xl glass-panel">
               <CardHeader>
-                <CardTitle className="text-2xl font-headline font-bold text-white">Active Ward Roster</CardTitle>
+                <CardTitle className="text-2xl font-headline font-bold text-white uppercase">Active Ward Roster</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
                 {wardAdmins.length === 0 ? (
@@ -261,7 +251,7 @@ export default function CommissionerDashboard() {
                           <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">ID: {admin.id}</p>
                         </div>
                       </div>
-                      <Badge variant="outline" className="border-emerald-500/20 text-emerald-500">Active</Badge>
+                      <Badge variant="outline" className="border-emerald-500/20 text-emerald-500 uppercase text-[8px] font-bold tracking-widest">Operational</Badge>
                     </div>
                   ))
                 )}
@@ -274,8 +264,10 @@ export default function CommissionerDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <Card className="lg:col-span-2 rounded-[3rem] border-none shadow-2xl glass-panel">
               <CardHeader>
-                <CardTitle className="text-2xl font-headline font-bold text-white">Live Sensor Intelligence</CardTitle>
-                <CardDescription>Real-time predictive analysis for Madurai city zones</CardDescription>
+                <CardTitle className="text-2xl font-headline font-bold text-white flex items-center gap-3 uppercase">
+                  <Activity className="h-6 w-6 text-primary" /> Live AI Dispatch Log
+                </CardTitle>
+                <CardDescription>Autonomous monitoring of Madurai city zones.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {Object.entries(sensors).map(([zone, data]: [string, any]) => (
@@ -286,11 +278,14 @@ export default function CommissionerDashboard() {
                           "h-4 w-4 rounded-full",
                           data.dustbin > 90 ? "bg-rose-500 animate-pulse" : data.dustbin > 75 ? "bg-amber-500" : "bg-emerald-500"
                         )} />
-                        <h4 className="font-bold text-lg">Zone {zone} Intelligence</h4>
+                        <h4 className="font-bold text-lg uppercase tracking-tight">Zone {zone} Intelligence</h4>
                       </div>
-                      <Badge variant="outline" className="border-primary/20 text-primary">{data.dustbin}% Fill Rate</Badge>
+                      <div className="flex gap-2">
+                        <Badge variant="outline" className="border-primary/20 text-primary uppercase text-[10px]">{data.dustbin}% Fill</Badge>
+                        <Badge variant="outline" className="border-primary/20 text-primary uppercase text-[10px]">{data.drainage === 'ok' ? 'Flow OK' : 'Leakage'}</Badge>
+                      </div>
                     </div>
-                    <Progress value={data.dustbin} className="h-2 bg-white/5" />
+                    <Progress value={data.dustbin} className="h-1.5 bg-white/5" />
                   </div>
                 ))}
               </CardContent>
@@ -298,17 +293,19 @@ export default function CommissionerDashboard() {
 
             <Card className="glass-panel border-none shadow-2xl rounded-[3rem] h-fit">
               <CardHeader className="bg-primary text-black">
-                <CardTitle className="font-headline text-xl">AI System Insights</CardTitle>
+                <CardTitle className="font-headline text-xl uppercase tracking-tighter">AI System Insights</CardTitle>
               </CardHeader>
               <CardContent className="p-8 space-y-4">
-                <p className="text-sm font-medium leading-relaxed italic text-white/80">
-                  "City performance is up by 14%. Recommendation: Increase morning sweep teams in North Zone (Thirunagar) to maintain efficiency."
-                </p>
+                <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
+                   <p className="text-sm font-medium leading-relaxed italic text-white/80">
+                    "AI Prediction: Zone C (East) market surge expected. Auto-assigned 2 additional crews to Mattuthavani."
+                   </p>
+                </div>
                 <div className="pt-4 border-t border-white/10">
-                   <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">System Status</p>
+                   <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Automation Status</p>
                    <div className="flex items-center gap-2">
-                     <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                     <span className="text-xs font-bold text-white/60">Cloud Synced & Live</span>
+                     <div className={cn("h-2 w-2 rounded-full", isDemoRunning ? "bg-emerald-500 animate-pulse" : "bg-white/20")} />
+                     <span className="text-xs font-bold text-white/60 uppercase">{isDemoRunning ? 'System Autonomous' : 'Awaiting Commands'}</span>
                    </div>
                 </div>
               </CardContent>

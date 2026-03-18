@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import initialData from './initial-dataset.json';
@@ -114,6 +115,7 @@ interface AppState {
   updateSensors: (newSensors: any) => void;
   checkTaskTimeouts: () => void;
   resetToDataset: () => void;
+  runSmartAutomation: () => void;
 }
 
 export const useStore = create<AppState>()(
@@ -220,6 +222,62 @@ export const useStore = create<AppState>()(
         if (!changed) return state;
         return { tasks: updatedTasks };
       }),
+      runSmartAutomation: () => {
+        const state = get();
+        const zones = Object.keys(state.sensors);
+        const randomZone = zones[Math.floor(Math.random() * zones.length)];
+        const currentZoneSensors = { ...state.sensors[randomZone] };
+
+        // Randomly simulate sensor fluctuations
+        currentZoneSensors.dustbin = Math.min(100, currentZoneSensors.dustbin + Math.floor(Math.random() * 15));
+        currentZoneSensors.toilet_napkins = Math.max(0, currentZoneSensors.toilet_napkins - Math.floor(Math.random() * 10));
+        
+        if (Math.random() > 0.8) currentZoneSensors.drainage = 'leakage';
+
+        const updatedSensors = { ...state.sensors, [randomZone]: currentZoneSensors };
+        set({ sensors: updatedSensors });
+
+        // Trigger tasks if thresholds are hit
+        if (currentZoneSensors.dustbin > 90 || currentZoneSensors.toilet_napkins < 15 || currentZoneSensors.drainage !== 'ok') {
+          const workType = currentZoneSensors.dustbin > 90 ? 'Overflowing Dustbin' : 
+                           currentZoneSensors.drainage !== 'ok' ? 'Drainage Leakage' : 'Napkin Refill';
+          
+          const newTaskId = `smart-task-${Date.now()}`;
+          const newTask: Task = {
+            id: newTaskId,
+            work: `Smart Alert: ${workType}`,
+            place: `Junction ${randomZone}-Smart-Alert`,
+            status: 'pending',
+            source: 'sensor',
+            zone: randomZone,
+            priority: 'HIGH',
+            createdAt: new Date().toISOString()
+          };
+
+          // Find best available team in that zone (least active tasks)
+          const zoneWorkers = state.users.filter(u => u.role === 'worker' && u.zone === randomZone);
+          if (zoneWorkers.length > 0) {
+            const workerStats = zoneWorkers.map(w => ({
+              ...w,
+              activeCount: state.tasks.filter(t => t.assignedTo === w.id && t.status !== 'completed').length
+            })).sort((a, b) => a.activeCount - b.activeCount);
+
+            const bestWorker = workerStats[0];
+            newTask.status = 'assigned';
+            newTask.assignedTo = bestWorker.id;
+            newTask.teamId = bestWorker.teamId;
+            newTask.assignedAt = new Date().toISOString();
+
+            state.addNotification({
+              title: "Smart AI Auto-Dispatch",
+              message: `Predictive task for Zone ${randomZone} automatically assigned to Team ${bestWorker.teamId}.`,
+              type: 'success'
+            });
+          }
+
+          state.addTask(newTask);
+        }
+      },
       resetToDataset: () => set({ 
         tasks: (initialData.tasks as any[]), 
         users: (initialData.users as User[]),
