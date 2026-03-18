@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import { 
   Map as MapIcon, 
   LayoutGrid, 
@@ -16,14 +17,20 @@ import {
   Zap,
   Clock,
   UserCheck,
-  AlertTriangle
+  AlertTriangle,
+  Activity,
+  Droplets,
+  Trash2,
+  Syringe,
+  MessageSquare
 } from "lucide-react"
 import { useStore, Task } from "@/lib/store"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import { getPredictedStatus } from "@/lib/ai-sensor-engine"
 
 export default function ZoneAdminDashboard() {
-  const { tasks, users, teams, currentUser, updateTask, addNotification } = useStore()
+  const { tasks, users, teams, currentUser, updateTask, addNotification, sensors } = useStore()
   const currentZone = currentUser?.zone || 'ZA'
   const [mounted, setMounted] = React.useState(false)
   const { toast } = useToast()
@@ -34,6 +41,7 @@ export default function ZoneAdminDashboard() {
 
   const zoneTasks = tasks.filter(t => t.zone === currentZone)
   const zoneWorkers = users.filter(u => u.role === 'worker' && u.zone === currentZone)
+  const zoneSensors = sensors[currentZone] || {}
 
   const handleAssignTask = (taskId: string, workerId: string) => {
     const worker = users.find(u => u.id === workerId);
@@ -75,16 +83,34 @@ export default function ZoneAdminDashboard() {
         <div>
           <h1 className="text-4xl font-headline font-bold text-white tracking-tighter uppercase">Zone Operations</h1>
           <p className="text-white/40 font-medium flex items-center gap-2">
-            <MapIcon className="h-4 w-4 text-primary" /> Zone {currentZone} - Command Intelligence
+            <MapIcon className="h-4 w-4 text-primary" /> Zone {currentZone} - Intelligence Hub
           </p>
         </div>
       </header>
 
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[
+          { label: 'Dustbin Fill', val: zoneSensors.dustbin + '%', icon: Trash2, color: zoneSensors.dustbin > 80 ? 'text-rose-500' : 'text-primary' },
+          { label: 'Napkin Stocks', val: zoneSensors.toilet_napkins + '%', icon: Syringe, color: zoneSensors.toilet_napkins < 20 ? 'text-rose-500' : 'text-emerald-500' },
+          { label: 'Drainage Status', val: zoneSensors.drainage === 'ok' ? 'Normal' : 'LEAKAGE', icon: Droplets, color: zoneSensors.drainage === 'ok' ? 'text-emerald-500' : 'text-rose-500' },
+          { label: 'Citizen Feedbacks', val: zoneTasks.filter(t => t.source.startsWith('citizen')).length, icon: MessageSquare, color: 'text-amber-500' }
+        ].map((stat, i) => (
+          <Card key={i} className="glass-panel border-none shadow-xl rounded-[2.5rem]">
+            <CardHeader className="pb-2">
+              <CardDescription className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-white/40">
+                <stat.icon className={cn("h-3 w-3", stat.color)} /> {stat.label}
+              </CardDescription>
+              <CardTitle className={cn("text-2xl font-headline font-bold", stat.color)}>{stat.val}</CardTitle>
+            </CardHeader>
+          </Card>
+        ))}
+      </div>
+
       <Tabs defaultValue="kanban" className="w-full">
         <TabsList className="bg-white/5 p-1 h-16 rounded-[2rem] border border-white/10 w-full grid grid-cols-3">
           <TabsTrigger value="kanban" className="rounded-3xl font-bold h-full data-[state=active]:bg-primary">Task Registry</TabsTrigger>
+          <TabsTrigger value="intelligence" className="rounded-3xl font-bold h-full data-[state=active]:bg-primary">AI Sensor Lab</TabsTrigger>
           <TabsTrigger value="teams" className="rounded-3xl font-bold h-full data-[state=active]:bg-primary">Team Deployment</TabsTrigger>
-          <TabsTrigger value="performance" className="rounded-3xl font-bold h-full data-[state=active]:bg-primary">Efficiency Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="kanban" className="pt-10">
@@ -109,6 +135,12 @@ export default function ZoneAdminDashboard() {
                     <Card key={task.id} className="rounded-[2.5rem] border-none shadow-2xl glass-panel group hover:translate-y-[-4px] transition-all relative overflow-hidden">
                       {task.priority === 'HIGH' && <div className="absolute top-0 left-0 w-full h-1 bg-rose-500" />}
                       <CardHeader className="p-6 pb-2">
+                        <div className="flex justify-between items-start">
+                          <Badge variant="outline" className="border-white/10 text-[8px] uppercase tracking-widest text-primary mb-2">
+                            {task.source.replace('_', ' ')}
+                          </Badge>
+                          {task.imageProof && <Activity className="h-3 w-3 text-emerald-500 animate-pulse" />}
+                        </div>
                         <CardTitle className="text-sm font-bold text-white line-clamp-2 uppercase tracking-tight">{task.work}</CardTitle>
                         <CardDescription className="text-[10px] font-medium flex items-center gap-1 text-white/40 mt-1">
                           <MapIcon className="h-3 w-3 text-primary" /> {task.place}
@@ -163,6 +195,83 @@ export default function ZoneAdminDashboard() {
                 </div>
               </div>
             ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="intelligence" className="pt-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="rounded-[3rem] border-none shadow-2xl glass-panel">
+               <CardHeader>
+                 <CardTitle className="text-2xl font-headline font-bold text-white flex items-center gap-3">
+                   <Activity className="h-6 w-6 text-primary" /> Real-time Predictive Analytics
+                 </CardTitle>
+                 <CardDescription>ML-driven forecasting based on current usage patterns in Zone {currentZone}.</CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-8">
+                 {[
+                   { type: 'dustbin' as const, label: 'Main Terminal Dustbin', icon: Trash2 },
+                   { type: 'toilet_napkins' as const, label: 'Ladies Restroom Napkin Dispenser', icon: Syringe },
+                   { type: 'toilet_tissue' as const, label: 'Public Restroom Tissue Stock', icon: Activity },
+                 ].map((sensor) => {
+                   const level = zoneSensors[sensor.type];
+                   const pred = getPredictedStatus(level, sensor.type);
+                   return (
+                     <div key={sensor.type} className="space-y-4 p-6 rounded-[2rem] bg-white/5 border border-white/10">
+                       <div className="flex justify-between items-center">
+                         <div className="flex items-center gap-3">
+                           <sensor.icon className="h-5 w-5 text-primary" />
+                           <span className="font-bold text-sm">{sensor.label}</span>
+                         </div>
+                         <Badge className={cn(
+                           "px-4 h-8 font-bold",
+                           level > 80 || level < 20 ? "bg-rose-500 text-white" : "bg-emerald-500 text-black"
+                         )}>{level}%</Badge>
+                       </div>
+                       <Progress value={sensor.type === 'dustbin' ? level : level} className="h-2" />
+                       <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                         <span className="text-white/40">Predicted Action: <span className="text-primary">{pred.minutesLeft} mins</span></span>
+                         <span className="text-white/40">Confidence: <span className="text-emerald-500">{Math.round(pred.confidence * 100)}%</span></span>
+                       </div>
+                     </div>
+                   );
+                 })}
+               </CardContent>
+            </Card>
+
+            <Card className="rounded-[3rem] border-none shadow-2xl glass-panel">
+               <CardHeader>
+                 <CardTitle className="text-2xl font-headline font-bold text-white flex items-center gap-3">
+                   <AlertTriangle className="h-6 w-6 text-rose-500" /> Critical Anomalies
+                 </CardTitle>
+                 <CardDescription>Hardware alerts and environmental risks detected by AI.</CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-6">
+                 <div className={cn(
+                   "p-6 rounded-[2rem] border-2 transition-all",
+                   zoneSensors.drainage === 'ok' ? "bg-emerald-500/5 border-emerald-500/10" : "bg-rose-500/10 border-rose-500/40 animate-pulse"
+                 )}>
+                   <div className="flex justify-between items-center mb-4">
+                     <h4 className="font-bold text-lg flex items-center gap-2">
+                       <Droplets className={cn("h-5 w-5", zoneSensors.drainage === 'ok' ? "text-emerald-500" : "text-rose-500")} />
+                       Underground Drainage
+                     </h4>
+                     <Badge className={zoneSensors.drainage === 'ok' ? "bg-emerald-500/20 text-emerald-500" : "bg-rose-500 text-white"}>
+                       {zoneSensors.drainage === 'ok' ? 'SECURE' : 'LEAKAGE DETECTED'}
+                     </Badge>
+                   </div>
+                   <p className="text-sm text-white/60 mb-4">
+                     {zoneSensors.drainage === 'ok' 
+                       ? "Acoustic sensors report no blockage. Pressure levels optimal." 
+                       : "Sensors at Junction WD04 report significant pressure drop. High risk of overflow."}
+                   </p>
+                   {zoneSensors.drainage !== 'ok' && (
+                     <Button className="w-full h-12 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold">
+                       Dispatch Emergency Plumbers
+                     </Button>
+                   )}
+                 </div>
+               </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
