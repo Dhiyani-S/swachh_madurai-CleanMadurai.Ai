@@ -165,7 +165,7 @@ export default function CommissionerDashboard() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-rose-500" />
-                <span className="text-[10px] font-bold text-white/60 uppercase">Low (<40%)</span>
+                <span className="text-[10px] font-bold text-white/60 uppercase">Low (&lt;40%)</span>
               </div>
             </div>
           </div>
