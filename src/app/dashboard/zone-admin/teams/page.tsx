@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -14,7 +15,8 @@ import {
   Save, 
   UserCheck, 
   HardHat,
-  UserCircle
+  UserCircle,
+  Users2
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { 
@@ -201,7 +203,9 @@ export default function ZoneAdminTeams() {
                       <CardTitle className="text-2xl font-headline font-bold text-white">{worker.name}</CardTitle>
                       <Badge className="bg-primary/10 text-primary border-primary/20 text-[8px] uppercase tracking-widest mt-1">Code: {worker.teamId}</Badge>
                     </div>
-                    <Badge variant="outline" className="border-white/10 text-white/40 text-[10px] font-bold">{memberCount} Members</Badge>
+                    <Badge variant="outline" className="border-white/10 text-white/40 text-[10px] font-bold flex items-center gap-1">
+                      <Users2 className="h-3 w-3" /> {memberCount} Personnel
+                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-5 pt-6">
@@ -239,10 +243,10 @@ export default function ZoneAdminTeams() {
             <DialogTitle className="font-headline text-4xl text-primary mt-4 uppercase tracking-tighter">Unit Profile: {selectedWorker?.name}</DialogTitle>
           </DialogHeader>
 
-          <Tabs defaultValue="details" className="w-full mt-4">
+          <Tabs defaultValue="roster" className="w-full mt-4">
             <TabsList className="bg-white/5 p-1 h-12 rounded-2xl border border-white/10 mb-6 w-full">
+              <TabsTrigger value="roster" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Team Personnel (Roster)</TabsTrigger>
               <TabsTrigger value="details" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Account & Area</TabsTrigger>
-              <TabsTrigger value="roster" className="flex-1 rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black uppercase text-[10px] tracking-widest">Team Personnel</TabsTrigger>
             </TabsList>
 
             <TabsContent value="details">
@@ -282,19 +286,29 @@ export default function ZoneAdminTeams() {
             <TabsContent value="roster">
               <div className="space-y-8">
                 <div className="p-6 rounded-[2rem] bg-white/5 border border-primary/10">
-                  <h4 className="font-headline font-bold text-lg mb-4 flex items-center gap-2 uppercase tracking-tighter"><Plus className="h-5 w-5 text-primary" /> Add Personnel</h4>
+                  <h4 className="font-headline font-bold text-lg mb-4 flex items-center gap-2 uppercase tracking-tighter"><Plus className="h-5 w-5 text-primary" /> Add Team Member</h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Input placeholder="Member Name" value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})} className="h-10 text-xs" />
-                    <Input placeholder="Phone Number" value={newMember.phone} onChange={e => setNewMember({...newMember, phone: e.target.value})} className="h-10 text-xs" />
-                    <Button onClick={handleAddPersonnelToTeam} className="h-10 font-bold bg-primary text-black rounded-xl">Add Member</Button>
+                    <div className="space-y-1">
+                      <Label className="text-[8px] uppercase font-bold text-white/40 ml-1">Member Name</Label>
+                      <Input placeholder="Full Name" value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})} className="h-10 text-xs" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[8px] uppercase font-bold text-white/40 ml-1">Phone Number</Label>
+                      <Input placeholder="9876543210" value={newMember.phone} onChange={e => setNewMember({...newMember, phone: e.target.value})} className="h-10 text-xs" />
+                    </div>
+                    <div className="flex items-end">
+                      <Button onClick={handleAddPersonnelToTeam} className="w-full h-10 font-bold bg-primary text-black rounded-xl">Add to Team</Button>
+                    </div>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                   <h4 className="font-bold text-white/60 uppercase text-[10px] tracking-widest ml-2">Active Roster ({teams.find(t => t.id === selectedWorker?.teamId)?.members.length || 0})</h4>
+                   <h4 className="font-bold text-white/60 uppercase text-[10px] tracking-widest ml-2 flex items-center gap-2">
+                     <Users className="h-3 w-3" /> Unit Personnel List ({teams.find(t => t.id === selectedWorker?.teamId)?.members.length || 0})
+                   </h4>
                    <div className="max-h-[300px] overflow-y-auto space-y-3 pr-2 custom-scrollbar">
                      {teams.find(t => t.id === selectedWorker?.teamId)?.members.length === 0 ? (
-                       <p className="text-center py-10 text-white/20 italic">No personnel added to this unit.</p>
+                       <p className="text-center py-10 text-white/20 italic">No members have been added to this team yet.</p>
                      ) : (
                        teams.find(t => t.id === selectedWorker?.teamId)?.members.map((member, i) => (
                          <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-black/30 border border-white/5 group transition-all hover:border-primary/20">
@@ -304,7 +318,9 @@ export default function ZoneAdminTeams() {
                               </div>
                               <div>
                                 <p className="font-bold text-md text-white">{member.name}</p>
-                                <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">{member.phone || 'No Phone'}</p>
+                                <div className="flex items-center gap-2 text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                                  <Phone className="h-2 w-2" /> {member.phone || 'No Contact'}
+                                </div>
                               </div>
                             </div>
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:bg-rose-500/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => removeTeamMember(selectedWorker?.teamId!, member.workerId)}>

@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -24,7 +25,9 @@ import {
   CheckCircle,
   ShieldCheck,
   UserCheck,
-  Radio
+  Radio,
+  UserCircle,
+  Phone
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
@@ -213,17 +216,24 @@ export default function WorkerDashboard() {
                    <Users className="h-6 w-6 text-primary" /> Team Personnel
                 </CardTitle>
              </CardHeader>
-             <CardContent className="p-8 space-y-4">
+             <CardContent className="p-6 space-y-4">
                 {!myTeam || myTeam.members.length === 0 ? (
-                  <p className="text-xs text-white/40 italic text-center py-4 uppercase">No personnel registered.</p>
+                  <p className="text-xs text-white/40 italic text-center py-4 uppercase tracking-widest">No personnel assigned to this unit yet.</p>
                 ) : (
                   myTeam.members.map((member, i) => {
                     const status = currentAttendance?.records.find(r => r.workerId === member.workerId)?.status || 'Pending';
                     return (
-                      <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/10">
-                         <div className="flex flex-col">
-                            <span className="font-bold text-sm">{member.name}</span>
-                            <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{member.phone}</span>
+                      <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/10 group">
+                         <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center">
+                               <UserCircle className="h-5 w-5 text-white/20" />
+                            </div>
+                            <div className="flex flex-col">
+                               <span className="font-bold text-sm text-white">{member.name}</span>
+                               <div className="flex items-center gap-1 text-[8px] text-white/40 font-bold uppercase tracking-widest">
+                                  <Phone className="h-2 w-2" /> {member.phone || 'N/A'}
+                               </div>
+                            </div>
                          </div>
                          <Badge variant="outline" className={cn(
                            "text-[8px] font-bold uppercase tracking-widest px-2",
