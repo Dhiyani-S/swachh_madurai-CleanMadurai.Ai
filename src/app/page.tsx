@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -9,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useStore, UserRole, User } from "@/lib/store"
-import { Recycle, ChevronRight, UserPlus, Globe, Loader2, ShieldCheck, MapPin } from "lucide-react"
+import { Recycle, ChevronRight, Globe, Loader2, ShieldCheck, UserPlus } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { translations } from "@/lib/translations"
 
@@ -23,11 +24,9 @@ export default function LandingPage() {
   const [password, setPassword] = React.useState('')
   const [mounted, setMounted] = React.useState(false)
 
-  // Sign up state
-  const [signUpRole, setSignUpRole] = React.useState<UserRole>('zone_admin')
+  // Sign up state - Only for Citizens
   const [signUpId, setSignUpId] = React.useState('')
   const [signUpPassword, setSignUpPassword] = React.useState('')
-  const [signUpZone, setSignUpZone] = React.useState('')
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
   React.useEffect(() => {
@@ -86,11 +85,10 @@ export default function LandingPage() {
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
-    // Normalizing role lookup for robustness
     const existingUser = users.find(u => 
       u.id === userId.trim() && 
       u.password === password && 
-      (u.role.toLowerCase().replace(' ', '_') === role.toLowerCase().replace(' ', '_'))
+      (u.role === role)
     )
     if (!existingUser) {
       toast({ title: t.signIn + " Failed", description: "Invalid credentials or unauthorized role.", variant: "destructive" })
@@ -107,34 +105,23 @@ export default function LandingPage() {
       return
     }
 
-    if (signUpRole === 'zone_admin' && !signUpZone) {
-      toast({ title: "Error", description: "Please select a zone.", variant: "destructive" })
-      return
-    }
-
     if (users.find(u => u.id === signUpId)) {
       toast({ title: "Registration Failed", description: "User ID already exists.", variant: "destructive" })
       return
     }
 
     setIsSubmitting(true)
-
     const newUser: User = {
       id: signUpId,
-      name: signUpId, // Use ID as name if field is removed
+      name: `Citizen ${signUpId}`,
       password: signUpPassword,
-      role: signUpRole,
-      zone: signUpRole === 'zone_admin' ? signUpZone : undefined,
+      role: 'citizen',
       rewardPoints: 0,
     }
-
     addUser(newUser)
-    
-    toast({ title: "Success", description: "Account created successfully. Please Sign In." })
-    
+    toast({ title: "Success", description: "Citizen account created. Please Sign In." })
     setSignUpId('')
     setSignUpPassword('')
-    setSignUpZone('')
     setIsSubmitting(false)
   }
 
@@ -189,57 +176,29 @@ export default function LandingPage() {
               </TabsContent>
 
               <TabsContent value="signup" className="mt-0 space-y-6">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-6">
+                  <div className="p-4 bg-primary/10 border border-primary/20 rounded-2xl">
+                    <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1 text-center">Citizen Registration Only</p>
+                    <p className="text-[10px] text-white/60 leading-relaxed text-center italic">
+                      Administrative roles must be assigned by higher authority.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">User ID</Label>
-                      <Input placeholder="ID" className="h-12 rounded-xl" required value={signUpId} onChange={e => setSignUpId(e.target.value)} />
+                      <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">Citizen ID / Username</Label>
+                      <Input placeholder="ID" className="h-14 rounded-2xl" required value={signUpId} onChange={e => setSignUpId(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">Password</Label>
-                      <Input type="password" placeholder="••••" className="h-12 rounded-xl" required value={signUpPassword} onChange={e => setSignUpPassword(e.target.value)} />
+                      <Input type="password" placeholder="••••" className="h-14 rounded-2xl" required value={signUpPassword} onChange={e => setSignUpPassword(e.target.value)} />
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">Administrative Role</Label>
-                    <Select value={signUpRole} onValueChange={(val) => setSignUpRole(val as UserRole)}>
-                      <SelectTrigger className="h-12 rounded-xl"><SelectValue /></SelectTrigger>
-                      <SelectContent className="bg-zinc-950/90 border-white/10 text-white rounded-xl backdrop-blur-xl">
-                        <SelectItem value="commissioner">Corporation Commissioner</SelectItem>
-                        <SelectItem value="ward_admin">Ward Admin</SelectItem>
-                        <SelectItem value="zone_admin">Zone Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {signUpRole === 'zone_admin' && (
-                    <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                      <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest flex items-center gap-1"><MapPin className="h-3 w-3" /> Assigned Zone</Label>
-                      <Select value={signUpZone} onValueChange={setSignUpZone}>
-                        <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Select Zone" /></SelectTrigger>
-                        <SelectContent className="bg-zinc-950/90 border-white/10 text-white rounded-xl backdrop-blur-xl">
-                          <SelectItem value="ZA">Zone A (North)</SelectItem>
-                          <SelectItem value="ZB">Zone B (South)</SelectItem>
-                          <SelectItem value="ZC">Zone C (East)</SelectItem>
-                          <SelectItem value="ZD">Zone D (West)</SelectItem>
-                          <SelectItem value="ZE">Zone E (Central)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  <Button type="submit" disabled={isSubmitting} className="w-full h-14 text-lg font-bold mt-4 rounded-xl">
-                    {isSubmitting ? <Loader2 className="animate-spin" /> : <ShieldCheck className="mr-2" />} Register Admin Account
-                  </Button>
-
-                  <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-2xl">
-                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Notice for Workers</p>
-                    <p className="text-[10px] text-white/60 leading-relaxed italic">
-                      {t.workerSelfRegisterBlocked}
-                    </p>
-                  </div>
-                </form>
+                    <Button type="submit" disabled={isSubmitting} className="w-full h-16 text-xl font-bold mt-4 rounded-2xl">
+                      {isSubmitting ? <Loader2 className="animate-spin" /> : <UserPlus className="mr-2 h-6 w-6" />} {t.register}
+                    </Button>
+                  </form>
+                </div>
               </TabsContent>
             </div>
           </Tabs>

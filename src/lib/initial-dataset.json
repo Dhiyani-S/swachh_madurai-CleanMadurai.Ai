@@ -1,10 +1,11 @@
+
 {
   "users": [
     {
-      "id": "commissioner1",
-      "name": "Dr. Senthil Kumar IAS",
+      "id": "09071901",
+      "name": "Corporation Commissioner",
       "role": "commissioner",
-      "password": "123",
+      "password": "1234",
       "phone": "9876500001",
       "email": "commissioner@madurai.gov.in",
       "rewardPoints": 0
