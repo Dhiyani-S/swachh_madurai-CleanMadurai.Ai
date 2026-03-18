@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -31,7 +30,10 @@ export default function ZoneAdminDashboard() {
 
   if (!mounted) return null;
 
+  // Filter tasks specifically for THIS zone
   const zoneTasks = tasks.filter(t => t.zone === currentZone)
+  
+  // Filter workers specifically in THIS zone
   const zoneWorkers = users.filter(u => u.role === 'worker' && u.zone === currentZone)
 
   const handleAssignTask = (taskId: string, workerId: string) => {
@@ -58,7 +60,7 @@ export default function ZoneAdminDashboard() {
   }
 
   // AI Suggestion Logic: Prefer teams in the same zone with fewer active tasks
-  const getRecommendedWorkers = (taskZone: string) => {
+  const getRecommendedWorkers = () => {
     return zoneWorkers
       .map(worker => {
         const activeTasks = tasks.filter(t => t.assignedTo === worker.id && t.status !== 'completed').length;
@@ -67,7 +69,7 @@ export default function ZoneAdminDashboard() {
       .sort((a, b) => a.activeTaskCount - b.activeTaskCount); // Lowest load first
   }
 
-  const recommendedWorkers = getRecommendedWorkers(currentZone);
+  const recommendedWorkers = getRecommendedWorkers();
 
   return (
     <div className="space-y-10">
@@ -126,7 +128,7 @@ export default function ZoneAdminDashboard() {
                                onChange={(e) => handleAssignTask(task.id, e.target.value)}
                                defaultValue=""
                              >
-                               <option value="" disabled>Assign Team User ID...</option>
+                               <option value="" disabled>Select Worker ID...</option>
                                {recommendedWorkers.map(w => (
                                  <option key={w.id} value={w.id}>
                                    {w.teamId} - {w.name} ({w.activeTaskCount} active)
