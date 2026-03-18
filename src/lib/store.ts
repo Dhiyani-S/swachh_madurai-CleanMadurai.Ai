@@ -114,6 +114,7 @@ interface AppState {
   markNotificationRead: (id: string) => void;
   setDemoState: (running: boolean, step?: number) => void;
   updateSensors: (newSensors: any) => void;
+  checkTaskTimeouts: () => void;
   resetToDataset: () => void;
 }
 
@@ -141,14 +142,30 @@ export const useStore = create<AppState>()(
       }),
       addTask: (task) => set((state) => ({ tasks: [task, ...state.tasks] })),
       updateTask: (taskId, updates) => set((state) => {
-        const updatedTasks = state.tasks.map(t => t.id === taskId ? { ...t, ...updates } : t);
+        const updatedTasks = state.tasks.map(t => {
+          if (t.id === taskId) {
+            const newTask = { ...t, ...updates };
+            
+            // Logic for awarding points on completion
+            if (updates.status === 'completed' && t.status !== 'completed' && t.assignedTo) {
+              const points = 25; // Base points for task completion
+              const worker = state.users.find(u => u.id === t.assignedTo);
+              if (worker) {
+                const updatedUsers = state.users.map(u => u.id === worker.id ? { ...u, rewardPoints: u.rewardPoints + points } : u);
+                setTimeout(() => set({ users: updatedUsers }), 0);
+              }
+            }
+            return newTask;
+          }
+          return t;
+        });
         return { tasks: updatedTasks };
       }),
       
       addTeam: (team) => set((state) => {
         const teamId = team.id.toUpperCase().trim();
         const exists = state.teams.find(t => t.id === teamId);
-        if (exists) return state; // Avoid duplicates
+        if (exists) return state; 
         return { teams: [...state.teams, { ...team, id: teamId }] };
       }),
       addTeamMember: (teamId, member) => set((state) => ({
@@ -188,6 +205,23 @@ export const useStore = create<AppState>()(
       })),
       setDemoState: (running, step = 0) => set({ isDemoRunning: running, demoStep: step }),
       updateSensors: (newSensors) => set({ sensors: newSensors }),
+      checkTaskTimeouts: () => set((state) => {
+        const now = new Date().getTime();
+        const thirtyMinutes = 30 * 60 * 1000;
+        
+        const updatedTasks = state.tasks.map(t => {
+          if (t.status === 'assigned' && t.assignedAt) {
+            const assignedTime = new Date(t.assignedAt).getTime();
+            if (now - assignedTime > thirtyMinutes) {
+              // Timeout reached - reassign to pending
+              return { ...t, status: 'pending', assignedTo: undefined, assignedAt: undefined, teamId: undefined };
+            }
+          }
+          return t;
+        });
+        
+        return { tasks: updatedTasks };
+      }),
       resetToDataset: () => set({ 
         tasks: (initialData.tasks as any[]), 
         users: (initialData.users as User[]),

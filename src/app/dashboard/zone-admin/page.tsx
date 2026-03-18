@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -14,7 +15,8 @@ import {
   Users,
   Zap,
   Clock,
-  UserCheck
+  UserCheck,
+  AlertTriangle
 } from "lucide-react"
 import { useStore, Task } from "@/lib/store"
 import { cn } from "@/lib/utils"
@@ -30,10 +32,7 @@ export default function ZoneAdminDashboard() {
 
   if (!mounted) return null;
 
-  // Filter tasks specifically for THIS zone
   const zoneTasks = tasks.filter(t => t.zone === currentZone)
-  
-  // Filter workers specifically in THIS zone
   const zoneWorkers = users.filter(u => u.role === 'worker' && u.zone === currentZone)
 
   const handleAssignTask = (taskId: string, workerId: string) => {
@@ -48,8 +47,8 @@ export default function ZoneAdminDashboard() {
     });
 
     addNotification({
-      title: "Task Assigned",
-      message: `Task ${taskId} has been assigned to Team ${worker.teamId} (${worker.name}).`,
+      title: "Task Dispatched",
+      message: `Task ${taskId.slice(-6)} assigned to Team ${worker.teamId}. Worker must accept within 30 mins.`,
       type: 'success'
     });
 
@@ -59,14 +58,13 @@ export default function ZoneAdminDashboard() {
     });
   }
 
-  // AI Suggestion Logic: Prefer teams in the same zone with fewer active tasks
   const getRecommendedWorkers = () => {
     return zoneWorkers
       .map(worker => {
         const activeTasks = tasks.filter(t => t.assignedTo === worker.id && t.status !== 'completed').length;
         return { ...worker, activeTaskCount: activeTasks };
       })
-      .sort((a, b) => a.activeTaskCount - b.activeTaskCount); // Lowest load first
+      .sort((a, b) => a.activeTaskCount - b.activeTaskCount);
   }
 
   const recommendedWorkers = getRecommendedWorkers();
@@ -93,8 +91,8 @@ export default function ZoneAdminDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               { label: '📡 UNASSIGNED', status: 'pending' as const, color: 'text-rose-500', icon: Zap },
-              { label: '📋 DISPATCHED', status: 'assigned' as const, color: 'text-amber-500', icon: ClipboardList },
-              { label: '🔄 IN ACTION', status: 'in_progress' as const, color: 'text-primary', icon: Clock },
+              { label: '📋 PROCESSING', status: 'in_progress' as const, color: 'text-amber-500', icon: Clock },
+              { label: '🗑️ DISPOSAL', status: 'partially_completed' as const, color: 'text-primary', icon: AlertTriangle },
               { label: '✅ RESOLVED', status: 'completed' as const, color: 'text-emerald-500', icon: CheckCircle }
             ].map((col) => (
               <div key={col.status} className="space-y-6">
@@ -121,17 +119,17 @@ export default function ZoneAdminDashboard() {
                            <div className="space-y-3">
                              <div className="flex items-center gap-2 mb-1">
                                <Zap className="h-3 w-3 text-primary animate-pulse" />
-                               <span className="text-[8px] font-bold uppercase text-primary tracking-widest">Recommended Teams</span>
+                               <span className="text-[8px] font-bold uppercase text-primary tracking-widest">Recommended Units</span>
                              </div>
                              <select 
                                className="w-full text-[10px] bg-black/40 border border-white/10 rounded-xl p-3 font-bold text-white focus:border-primary outline-none" 
                                onChange={(e) => handleAssignTask(task.id, e.target.value)}
                                defaultValue=""
                              >
-                               <option value="" disabled>Select Worker ID...</option>
+                               <option value="" disabled>Select User ID...</option>
                                {recommendedWorkers.map(w => (
                                  <option key={w.id} value={w.id}>
-                                   {w.teamId} - {w.name} ({w.activeTaskCount} active)
+                                   ID: {w.id} - Team {w.teamId} ({w.activeTaskCount} active)
                                  </option>
                                ))}
                              </select>
@@ -139,14 +137,19 @@ export default function ZoneAdminDashboard() {
                          )}
                          
                          {task.status !== 'pending' && (
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
-                               <div className="flex items-center gap-2">
-                                 <UserCheck className="h-3 w-3 text-emerald-500" />
-                                 <span className="text-[10px] font-bold text-white/60">
-                                   {users.find(u => u.id === task.assignedTo)?.teamId || 'TEAM-X'}
-                                 </span>
+                            <div className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 border border-white/5">
+                               <div className="flex items-center justify-between">
+                                 <div className="flex items-center gap-2">
+                                   <UserCheck className="h-3 w-3 text-emerald-500" />
+                                   <span className="text-[10px] font-bold text-white/60">
+                                     {users.find(u => u.id === task.assignedTo)?.teamId || 'TEAM-X'}
+                                   </span>
+                                 </div>
+                                 <Badge variant="outline" className="border-white/10 text-[8px] uppercase">{task.status.replace('_', ' ')}</Badge>
                                </div>
-                               <Badge variant="outline" className="border-white/10 text-[8px] uppercase">{task.status}</Badge>
+                               {task.status === 'partially_completed' && (
+                                 <p className="text-[8px] text-amber-500 font-bold uppercase animate-pulse">Awaiting QR Verification</p>
+                               )}
                             </div>
                          )}
                          
@@ -157,13 +160,6 @@ export default function ZoneAdminDashboard() {
                       </CardContent>
                     </Card>
                   ))}
-                  
-                  {zoneTasks.filter(t => t.status === col.status).length === 0 && (
-                    <div className="py-12 text-center border-2 border-dashed border-white/5 rounded-[2rem]">
-                      <ClipboardList className="h-8 w-8 mx-auto text-white/10 mb-2" />
-                      <p className="text-[10px] text-white/20 font-bold uppercase tracking-widest">No tasks in this stage</p>
-                    </div>
-                  )}
                 </div>
               </div>
             ))}
@@ -179,7 +175,7 @@ export default function ZoneAdminDashboard() {
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="text-2xl font-headline font-bold text-white">{worker.name}</CardTitle>
-                      <CardDescription className="uppercase tracking-widest text-[10px] font-bold text-primary mt-1">Unit ID: {worker.id} • Team {worker.teamId}</CardDescription>
+                      <CardDescription className="uppercase tracking-widest text-[10px] font-bold text-primary mt-1">Login ID: {worker.id} • Team {worker.teamId}</CardDescription>
                     </div>
                     <Badge className="bg-primary/10 text-primary border-primary/20">{worker.activeTaskCount} Tasks</Badge>
                   </div>

@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -28,7 +29,8 @@ import {
   UserCircle,
   Phone,
   Zap,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
@@ -38,7 +40,7 @@ import { translations } from "@/lib/translations"
 import { Badge } from "@/components/ui/badge"
 
 export default function WorkerDashboard() {
-  const { currentUser, tasks, updateTask, attendance, submitAttendance, language, teams, addNotification } = useStore()
+  const { currentUser, tasks, updateTask, attendance, submitAttendance, language, teams, addNotification, checkTaskTimeouts } = useStore()
   const { toast } = useToast()
   const t = translations[language || 'en'];
   
@@ -46,10 +48,10 @@ export default function WorkerDashboard() {
   const [attendanceState, setAttendanceState] = React.useState<AttendanceRecord[]>([])
   const [mounted, setMounted] = React.useState(false)
   const [processingId, setProcessingId] = React.useState<string | null>(null)
+  const [qrTaskId, setQrTaskId] = React.useState<string | null>(null)
 
   const today = React.useMemo(() => new Date().toLocaleDateString(), [])
   
-  // Find the team roster for the current user's team ID
   const myTeam = React.useMemo(() => {
     if (!currentUser?.teamId) return null;
     return teams.find(team => team.id.toUpperCase() === currentUser.teamId?.toUpperCase());
@@ -60,11 +62,13 @@ export default function WorkerDashboard() {
 
   React.useEffect(() => {
     setMounted(true)
+    const interval = setInterval(() => checkTaskTimeouts(), 60000); // Check every minute
     if (myTeam && !hasMarkedAttendance) {
       setAttendanceState(myTeam.members.map(m => ({ workerId: m.workerId, name: m.name, status: 'Present' })))
       setIsAttendanceModalOpen(true)
     }
-  }, [mounted, hasMarkedAttendance, myTeam])
+    return () => clearInterval(interval);
+  }, [mounted, hasMarkedAttendance, myTeam, checkTaskTimeouts])
 
   const handleAttendanceSubmit = () => {
     if (myTeam) {
@@ -81,20 +85,36 @@ export default function WorkerDashboard() {
 
   const handleTaskAction = (taskId: string, newStatus: any) => {
     setProcessingId(taskId);
-    // Simulate API delay
     setTimeout(() => {
       updateTask(taskId, { status: newStatus });
       setProcessingId(null);
       toast({
-        title: `Task ${newStatus.replace('_', ' ')}`,
+        title: `Task Status: ${newStatus.replace('_', ' ')}`,
         description: `Successfully updated task status.`
       });
     }, 800);
   }
 
+  const handleRejectTask = (taskId: string) => {
+    updateTask(taskId, { status: 'pending', assignedTo: undefined, teamId: undefined, assignedAt: undefined });
+    toast({ title: "Task Rejected", description: "Task has been returned to the Zone Admin queue." });
+  }
+
+  const simulateQrScan = (taskId: string) => {
+    setQrTaskId(taskId);
+    setTimeout(() => {
+      handleTaskAction(taskId, 'completed');
+      setQrTaskId(null);
+      addNotification({
+        title: "Disposal Verified",
+        message: "QR code verified at disposal site. Reward points awarded.",
+        type: 'success'
+      });
+    }, 2000);
+  }
+
   if (!mounted || !currentUser) return null
 
-  // Important: Filter tasks specifically assigned to THIS team's User ID or Team Code
   const myTasks = tasks.filter(t => 
     (t.assignedTo === currentUser.id || t.teamId === currentUser.teamId) && 
     t.status !== 'completed'
@@ -102,7 +122,6 @@ export default function WorkerDashboard() {
 
   return (
     <div className="space-y-10 max-w-5xl mx-auto">
-      {/* Daily Attendance Modal */}
       <Dialog open={isAttendanceModalOpen} onOpenChange={setIsAttendanceModalOpen}>
         <DialogContent className="sm:max-w-md bg-zinc-950/90 border-white/10 text-white rounded-[3rem] backdrop-blur-3xl shadow-2xl">
           <DialogHeader className="pt-4">
@@ -115,7 +134,7 @@ export default function WorkerDashboard() {
           </DialogHeader>
           <div className="space-y-4 py-6 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
             {attendanceState.length === 0 ? (
-              <p className="text-center py-10 text-white/40 italic">No personnel found. Please contact Zone Admin to update your team roster.</p>
+              <p className="text-center py-10 text-white/40 italic">No personnel found.</p>
             ) : (
               attendanceState.map((record, idx) => (
                 <div key={record.workerId} className="p-5 rounded-3xl bg-white/5 border border-white/10 flex flex-col gap-4">
@@ -201,47 +220,58 @@ export default function WorkerDashboard() {
                         </div>
                         <Badge className={cn(
                           "rounded-full px-4 h-8 uppercase text-[10px] font-bold tracking-widest",
-                          task.status === 'assigned' ? 'bg-amber-500/20 text-amber-500' : 'bg-primary/20 text-primary'
+                          task.status === 'assigned' ? 'bg-amber-500/20 text-amber-500' : 
+                          task.status === 'in_progress' ? 'bg-primary/20 text-primary' : 'bg-emerald-500/20 text-emerald-500'
                         )}>
-                          {task.status.replace('_', ' ')}
+                          {task.status === 'assigned' ? 'New Request' : 
+                           task.status === 'in_progress' ? 'Processing' : 
+                           task.status === 'partially_completed' ? 'Awaiting Disposal' : task.status}
                         </Badge>
                       </div>
                     </CardHeader>
                     
-                    {task.imageProof && (
-                      <div className="px-8 pb-4">
-                         <div className="h-40 w-full rounded-2xl overflow-hidden bg-black/40 border border-white/5 relative">
-                            <img src={task.imageProof} className="w-full h-full object-cover opacity-60" alt="Evidence" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-4">
-                               <p className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Citizen Evidence Provided</p>
-                            </div>
-                         </div>
-                      </div>
-                    )}
-
                     <CardFooter className="p-8 pt-2 gap-4">
-                      {task.status === 'assigned' || task.status === 'pending' ? (
-                        <>
+                      {task.status === 'assigned' ? (
+                        <div className="grid grid-cols-2 w-full gap-4">
                           <Button 
-                            className="flex-1 h-16 rounded-2xl bg-primary font-bold shadow-2xl shadow-primary/20 text-black text-lg" 
+                            className="h-16 rounded-2xl bg-primary font-bold shadow-2xl shadow-primary/20 text-black text-lg" 
                             onClick={() => handleTaskAction(task.id, 'in_progress')}
                             disabled={processingId === task.id}
                           >
-                            {processingId === task.id ? <Loader2 className="animate-spin" /> : <CheckCircle2 className="h-5 w-5 mr-2" />} 
-                            Accept Duty
+                            Accept Task
                           </Button>
-                        </>
-                      ) : (
+                          <Button 
+                            variant="outline"
+                            className="h-16 rounded-2xl border-rose-500 text-rose-500 font-bold" 
+                            onClick={() => handleRejectTask(task.id)}
+                          >
+                            Reject Task
+                          </Button>
+                        </div>
+                      ) : task.status === 'in_progress' ? (
                         <Button 
-                          className="w-full h-16 rounded-2xl bg-primary font-bold shadow-2xl shadow-primary/20 text-black text-lg" 
-                          onClick={() => handleTaskAction(task.id, 'completed')}
+                          className="w-full h-16 rounded-2xl bg-primary font-bold shadow-2xl shadow-primary/20 text-black text-lg uppercase" 
+                          onClick={() => handleTaskAction(task.id, 'partially_completed')}
                           disabled={processingId === task.id}
                         >
-                          {processingId === task.id ? <Loader2 className="animate-spin" /> : <QrCode className="h-5 w-5 mr-2" />} 
-                          Verify Completion
+                          Mark Collected
+                        </Button>
+                      ) : (
+                        <Button 
+                          className="w-full h-16 rounded-2xl bg-emerald-500 font-bold shadow-2xl shadow-emerald-500/20 text-black text-lg uppercase flex gap-2" 
+                          onClick={() => simulateQrScan(task.id)}
+                          disabled={qrTaskId === task.id}
+                        >
+                          {qrTaskId === task.id ? <Loader2 className="animate-spin" /> : <QrCode className="h-6 w-6" />}
+                          {qrTaskId === task.id ? 'Scanning QR...' : 'Scan Disposal QR'}
                         </Button>
                       )}
                     </CardFooter>
+                    {task.status === 'assigned' && (
+                      <div className="px-8 pb-4 flex items-center gap-2 text-[10px] font-bold text-amber-500 uppercase">
+                         <Clock className="h-3 w-3 animate-pulse" /> Auto-reassign if not accepted within 30m
+                      </div>
+                    )}
                   </Card>
                 ))}
               </div>
@@ -279,7 +309,7 @@ export default function WorkerDashboard() {
              </CardHeader>
              <CardContent className="p-6 space-y-4">
                 {!myTeam || myTeam.members.length === 0 ? (
-                  <p className="text-xs text-white/40 italic text-center py-6 uppercase tracking-widest">No personnel registered to this unit yet.</p>
+                  <p className="text-xs text-white/40 italic text-center py-6 uppercase tracking-widest">No personnel registered.</p>
                 ) : (
                   myTeam.members.map((member, i) => {
                     const status = currentAttendance?.records.find(r => r.workerId === member.workerId)?.status || 'Pending';
@@ -306,29 +336,6 @@ export default function WorkerDashboard() {
                     )
                   })
                 )}
-             </CardContent>
-          </Card>
-
-          <Card className="rounded-[3rem] border-none shadow-2xl glass-panel relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4">
-                <ShieldCheck className="h-12 w-12 text-white/5" />
-             </div>
-             <CardHeader>
-                <CardTitle className="text-xl font-headline font-bold flex items-center gap-3 uppercase tracking-tighter">
-                   <ShieldCheck className="h-6 w-6 text-primary" /> Field Safety
-                </CardTitle>
-             </CardHeader>
-             <CardContent className="p-8 pt-0 space-y-4">
-                {[
-                  { label: 'Reflective Gear', val: true },
-                  { label: 'Safety Gloves', val: true },
-                  { label: 'Standard Mask', val: true }
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest bg-white/5 p-3 rounded-xl border border-white/5">
-                    <span className="text-white/60">{item.label}</span>
-                    <CheckCircle className="h-4 w-4 text-emerald-500" />
-                  </div>
-                ))}
              </CardContent>
           </Card>
         </div>
