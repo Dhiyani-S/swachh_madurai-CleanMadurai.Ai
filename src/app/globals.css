@@ -10,7 +10,7 @@
     --card-foreground: 150 20% 96%;
     --popover: 160 40% 6%;
     --popover-foreground: 150 20% 96%;
-    /* Vibrant Saffron-Yellow from the iconic Madurai sign in the image */
+    /* Vibrant Saffron-Yellow from the iconic Madurai sign */
     --primary: 47 100% 50%; 
     --primary-foreground: 160 40% 4%;
     --secondary: 160 20% 12%;
@@ -27,87 +27,80 @@
     --radius: 2.5rem;
   }
 
-  html {
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
     background: transparent !important;
   }
 
   body {
-    @apply bg-transparent text-foreground font-body antialiased;
-    background: transparent !important;
+    @apply font-body antialiased;
+    /* This ensures the background covers everything globally */
+    background-image: url('https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&q=80&w=1920') !important;
+    background-size: cover !important;
+    background-attachment: fixed !important;
+    background-position: center top !important;
+    background-repeat: no-repeat !important;
+    color: #E8F5EE;
+  }
+
+  /* Dark translucent overlay for text readability */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+    z-index: -1;
+    pointer-events: none;
   }
 }
 
-/* Fixed Global Heritage Background */
-.madurai-bg {
-  position: fixed;
-  inset: 0;
-  background-image: url('/madurai_bg.jpg'); /* Ensure this file is in public/madurai_bg.jpg */
-  background-size: cover;
-  background-position: top center;
-  background-repeat: no-repeat;
-  z-index: -2; 
-}
-
-/* Translucent Dark overlay for readability */
-.madurai-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(5, 15, 10, 0.4), rgba(5, 15, 10, 0.8));
-  z-index: -1;
-}
-
-/* Deep Glassmorphism UI */
+/* Deep Glassmorphism UI - Much more transparent */
 .glass-panel {
-  background: rgba(10, 26, 16, 0.45) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(255, 200, 0, 0.1) !important;
-  color: #E8F5EE !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(25px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(160%) !important;
+  border: 1px solid rgba(255, 200, 0, 0.15) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
 }
 
 .glass-sidebar {
-  background: rgba(5, 15, 10, 0.6) !important;
-  backdrop-filter: blur(30px) !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  backdrop-filter: blur(40px) !important;
   border-right: 1px solid rgba(255, 200, 0, 0.05) !important;
 }
 
 .glass-header {
-  background: rgba(5, 15, 10, 0.6) !important;
+  background: rgba(0, 0, 0, 0.1) !important;
   backdrop-filter: blur(30px) !important;
   border-bottom: 1px solid rgba(255, 200, 0, 0.05) !important;
 }
 
-/* Force Glassmorphism on UI components */
+/* UI Component Transparency */
 .card, [class*="card"], .bg-card {
   @apply glass-panel;
 }
 
 input, select, textarea {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 200, 0, 0.2) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  border: 1px solid rgba(255, 200, 0, 0.25) !important;
   color: #FFFFFF !important;
-  backdrop-filter: blur(5px) !important;
+  backdrop-filter: blur(10px) !important;
 }
 
 button.bg-primary, .btn-primary {
   background: hsl(var(--primary)) !important;
-  color: hsl(var(--primary-foreground)) !important;
+  color: #000000 !important;
   font-weight: 800 !important;
-  box-shadow: 0 4px 20px rgba(255, 200, 0, 0.3) !important;
+  box-shadow: 0 4px 25px rgba(255, 200, 0, 0.4) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 button.bg-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(255, 200, 0, 0.5) !important;
-}
-
-button[variant="outline"] {
-  border-color: rgba(255, 200, 0, 0.3) !important;
-  color: hsl(var(--primary)) !important;
-  background: rgba(255, 200, 0, 0.03) !important;
-  backdrop-filter: blur(5px);
+  box-shadow: 0 8px 35px rgba(255, 200, 0, 0.6) !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -117,6 +110,6 @@ button[variant="outline"] {
   background: rgba(255, 255, 255, 0.02);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 200, 0, 0.2);
+  background: rgba(255, 200, 0, 0.3);
   border-radius: 10px;
 }

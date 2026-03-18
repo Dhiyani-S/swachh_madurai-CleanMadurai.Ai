@@ -47,7 +47,7 @@ export default function LandingPage() {
             </div>
           </div>
           
-          <Card className="p-10 rounded-[3rem] border-white/20 bg-white/10 backdrop-blur-3xl shadow-2xl">
+          <Card className="p-10 rounded-[3rem] border-white/20 glass-panel shadow-2xl">
             <h2 className="text-2xl font-bold mb-8 font-headline text-white">Choose Language / மொழியைத் தேர்ந்தெடுக்கவும்</h2>
             <div className="grid grid-cols-1 gap-4">
               <Button 
@@ -84,31 +84,17 @@ export default function LandingPage() {
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Default Commissioner Logic
     if (userId === '09071901' && password === '1234' && role === 'commissioner') {
-      setCurrentUser({
-        id: "09071901",
-        name: "Corporation Commissioner",
-        role: "commissioner",
-        rewardPoints: 0
-      })
+      setCurrentUser({ id: "09071901", name: "Corporation Commissioner", role: "commissioner", rewardPoints: 0 })
       router.push('/dashboard')
       return
     }
 
     const trimmedId = userId.trim()
-    const existingUser = users.find(u => 
-      u.id === trimmedId && 
-      u.password === password && 
-      u.role === role
-    )
+    const existingUser = users.find(u => u.id === trimmedId && u.password === password && u.role === role)
 
     if (!existingUser) {
-      toast({ 
-        title: "Sign In Failed", 
-        description: "Invalid ID, Password, or Role. Note: Administrative roles are assigned by the Corporation hierarchy.", 
-        variant: "destructive" 
-      })
+      toast({ title: "Sign In Failed", description: "Invalid credentials. Administrative roles are assigned by hierarchy.", variant: "destructive" })
       return
     }
 
@@ -119,31 +105,21 @@ export default function LandingPage() {
   const handleSignUp = (e: React.FormEvent) => {
     e.preventDefault()
     if (!signUpId || !signUpPassword) {
-      toast({ title: "Error", description: "Please fill all required fields.", variant: "destructive" })
+      toast({ title: "Error", description: "Fill all fields.", variant: "destructive" })
       return
     }
-
     if (users.find(u => u.id === signUpId)) {
-      toast({ title: "Registration Failed", description: "User ID already exists.", variant: "destructive" })
+      toast({ title: "Failed", description: "User ID exists.", variant: "destructive" })
       return
     }
-
     setIsSubmitting(true)
-    addUser({
-      id: signUpId,
-      name: `Citizen ${signUpId}`,
-      password: signUpPassword,
-      role: 'citizen',
-      rewardPoints: 0,
-    })
-    toast({ title: "Success", description: "Citizen account created. Please Sign In." })
-    setSignUpId('')
-    setSignUpPassword('')
-    setIsSubmitting(false)
+    addUser({ id: signUpId, name: `Citizen ${signUpId}`, password: signUpPassword, role: 'citizen', rewardPoints: 0 })
+    toast({ title: "Success", description: "Account created. Please Sign In." })
+    setSignUpId(''); setSignUpPassword(''); setIsSubmitting(false)
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-transparent">
       <div className="max-w-md w-full flex flex-col items-center z-20">
         <div className="mb-8 text-center space-y-4">
           <div className="flex items-center justify-center gap-3">
@@ -155,11 +131,11 @@ export default function LandingPage() {
           <h2 className="text-xl font-headline font-bold text-white/80">{t.taglineFull}</h2>
         </div>
 
-        <Card className="w-full border-white/20 bg-white/5 backdrop-blur-[100px] shadow-2xl rounded-[3.5rem] overflow-hidden">
+        <Card className="w-full border-white/20 glass-panel shadow-2xl rounded-[3.5rem] overflow-hidden">
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-white/5 p-1 h-16">
-              <TabsTrigger value="signin" className="font-bold rounded-3xl text-lg data-[state=active]:bg-primary data-[state=active]:text-black text-white/60">{t.signIn}</TabsTrigger>
-              <TabsTrigger value="signup" className="font-bold rounded-3xl text-lg data-[state=active]:bg-primary data-[state=active]:text-black text-white/60">{t.register}</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 bg-white/10 p-1 h-16 rounded-none">
+              <TabsTrigger value="signin" className="font-bold rounded-3xl text-lg data-[state=active]:bg-primary data-[state=active]:text-black text-white/60">Sign In</TabsTrigger>
+              <TabsTrigger value="signup" className="font-bold rounded-3xl text-lg data-[state=active]:bg-primary data-[state=active]:text-black text-white/60">Register</TabsTrigger>
             </TabsList>
 
             <div className="p-10 space-y-8">
@@ -177,7 +153,7 @@ export default function LandingPage() {
                     <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">{t.accessRole}</Label>
                     <Select value={role} onValueChange={(val) => setRole(val as UserRole)}>
                       <SelectTrigger className="h-14 rounded-2xl text-lg"><SelectValue /></SelectTrigger>
-                      <SelectContent className="bg-zinc-950/90 border-white/10 text-white rounded-2xl backdrop-blur-xl">
+                      <SelectContent className="bg-zinc-950/95 border-white/10 text-white rounded-2xl backdrop-blur-3xl">
                         <SelectItem value="commissioner">Corporation Commissioner</SelectItem>
                         <SelectItem value="ward_admin">Ward Admin</SelectItem>
                         <SelectItem value="zone_admin">Zone Admin</SelectItem>
@@ -186,7 +162,7 @@ export default function LandingPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button type="submit" className="w-full h-16 text-xl font-bold mt-4 rounded-2xl">
+                  <Button type="submit" className="w-full h-16 text-xl font-bold mt-4 rounded-2xl bg-primary">
                     {t.signIn} <ChevronRight className="h-6 w-6 ml-2" />
                   </Button>
                 </form>
@@ -195,23 +171,20 @@ export default function LandingPage() {
               <TabsContent value="signup" className="mt-0 space-y-6">
                 <div className="space-y-6">
                   <div className="p-4 bg-primary/10 border border-primary/20 rounded-2xl">
-                    <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1 text-center">Citizen Registration Only</p>
-                    <p className="text-[10px] text-white/60 leading-relaxed text-center italic">
-                      Administrative roles (Ward, Zone, Worker) are strictly assigned by the Corporation hierarchy.
+                    <p className="text-[10px] text-white/80 leading-relaxed text-center italic">
+                      Only Citizen accounts can self-register. Others are assigned by hierarchy.
                     </p>
                   </div>
-
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">Citizen ID / Username</Label>
+                      <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">Username</Label>
                       <Input placeholder="e.g. user123" className="h-14 rounded-2xl" required value={signUpId} onChange={e => setSignUpId(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label className="font-bold ml-2 text-white/60 uppercase text-[10px] tracking-widest">Password</Label>
                       <Input type="password" placeholder="••••" className="h-14 rounded-2xl" required value={signUpPassword} onChange={e => setSignUpPassword(e.target.value)} />
                     </div>
-
-                    <Button type="submit" disabled={isSubmitting} className="w-full h-16 text-xl font-bold mt-4 rounded-2xl">
+                    <Button type="submit" disabled={isSubmitting} className="w-full h-16 text-xl font-bold mt-4 rounded-2xl bg-primary">
                       {isSubmitting ? <Loader2 className="animate-spin" /> : <UserPlus className="mr-2 h-6 w-6" />} {t.register}
                     </Button>
                   </form>

@@ -19,14 +19,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased relative min-h-screen bg-transparent">
-        {/* Fixed Heritage Background Layer */}
-        <div className="madurai-bg" aria-hidden="true" />
-        
-        <div className="relative z-10 min-h-screen">
+      <body className="font-body antialiased min-h-screen">
+        {/* Main Content Container - Elevated above the fixed background */}
+        <div className="relative z-10 min-h-screen flex flex-col">
           {children}
         </div>
-        
         <Toaster />
       </body>
     </html>
