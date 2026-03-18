@@ -32,62 +32,47 @@
     padding: 0;
     width: 100%;
     min-height: 100%;
-    background: transparent !important;
+    background: #000000 !important;
   }
 
   body {
     @apply font-body antialiased;
-    /* High-definition Meenakshi Amman Temple dusk view */
-    background-image: url('https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&q=80&w=1920') !important;
-    background-size: cover !important;
-    background-attachment: fixed !important;
-    background-position: center center !important;
-    background-repeat: no-repeat !important;
+    background-color: #000000 !important;
     color: #E8F5EE;
-  }
-
-  /* Dark gradient overlay to ensure text readability without hiding the temple */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7));
-    z-index: -1;
-    pointer-events: none;
   }
 }
 
 /* Deep Glassmorphism UI - High Transparency */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.04) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(255, 200, 0, 0.15) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  background: rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(25px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+  border: 1px solid rgba(255, 200, 0, 0.1) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
 }
 
 .glass-sidebar {
-  background: rgba(0, 0, 0, 0.2) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
   backdrop-filter: blur(40px) !important;
-  border-right: 1px solid rgba(255, 200, 0, 0.1) !important;
+  border-right: 1px solid rgba(255, 200, 0, 0.05) !important;
 }
 
 .glass-header {
-  background: rgba(0, 0, 0, 0.15) !important;
+  background: rgba(0, 0, 0, 0.3) !important;
   backdrop-filter: blur(30px) !important;
   border-bottom: 1px solid rgba(255, 200, 0, 0.05) !important;
 }
 
 /* UI Component Transparency overrides */
 .card, [class*="card"], .bg-card {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(255, 200, 0, 0.1) !important;
-  backdrop-filter: blur(15px) !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 200, 0, 0.08) !important;
+  backdrop-filter: blur(20px) !important;
 }
 
 input, select, textarea {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 200, 0, 0.25) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 200, 0, 0.15) !important;
   color: #FFFFFF !important;
   backdrop-filter: blur(10px) !important;
 }
@@ -96,13 +81,13 @@ button.bg-primary, .btn-primary {
   background: hsl(var(--primary)) !important;
   color: #000000 !important;
   font-weight: 800 !important;
-  box-shadow: 0 4px 20px rgba(255, 200, 0, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(255, 200, 0, 0.3) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 button.bg-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(255, 200, 0, 0.6) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 30px rgba(255, 200, 0, 0.5) !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -112,6 +97,6 @@ button.bg-primary:hover {
   background: rgba(255, 255, 255, 0.01);
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 200, 0, 0.3);
+  background: rgba(255, 200, 0, 0.2);
   border-radius: 10px;
 }

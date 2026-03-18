@@ -1,9 +1,8 @@
-
 "use client"
 
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useStore, TeamMember, User } from "@/lib/store"
+import { useStore, TeamMember } from "@/lib/store"
 import { 
   Users, 
   UserPlus, 
@@ -64,9 +63,12 @@ export default function ZoneAdminTeams() {
   const currentZone = currentUser?.zone || 'ZA'
   const zoneWorkers = users.filter(u => u.role === 'worker' && u.zone === currentZone)
 
-  // Derived state to get the latest selected worker and their team
+  // Derived state to get the latest selected worker and their team reactively
   const activeWorker = React.useMemo(() => users.find(u => u.id === selectedWorkerId), [users, selectedWorkerId]);
-  const activeTeam = React.useMemo(() => teams.find(t => t.id.toUpperCase() === activeWorker?.teamId?.toUpperCase()), [teams, activeWorker]);
+  const activeTeam = React.useMemo(() => {
+    if (!activeWorker?.teamId) return null;
+    return teams.find(t => t.id.toUpperCase() === activeWorker.teamId?.toUpperCase());
+  }, [teams, activeWorker]);
 
   const handleRegisterTeamAccount = (e: React.FormEvent) => {
     e.preventDefault()
