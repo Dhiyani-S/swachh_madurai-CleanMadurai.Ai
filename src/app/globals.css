@@ -37,8 +37,8 @@
 
   body {
     @apply font-body antialiased;
-    /* High-definition Meenakshi Amman Temple Gopuram */
-    background-image: url('https://images.unsplash.com/photo-1621252179027-94459d278660?auto=format&fit=crop&q=80&w=1920') !important;
+    /* High-definition Meenakshi Amman Temple dusk view */
+    background-image: url('https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&q=80&w=1920') !important;
     background-size: cover !important;
     background-attachment: fixed !important;
     background-position: center center !important;
@@ -46,12 +46,12 @@
     color: #E8F5EE;
   }
 
-  /* Transparent overlay for text readability without blocking the image */
+  /* Dark gradient overlay to ensure text readability without hiding the temple */
   body::before {
     content: "";
     position: fixed;
     inset: 0;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7));
     z-index: -1;
     pointer-events: none;
   }
@@ -59,30 +59,30 @@
 
 /* Deep Glassmorphism UI - High Transparency */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.03) !important;
-  backdrop-filter: blur(25px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(25px) saturate(180%) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   border: 1px solid rgba(255, 200, 0, 0.15) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
 }
 
 .glass-sidebar {
-  background: rgba(0, 0, 0, 0.15) !important;
+  background: rgba(0, 0, 0, 0.2) !important;
   backdrop-filter: blur(40px) !important;
-  border-right: 1px solid rgba(255, 200, 0, 0.05) !important;
+  border-right: 1px solid rgba(255, 200, 0, 0.1) !important;
 }
 
 .glass-header {
-  background: rgba(0, 0, 0, 0.1) !important;
+  background: rgba(0, 0, 0, 0.15) !important;
   backdrop-filter: blur(30px) !important;
   border-bottom: 1px solid rgba(255, 200, 0, 0.05) !important;
 }
 
-/* UI Component Transparency override */
+/* UI Component Transparency overrides */
 .card, [class*="card"], .bg-card {
   background: rgba(255, 255, 255, 0.03) !important;
   border: 1px solid rgba(255, 200, 0, 0.1) !important;
-  backdrop-filter: blur(20px) !important;
+  backdrop-filter: blur(15px) !important;
 }
 
 input, select, textarea {
