@@ -102,6 +102,13 @@ interface AppState {
   updateUser: (userId: string, updates: Partial<User>) => void;
   addTask: (task: Task) => void;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
+  
+  // Team Roster Actions
+  addTeam: (team: Team) => void;
+  addTeamMember: (teamId: string, member: TeamMember) => void;
+  updateTeamMember: (teamId: string, workerId: string, updates: Partial<TeamMember>) => void;
+  removeTeamMember: (teamId: string, workerId: string) => void;
+
   submitAttendance: (teamId: string, date: string, records: AttendanceRecord[]) => void;
   addNotification: (notif: Omit<Notification, 'id' | 'read' | 'time'>) => void;
   markNotificationRead: (id: string) => void;
@@ -137,6 +144,24 @@ export const useStore = create<AppState>()(
         const updatedTasks = state.tasks.map(t => t.id === taskId ? { ...t, ...updates } : t);
         return { tasks: updatedTasks };
       }),
+      
+      addTeam: (team) => set((state) => ({ teams: [...state.teams, team] })),
+      addTeamMember: (teamId, member) => set((state) => ({
+        teams: state.teams.map(t => t.id === teamId ? { ...t, members: [...t.members, member] } : t)
+      })),
+      updateTeamMember: (teamId, workerId, updates) => set((state) => ({
+        teams: state.teams.map(t => t.id === teamId ? {
+          ...t,
+          members: t.members.map(m => m.workerId === workerId ? { ...m, ...updates } : m)
+        } : t)
+      })),
+      removeTeamMember: (teamId, workerId) => set((state) => ({
+        teams: state.teams.map(t => t.id === teamId ? {
+          ...t,
+          members: t.members.filter(m => m.workerId !== workerId)
+        } : t)
+      })),
+
       submitAttendance: (teamId, date, records) => set((state) => ({
         attendance: {
           ...state.attendance,

@@ -2,11 +2,33 @@
 "use client"
 
 import * as React from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { useStore, User, TeamMember } from "@/lib/store"
-import { Users, UserPlus, Phone, MapPin, Trash2, Edit2, Plus, Save, X, UserCheck, CalendarDays, HardHat } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useStore, TeamMember, User } from "@/lib/store"
+import { 
+  Users, 
+  UserPlus, 
+  Phone, 
+  MapPin, 
+  Trash2, 
+  Edit2, 
+  Plus, 
+  Save, 
+  X, 
+  UserCheck, 
+  HardHat,
+  ChevronRight,
+  UserCircle
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger, 
+  DialogFooter 
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
@@ -14,7 +36,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function ZoneAdminTeams() {
-  const { users, currentUser, addUser, updateUser, teams } = useStore()
+  const { users, currentUser, addUser, updateUser, teams, addTeam, addTeamMember, updateTeamMember, removeTeamMember } = useStore()
   const { toast } = useToast()
   
   const [isRegisterOpen, setIsRegisterOpen] = React.useState(false)
@@ -27,8 +49,17 @@ export default function ZoneAdminTeams() {
     password: '',
     name: '',
     phone: '',
-    address: '', // This will be used as the Assigned Area
+    address: '',
     teamId: '',
+  })
+
+  // New Member Form State
+  const [newMember, setNewMember] = React.useState<TeamMember>({
+    workerId: '',
+    name: '',
+    age: 0,
+    phone: '',
+    address: ''
   })
 
   const currentZone = currentUser?.zone || 'ZA'
@@ -46,6 +77,7 @@ export default function ZoneAdminTeams() {
       return
     }
 
+    // Create User Account for Login
     addUser({
       id: newWorker.id,
       name: newWorker.name,
@@ -54,10 +86,21 @@ export default function ZoneAdminTeams() {
       teamId: newWorker.teamId,
       zone: currentZone,
       phone: newWorker.phone,
-      address: newWorker.address, // Area Assignment
+      address: newWorker.address,
       rewardPoints: 0,
       createdByAdmin: currentUser?.id
     })
+
+    // Initialize the Team record if it doesn't exist
+    if (!teams.find(t => t.id === newWorker.teamId)) {
+      addTeam({
+        id: newWorker.teamId,
+        zone: currentZone,
+        name: newWorker.name,
+        members: [],
+        supervisorId: currentUser?.id || ''
+      })
+    }
 
     toast({ title: "Worker Registered", description: `Account ${newWorker.id} created for Team ${newWorker.teamId}.` })
     setNewWorker({ id: '', password: '', name: '', phone: '', address: '', teamId: '' })
@@ -76,6 +119,16 @@ export default function ZoneAdminTeams() {
     
     toast({ title: "Details Updated", description: "Worker and Area details saved successfully." })
     setIsManageMembersOpen(false)
+  }
+
+  const handleAddMember = () => {
+    if (!selectedWorker?.teamId || !newMember.name || !newMember.workerId) {
+      toast({ title: "Validation Error", description: "Member Name and ID are required.", variant: "destructive" })
+      return
+    }
+    addTeamMember(selectedWorker.teamId, newMember)
+    setNewMember({ workerId: '', name: '', age: 0, phone: '', address: '' })
+    toast({ title: "Member Added", description: `${newMember.name} has been added to the roster.` })
   }
 
   return (
@@ -183,7 +236,7 @@ export default function ZoneAdminTeams() {
                       setIsManageMembersOpen(true)
                     }}
                   >
-                    <Edit2 className="h-4 w-4 mr-2" /> Edit Details & Area
+                    <Edit2 className="h-4 w-4 mr-2" /> Manage Team & Roster
                   </Button>
                 </CardContent>
               </Card>
@@ -193,22 +246,22 @@ export default function ZoneAdminTeams() {
       </div>
 
       <Dialog open={isManageMembersOpen} onOpenChange={setIsManageMembersOpen}>
-        <DialogContent className="max-w-2xl glass-panel text-white rounded-[3.5rem] shadow-2xl border-primary/20">
+        <DialogContent className="max-w-3xl glass-panel text-white rounded-[3.5rem] shadow-2xl border-primary/20">
           <DialogHeader>
             <DialogTitle className="font-headline text-4xl text-primary mt-4">Manage Unit: {selectedWorker?.name}</DialogTitle>
           </DialogHeader>
 
           <Tabs defaultValue="details" className="w-full mt-4">
             <TabsList className="bg-white/5 p-1 h-12 rounded-2xl border border-white/10 mb-6">
-              <TabsTrigger value="details" className="rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black">Basic Info & Area</TabsTrigger>
-              <TabsTrigger value="roster" className="rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black">Team Roster</TabsTrigger>
+              <TabsTrigger value="details" className="rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black">Team Details</TabsTrigger>
+              <TabsTrigger value="roster" className="rounded-xl font-bold px-6 h-full data-[state=active]:bg-primary data-[state=active]:text-black">Personnel Roster</TabsTrigger>
             </TabsList>
 
             <TabsContent value="details">
               <form onSubmit={handleUpdateWorker} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Team Display Name</Label>
+                    <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Display Name</Label>
                     <Input 
                       value={selectedWorker?.name || ''} 
                       onChange={e => setSelectedWorker(prev => prev ? {...prev, name: e.target.value} : null)}
@@ -216,7 +269,7 @@ export default function ZoneAdminTeams() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Assigned Area / Location</Label>
+                    <Label className="text-white/40 uppercase text-[10px] font-bold tracking-widest ml-2">Assigned Operational Area</Label>
                     <Input 
                       value={selectedWorker?.address || ''} 
                       onChange={e => setSelectedWorker(prev => prev ? {...prev, address: e.target.value} : null)}
@@ -234,25 +287,49 @@ export default function ZoneAdminTeams() {
                   </div>
                 </div>
                 <Button type="submit" className="w-full h-14 rounded-2xl font-bold bg-primary text-black">
-                  <Save className="h-5 w-5 mr-2" /> Save Field Updates
+                  <Save className="h-5 w-5 mr-2" /> Save Updates
                 </Button>
               </form>
             </TabsContent>
 
             <TabsContent value="roster">
-              <div className="space-y-6">
-                <div className="p-6 rounded-[2rem] bg-white/5 border border-white/10">
-                   <h4 className="font-bold mb-4 flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> Members Roster</h4>
-                   {teams.find(t => t.id === selectedWorker?.teamId)?.members.map((member, i) => (
-                     <div key={i} className="flex justify-between items-center p-3 mb-2 rounded-xl bg-black/20 border border-white/5">
-                        <div>
-                          <p className="font-bold text-sm">{member.name}</p>
-                          <p className="text-[10px] text-white/40">{member.workerId} • Age: {member.age}</p>
-                        </div>
-                        <Badge variant="outline" className="text-[8px]">{member.phone}</Badge>
-                     </div>
-                   ))}
-                   <p className="text-[10px] text-center text-white/20 mt-4 italic">Registering new individuals to the team roster is handled by the Central HR sync.</p>
+              <div className="space-y-8">
+                {/* Add Member Form */}
+                <div className="p-6 rounded-[2rem] bg-white/5 border border-primary/10">
+                  <h4 className="font-headline font-bold text-lg mb-4 flex items-center gap-2"><Plus className="h-5 w-5 text-primary" /> Add New Member</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Input placeholder="Full Name" value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})} className="h-10 text-xs" />
+                    <Input placeholder="Member ID" value={newMember.workerId} onChange={e => setNewMember({...newMember, workerId: e.target.value})} className="h-10 text-xs" />
+                    <Input placeholder="Phone" value={newMember.phone} onChange={e => setNewMember({...newMember, phone: e.target.value})} className="h-10 text-xs" />
+                    <Button onClick={handleAddMember} className="h-10 font-bold bg-primary text-black">Add To Unit</Button>
+                  </div>
+                </div>
+
+                {/* Member List */}
+                <div className="space-y-3">
+                   <h4 className="font-bold text-white/60 uppercase text-[10px] tracking-widest ml-2">Registered Personnel</h4>
+                   {teams.find(t => t.id === selectedWorker?.teamId)?.members.length === 0 ? (
+                     <p className="text-center py-10 text-white/20 italic">No members added to this unit yet.</p>
+                   ) : (
+                     teams.find(t => t.id === selectedWorker?.teamId)?.members.map((member, i) => (
+                       <div key={i} className="flex justify-between items-center p-4 rounded-2xl bg-black/30 border border-white/5 group transition-all hover:border-primary/20">
+                          <div className="flex items-center gap-4">
+                            <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center">
+                              <UserCircle className="h-6 w-6 text-primary/40" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-md text-white">{member.name}</p>
+                              <p className="text-[10px] text-white/40">{member.workerId} • {member.phone || 'No Phone'}</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-500 hover:bg-rose-500/10" onClick={() => removeTeamMember(selectedWorker?.teamId!, member.workerId)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                       </div>
+                     ))
+                   )}
                 </div>
               </div>
             </TabsContent>
