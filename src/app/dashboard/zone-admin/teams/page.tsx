@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -10,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function ZoneAdminTeams() {
   const { users, currentUser, addUser, updateUser, teams } = useStore()
@@ -27,13 +29,6 @@ export default function ZoneAdminTeams() {
     phone: '',
     address: '', // This will be used as the Assigned Area
     teamId: '',
-  })
-
-  // Member Form State
-  const [memberForm, setMemberForm] = React.useState({
-    name: '',
-    age: '',
-    phone: '',
   })
 
   const currentZone = currentUser?.zone || 'ZA'
@@ -69,16 +64,6 @@ export default function ZoneAdminTeams() {
     setIsRegisterOpen(false)
   }
 
-  const handleAddMember = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedWorker) return
-    
-    // In this prototype, we store team members inside the Team object in the store
-    // Let's find the team or simulate adding to the worker's detail
-    toast({ title: "Member Added", description: `${memberForm.name} added to the team roster.` })
-    setMemberForm({ name: '', age: '', phone: '' })
-  }
-
   const handleUpdateWorker = (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedWorker) return
@@ -107,7 +92,7 @@ export default function ZoneAdminTeams() {
               <UserPlus className="h-5 w-5" /> Register Worker Account
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] glass-panel text-white rounded-[2.5rem] border-primary/20">
+          <DialogContent className="sm:max-w-[500px] glass-panel text-white rounded-[2.5rem] border-primary/20 shadow-2xl">
             <DialogHeader>
               <DialogTitle className="font-headline text-3xl text-primary">New Worker Registration</DialogTitle>
               <DialogDescription className="text-white/60">
@@ -258,7 +243,6 @@ export default function ZoneAdminTeams() {
               <div className="space-y-6">
                 <div className="p-6 rounded-[2rem] bg-white/5 border border-white/10">
                    <h4 className="font-bold mb-4 flex items-center gap-2"><Users className="h-5 w-5 text-primary" /> Members Roster</h4>
-                   {/* Display members if existing in store team data */}
                    {teams.find(t => t.id === selectedWorker?.teamId)?.members.map((member, i) => (
                      <div key={i} className="flex justify-between items-center p-3 mb-2 rounded-xl bg-black/20 border border-white/5">
                         <div>
